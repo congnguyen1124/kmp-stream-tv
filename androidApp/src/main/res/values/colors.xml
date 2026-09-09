@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="stream_background">#090B10</color>
+    <color name="stream_surface">#171A22</color>
+    <color name="stream_surface_high">#2A2E39</color>
+    <color name="stream_navigation">#0D0F15</color>
+    <color name="stream_text">#FFF8F3</color>
+    <color name="stream_text_secondary">#B9BBC5</color>
+    <color name="stream_text_muted">#777B87</color>
+    <color name="stream_accent">#FF5A36</color>
+    <color name="stream_accent_soft">#33FF5A36</color>
+    <color name="stream_live">#E32636</color>
+    <color name="stream_divider">#26FFFFFF</color>
+    <color name="stream_scrim">#B3000000</color>
+    <color name="transparent">#00000000</color>
+</resources>

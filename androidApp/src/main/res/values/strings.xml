@@ -1,0 +1,44 @@
+<resources>
+    <string name="app_name">StreamTV</string>
+    <string name="stream_initial">S</string>
+    <string name="top_ten">TOP\n10</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_music">Music</string>
+    <string name="nav_shorts">Shorts</string>
+    <string name="nav_playlist">Playlist</string>
+    <string name="category_home">Home</string>
+    <string name="category_movies">Movies</string>
+    <string name="category_series">Series</string>
+    <string name="category_live">Live</string>
+    <string name="category_more">More ▾</string>
+    <string name="search">Search</string>
+    <string name="notifications">Notifications</string>
+    <string name="profile">Profile</string>
+    <string name="search_coming_soon">Search will be connected in a later screen.</string>
+    <string name="notifications_coming_soon">Notifications will be connected in a later screen.</string>
+    <string name="profile_coming_soon">Profile will be connected in a later screen.</string>
+    <string name="placeholder_music">The Music fragment shell is ready for its feature implementation.</string>
+    <string name="placeholder_shorts">The Shorts fragment shell is ready for its vertical feed.</string>
+    <string name="placeholder_playlist">The Playlist fragment shell is ready for saved content.</string>
+    <string name="placeholder_home_category">The %1$s category is wired into Home navigation and ready for its fragment.</string>
+    <string name="watch_later">Watch later</string>
+    <string name="added_to_watch_later">Added to Watch later</string>
+    <string name="information">Information</string>
+    <string name="retry">Try again</string>
+    <string name="watch_now">Watch now</string>
+    <string name="live">LIVE</string>
+    <string name="loading_home">Loading Home content</string>
+    <string name="video">Video</string>
+    <string name="back">Back</string>
+    <string name="rewind">Rewind 10 seconds</string>
+    <string name="forward">Forward 10 seconds</string>
+    <string name="rewind_short">−10</string>
+    <string name="forward_short">+10</string>
+    <string name="play">Play</string>
+    <string name="pause">Pause</string>
+    <string name="elapsed_time">%1$s / %2$s</string>
+    <plurals name="episode_count">
+        <item quantity="one">%d episode</item>
+        <item quantity="other">%d episodes</item>
+    </plurals>
+</resources>

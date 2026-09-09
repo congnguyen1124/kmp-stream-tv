@@ -1,0 +1,86 @@
+package com.congnguyencn.kmpstreamtv.feature.home
+
+import android.os.Bundle
+import android.view.View
+import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.congnguyencn.kmpstreamtv.R
+import com.congnguyencn.kmpstreamtv.core.ui.dp
+import com.congnguyencn.kmpstreamtv.databinding.FragmentHomeBinding
+import com.congnguyencn.kmpstreamtv.feature.home.presentation.HomeUiState
+import com.congnguyencn.kmpstreamtv.feature.home.presentation.HomeViewModel
+import com.congnguyencn.kmpstreamtv.feature.player.PlayerActivity
+import kotlinx.coroutines.launch
+import org.koin.android.ext.android.getKoin
+
+class HomeFragment : Fragment(R.layout.fragment_home) {
+    private var _binding: FragmentHomeBinding? = null
+    private val binding get() = requireNotNull(_binding)
+    private var homeAdapter: HomeSectionAdapter? = null
+    private val viewModel: HomeViewModel by viewModels {
+        object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T =
+                getKoin().get<HomeViewModel>() as T
+        }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        _binding = FragmentHomeBinding.bind(view)
+        val sectionAdapter = HomeSectionAdapter { content ->
+            startActivity(PlayerActivity.intent(requireContext(), content))
+        }
+        homeAdapter = sectionAdapter
+
+        binding.sections.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = sectionAdapter
+            setHasFixedSize(false)
+            addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    (parentFragment as? HomeTabFragment)
+                        ?.updateToolbarForScroll(recyclerView.computeVerticalScrollOffset())
+                }
+            })
+        }
+        binding.swipeRefresh.apply {
+            setColorSchemeResources(R.color.stream_accent)
+            setProgressBackgroundColorSchemeResource(R.color.stream_surface)
+            setProgressViewOffset(false, 92.dp, 140.dp)
+            setOnRefreshListener(viewModel::loadHome)
+        }
+        binding.retry.setOnClickListener { viewModel.loadHome() }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect(::render)
+            }
+        }
+    }
+
+    private fun render(state: HomeUiState) = with(binding) {
+        val hasContent = state.sections.isNotEmpty()
+        swipeRefresh.isRefreshing = state.isLoading && hasContent
+        loading.isVisible = state.isLoading && !hasContent
+        sections.isVisible = hasContent && state.errorMessage == null
+        errorGroup.isVisible = !state.isLoading && state.errorMessage != null
+        errorMessage.text = state.errorMessage
+        homeAdapter?.submitList(state.sections)
+    }
+
+    override fun onDestroyView() {
+        binding.sections.adapter = null
+        homeAdapter = null
+        _binding = null
+        super.onDestroyView()
+    }
+}
