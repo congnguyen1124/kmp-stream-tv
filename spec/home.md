@@ -37,3 +37,14 @@ Gilroy font files, palette, logo, editorial backgrounds, rank artwork and select
 paths. Android vector drawables are converted to SVG for iOS rather than replaced with SF Symbols.
 Cards render only the content visible in their Android XML counterpart, and carousel/card dimensions
 use the Android dp values as iOS points while retaining the same compact-width shrink behavior.
+## Android rendering contract
+
+- Section holders must inflate the matching `item_layout*` custom-view wrapper used by the mobile
+  reference instead of flattening the outer hierarchy into the page adapter.
+- Ordinary layouts use nested horizontal RecyclerViews; both highlight layouts use `ViewPager2`
+  through the cloned carousel behavior with the reference size, scale, translation and looping.
+- Tall Highlight must retain every source child: active blurred artwork, the two source carousel
+  background drawables, carousel, Watch later, Watch now, Information, click proxy, bottom spacer,
+  loading overlay and error overlay.
+- Loading/error views remain part of every source layout family even when dummy content resolves
+  synchronously. Do not add display-only scrims or gradients that are absent from the reference XML.

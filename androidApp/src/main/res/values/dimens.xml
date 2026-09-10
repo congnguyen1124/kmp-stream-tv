@@ -16,6 +16,8 @@
     <dimen name="margin_x">20dp</dimen>
     <dimen name="margin_xx">24dp</dimen>
     <dimen name="margin_4x">32dp</dimen>
+    <dimen name="padding_super_tiny">2dp</dimen>
+    <dimen name="padding_tiny_x">6dp</dimen>
     <dimen name="size_1_5x">24dp</dimen>
     <dimen name="size_3_5x">56dp</dimen>
     <dimen name="content_padding_horizontal">16dp</dimen>
@@ -64,7 +66,8 @@
     <dimen name="divider">1dp</dimen>
     <dimen name="linear_progress_height">2dp</dimen>
     <dimen name="radius_small">4dp</dimen>
-    <dimen name="radius_normal_extra">12dp</dimen>
+    <dimen name="radius_normal">12dp</dimen>
+    <dimen name="radius_normal_extra">16dp</dimen>
     <dimen name="logo_app_corner">12dp</dimen>
 
 </resources>
