@@ -1,4 +1,4 @@
-# Android navigation shell
+# Native navigation shells
 
 ## Main destinations
 
@@ -27,3 +27,21 @@ row. Tapping its title opens the category picker, and tapping the StreamTV wordm
 The toolbar scrim becomes opaque as the Home feed scrolls. Child Fragment state and the selected
 category tag survive view recreation. Search, notification and profile buttons currently provide
 explicit “coming later” feedback instead of dead click targets.
+
+## iOS
+
+`MainTabView` owns the same persistent Home, Music, Short and Playlist destinations through a native
+SwiftUI `TabView`. `HomeTabView` owns Home's brand row, working search/notification/profile feedback,
+the Home/Movies/Series/Live/More category controls and the toolbar scrim. The loaded `HomeStore` and
+its feed remain alive while a placeholder category is shown, preserving shared state and scroll
+identity in the same ownership layer used by Android's `HomeTabFragment`.
+
+The SwiftUI hierarchy follows the Android feature split without sharing native rendering code:
+
+```text
+MainActivity / MainTabView
+  ├── HomeTabFragment / HomeTabView
+  │     ├── HomeFragment / HomeView
+  │     └── Home chrome and categories
+  └── PlaceholderFragment / PlaceholderView
+```

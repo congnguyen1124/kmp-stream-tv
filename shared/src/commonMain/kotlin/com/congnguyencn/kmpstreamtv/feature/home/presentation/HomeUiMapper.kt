@@ -5,7 +5,7 @@ import com.congnguyencn.kmpstreamtv.feature.home.domain.model.Content
 import com.congnguyencn.kmpstreamtv.feature.home.domain.model.HomeSection
 import com.congnguyencn.kmpstreamtv.feature.home.domain.model.HomeSectionViewType
 import com.congnguyencn.kmpstreamtv.feature.home.domain.model.Series
-import com.congnguyencn.kmpstreamtv.feature.home.domain.model.Short
+import com.congnguyencn.kmpstreamtv.feature.home.domain.model.ShortVideo
 import com.congnguyencn.kmpstreamtv.feature.home.presentation.model.HomeContentUiModel
 import com.congnguyencn.kmpstreamtv.feature.home.presentation.model.HomeSectionPresentation
 import com.congnguyencn.kmpstreamtv.feature.home.presentation.model.HomeSectionUiModel
@@ -59,11 +59,11 @@ private fun Content.toUiModel() = HomeContentUiModel(
     description = description,
     ageRestriction = ageRestriction,
     isLive = this is Channel,
-    isShort = this is Short,
+    isShort = this is ShortVideo,
     episodeCount = (this as? Series)?.episodes?.size ?: 0,
     providerName = when (this) {
         is Channel -> title
-        is Short -> "StreamTV Stories"
+        is ShortVideo -> "StreamTV Stories"
         is Series -> "StreamTV Series"
         else -> "StreamTV Originals"
     },
@@ -71,12 +71,12 @@ private fun Content.toUiModel() = HomeContentUiModel(
     subtitle = when (this) {
         is Channel -> "Live now"
         is Series -> "${episodes.size} episodes"
-        is Short -> "Short video"
+        is ShortVideo -> "Short video"
         else -> "Episode ${1 + seed() % 8}"
     },
     durationLabel = when (this) {
         is Channel -> "LIVE"
-        is Short -> "0:${durationSeconds()}"
+        is ShortVideo -> "0:${durationSeconds()}"
         else -> "${durationMinutes()}:${durationSeconds()}"
     },
     viewCountLabel = "${viewCount()}K views",

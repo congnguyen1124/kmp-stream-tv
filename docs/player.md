@@ -25,7 +25,9 @@ progress and seeking.
 seeks, samples time twice per second and removes its observer during teardown.
 
 `PlayerView` renders an `AVPlayerViewController` with app-owned controls. Live channels omit seek and
-progress UI. The player stops and clears its item when the screen disappears.
+progress UI. It pauses when the scene leaves the foreground, then stops and clears its item when the
+full-screen player disappears. `NativePlayerView` is kept in its own bridge file so UIKit surface
+ownership stays separate from SwiftUI controls.
 
 ## Non-goal
 

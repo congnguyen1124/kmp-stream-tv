@@ -2,7 +2,7 @@ package com.congnguyencn.kmpstreamtv.feature.home
 
 import com.congnguyencn.kmpstreamtv.feature.home.domain.model.HomeSection
 import com.congnguyencn.kmpstreamtv.feature.home.domain.model.HomeSectionViewType
-import com.congnguyencn.kmpstreamtv.feature.home.domain.model.Short
+import com.congnguyencn.kmpstreamtv.feature.home.domain.model.ShortVideo
 import com.congnguyencn.kmpstreamtv.feature.home.data.source.HomeDummyDataSource
 import com.congnguyencn.kmpstreamtv.feature.home.presentation.HomeUiMapper
 import com.congnguyencn.kmpstreamtv.feature.home.presentation.model.HomeSectionPresentation
@@ -15,7 +15,7 @@ import kotlinx.coroutines.test.runTest
 class HomeModelTest {
     @Test
     fun bannerRejectsPortraitContent() {
-        val short = Short("id", "video", "trailer", "image", "title", "description", null)
+        val short = ShortVideo("id", "video", "trailer", "image", "title", "description", null)
 
         assertFailsWith<IllegalArgumentException> {
             HomeSection("featured", "Featured", HomeSectionViewType.Banner, listOf(short))
