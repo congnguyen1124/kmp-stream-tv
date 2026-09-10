@@ -1,198 +1,185 @@
 import Shared
 import SwiftUI
 
+/// `layout_highlight_wide_view.xml`
 struct HighlightWideSectionView: View {
     let section: HomeSectionUiModel
     let onSelect: (HomeContentUiModel) -> Void
 
     var body: some View {
-        GeometryReader { geometry in
-            let width = min(340, max(0, geometry.size.width - 80))
-            let height = width * 191 / 340
-            let edgePadding = max(40, (geometry.size.width - 340) / 2)
-
-            ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: 8) {
-                    ForEach(section.items, id: \.id) { item in
-                        Button {
-                            onSelect(item)
-                        } label: {
-                            RemoteArtwork(url: item.thumbnailUrl)
-                                .frame(width: width, height: height)
-                                .background(Color.streamSurface)
-                                .clipShape(
-                                    RoundedRectangle(
-                                        cornerRadius: StreamMetrics.thumbnailCorner,
-                                        style: .continuous
-                                    )
-                                )
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel(item.title)
-                        .scrollTransition(.interactive, axis: .horizontal) { content, phase in
-                            content.scaleEffect(1 - (0.15 * abs(phase.value)))
-                        }
-                    }
-                }
-                .scrollTargetLayout()
-                .frame(height: 191, alignment: .top)
-                .padding(.horizontal, edgePadding)
+        ZStack {
+            if let backgroundUrl = section.backgroundUrl, !backgroundUrl.isEmpty {
+                RemoteArtwork(url: backgroundUrl)
             }
-            .scrollTargetBehavior(.viewAligned(limitBehavior: .always))
-            .padding(.vertical, 24)
+
+            HomeCarousel(
+                items: section.items,
+                thumbSize: StreamCardSize.highlightWide,
+                onSelect: onSelect
+            )
+            .frame(height: StreamCardSize.highlightWide.height)
+            .padding(.vertical, StreamMetrics.verticalListDivider)
         }
-        .frame(height: 239)
+        .frame(height: StreamCardSize.highlightWide.height + 2 * StreamMetrics.verticalListDivider)
     }
 }
 
+/// `layout_highlight_tall_view.xml` bound by `LayoutHighlightTallView`.
 struct HighlightTallSectionView: View {
     let section: HomeSectionUiModel
+    /// `LayoutHighlightTallViewHolder` widens the carousel top margin for the first feed row.
+    let isTopSection: Bool
     let onSelect: (HomeContentUiModel) -> Void
 
-    @State private var activeItemID: String?
-    @State private var feedbackMessage: String?
+    @Environment(\.homeToast) private var homeToast
+    @State private var activeIndex = 0
+    @State private var followedItemIDs: Set<String> = []
 
-    private var activeItem: HomeContentUiModel? {
-        section.items.first(where: { $0.id == activeItemID }) ?? section.items.first
-    }
+    /// `margin_4x` between the carousel and the actions, `margin_x` below them.
+    private static let actionBarTopMargin: CGFloat = 32
+    private static let bottomSpacing: CGFloat = 20
 
     var body: some View {
-        GeometryReader { geometry in
-            let width = min(294, max(0, geometry.size.width - 80))
-            let height = width * 441 / 294
-            let edgePadding = max(40, (geometry.size.width - 294) / 2)
-
-            ZStack(alignment: .top) {
-                background
-
-                VStack(spacing: 0) {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        LazyHStack(spacing: 8) {
-                            ForEach(section.items, id: \.id) { item in
-                                Button {
-                                    onSelect(item)
-                                } label: {
-                                    RemoteArtwork(url: item.thumbnailUrl)
-                                        .frame(width: width, height: height)
-                                        .background(Color.streamSurface)
-                                        .clipShape(
-                                            RoundedRectangle(
-                                                cornerRadius: StreamMetrics.thumbnailCorner,
-                                                style: .continuous
-                                            )
-                                        )
-                                }
-                                .buttonStyle(.plain)
-                                .id(item.id)
-                                .accessibilityLabel(item.title)
-                                .scrollTransition(.interactive, axis: .horizontal) { content, phase in
-                                    content.scaleEffect(1 - (0.15 * abs(phase.value)))
-                                }
-                            }
-                        }
-                        .scrollTargetLayout()
-                        .frame(height: 441, alignment: .top)
-                        .padding(.horizontal, edgePadding)
-                    }
-                    .scrollPosition(id: $activeItemID, anchor: .center)
-                    .scrollTargetBehavior(.viewAligned(limitBehavior: .always))
-                    .padding(.top, 24)
-
-                    actionBar
-                        .padding(.top, 32)
-
-                    Color.clear.frame(height: 20)
-                }
-            }
+        ZStack(alignment: .top) {
+            blurredArtwork
+            carouselGradients
+            content
         }
-        .frame(height: 573)
-        .onAppear {
-            if activeItemID == nil {
-                activeItemID = section.items.first?.id
-            }
-        }
-        .alert("StreamTV", isPresented: feedbackPresented) {
-            Button("OK", role: .cancel) { feedbackMessage = nil }
-        } message: {
-            Text(feedbackMessage ?? "")
+        .frame(height: carouselTopMargin + StreamCardSize.highlightTall.height + trailingHeight)
+        .clipped()
+    }
+
+    private var carouselTopMargin: CGFloat {
+        isTopSection
+            ? StreamMetrics.verticalListDivider + StreamMetrics.homeContentPaddingTop
+            : StreamMetrics.verticalListDivider
+    }
+
+    private var trailingHeight: CGFloat {
+        Self.actionBarTopMargin + StreamMetrics.largeIconButtonSize + Self.bottomSpacing
+    }
+
+    private var activeItem: HomeContentUiModel? {
+        section.items.indices.contains(activeIndex) ? section.items[activeIndex] : section.items.first
+    }
+
+    private var isFollowingActiveItem: Bool {
+        guard let activeItem else { return false }
+        return followedItemIDs.contains(activeItem.id)
+    }
+
+    /// `ivCarouselBlur` with the reference `BlurTransformation(5, 25)` treatment.
+    @ViewBuilder
+    private var blurredArtwork: some View {
+        if let thumbnailUrl = activeItem?.thumbnailUrl ?? section.backgroundUrl, !thumbnailUrl.isEmpty {
+            RemoteArtwork(url: thumbnailUrl)
+                .blur(radius: 40, opaque: true)
+                .opacity(0.8)
         }
     }
 
-    private var background: some View {
-        ZStack {
-            if let backgroundUrl = activeItem?.thumbnailUrl ?? section.backgroundUrl {
-                RemoteArtwork(url: backgroundUrl)
-                    .opacity(0.8)
-            }
-
-            LinearGradient(
-                stops: [
-                    .init(color: .streamBackground, location: 0),
-                    .init(color: .clear, location: 0.18),
-                    .init(color: .clear, location: 0.68),
-                    .init(color: .streamBackground, location: 1),
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
+    /// `bg_carousel_top` above the carousel and `bg_carousel` below it.
+    private var carouselGradients: some View {
+        VStack(spacing: 0) {
+            LinearGradient.streamCarouselTop.frame(height: carouselTopMargin)
+            Spacer(minLength: 0)
+            LinearGradient.streamCarouselBottom.frame(height: trailingHeight)
         }
-        .clipped()
+    }
+
+    private var content: some View {
+        VStack(spacing: 0) {
+            HomeCarousel(
+                items: section.items,
+                thumbSize: StreamCardSize.highlightTall,
+                onSelect: onSelect,
+                onActiveIndexChanged: { activeIndex = $0 }
+            )
+            .frame(height: StreamCardSize.highlightTall.height)
+            .padding(.top, carouselTopMargin)
+
+            actionBar
+                .padding(.top, Self.actionBarTopMargin)
+
+            Color.clear.frame(height: Self.bottomSpacing)
+        }
     }
 
     private var actionBar: some View {
         HStack(spacing: 0) {
-            actionButton(title: "Watch later", icon: "ic_playlist_plus") {
-                feedbackMessage = "Added to Watch later"
-            }
+            iconAction(
+                title: "Watch later",
+                icon: isFollowingActiveItem ? "ic_playlist_check" : "ic_playlist_plus",
+                action: toggleWatchLater
+            )
 
-            Button {
+            watchNowButton
+                .padding(.horizontal, 4)
+
+            iconAction(title: "Information", icon: "ic_info_circle") {
                 if let activeItem {
                     onSelect(activeItem)
                 }
-            } label: {
-                HStack(spacing: 8) {
-                    Image("ic_play_round")
-                        .resizable()
-                        .frame(width: 24, height: 24)
-                    Text("Watch now")
-                        .font(.streamSemiBold(16))
-                }
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 48)
-                .background(Color.streamAccent)
-                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-            }
-            .buttonStyle(.plain)
-            .padding(.horizontal, 4)
-
-            actionButton(title: "Information", icon: "ic_info_circle") {
-                feedbackMessage = activeItem?.description_ ?? ""
             }
         }
-        .frame(height: 56)
+        .frame(height: StreamMetrics.largeIconButtonSize)
     }
 
-    private func actionButton(title: String, icon: String, action: @escaping () -> Void) -> some View {
+    private var watchNowButton: some View {
+        Button {
+            if let activeItem {
+                onSelect(activeItem)
+            }
+        } label: {
+            HStack(spacing: 4) {
+                Image("ic_play_round")
+                    .resizable()
+                    .frame(width: StreamMetrics.iconButtonSize, height: StreamMetrics.iconButtonSize)
+                Text("Watch now")
+                    .font(.streamSemiBold(16))
+            }
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity)
+            .frame(height: StreamMetrics.buttonHeight)
+            .background(LinearGradient.streamPrimaryButton)
+            .clipShape(RoundedRectangle(cornerRadius: StreamMetrics.buttonRadius, style: .continuous))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func iconAction(
+        title: String,
+        icon: String,
+        action: @escaping () -> Void
+    ) -> some View {
         Button(action: action) {
             VStack(spacing: 8) {
                 Image(icon)
                     .resizable()
-                    .frame(width: 24, height: 24)
+                    .frame(width: StreamMetrics.iconButtonSize, height: StreamMetrics.iconButtonSize)
                 Text(title)
                     .font(.streamSemiBold(12))
                     .foregroundStyle(Color.streamSecondaryText)
                     .lineLimit(1)
             }
-            .frame(minWidth: 92, minHeight: 56)
+            .padding(.horizontal, 8)
+            .frame(
+                minWidth: StreamMetrics.largeIconButtonSize,
+                minHeight: StreamMetrics.largeIconButtonSize
+            )
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
 
-    private var feedbackPresented: Binding<Bool> {
-        Binding(
-            get: { feedbackMessage != nil },
-            set: { if !$0 { feedbackMessage = nil } }
-        )
+    private func toggleWatchLater() {
+        guard let activeItem else { return }
+        if followedItemIDs.contains(activeItem.id) {
+            followedItemIDs.remove(activeItem.id)
+            homeToast("Removed from Watch later")
+        } else {
+            followedItemIDs.insert(activeItem.id)
+            homeToast("Added to Watch later")
+        }
     }
 }

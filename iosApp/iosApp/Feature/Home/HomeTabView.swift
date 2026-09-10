@@ -30,8 +30,8 @@ struct HomeTabView: View {
 
             HomeChromeView(
                 selectedCategory: $selectedCategory,
-                scrimOpacity: selectedCategory == .home ? toolbarScrimOpacity : 0.82,
-                onAction: showToast,
+                scrimOpacity: toolbarScrimOpacity,
+                onAction: { showToast($0.message) },
                 onCategoryPicker: { isCategoryPickerPresented = true }
             )
 
@@ -53,10 +53,12 @@ struct HomeTabView: View {
                     .transition(.opacity)
             }
         }
+        .environment(\.homeToast, showToast)
     }
 
+    /// `ivTopBarBehind.alpha` tracks the feed offset over `highlight_topbar_offset`.
     private var toolbarScrimOpacity: Double {
-        min(max(Double(feedOffset / 250), 0), 0.82)
+        min(max(Double(feedOffset / StreamMetrics.highlightTopbarOffset), 0), 1)
     }
 
     private var categoryPicker: some View {
@@ -95,8 +97,7 @@ struct HomeTabView: View {
         .transition(.opacity)
     }
 
-    private func showToast(_ action: HomeChromeAction) {
-        let message = action.message
+    private func showToast(_ message: String) {
         withAnimation { toastMessage = message }
         Task {
             try? await Task.sleep(nanoseconds: 2_000_000_000)

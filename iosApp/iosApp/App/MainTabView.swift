@@ -40,7 +40,9 @@ struct MainTabView: View {
     @State private var selection = AppDestination.home
 
     var body: some View {
-        VStack(spacing: 0) {
+        ZStack(alignment: .bottom) {
+            Color.streamBackground.ignoresSafeArea()
+
             ZStack {
                 destination(.home) { HomeTabView() }
                 destination(.music) {
@@ -62,10 +64,10 @@ struct MainTabView: View {
                     )
                 }
             }
+            .safeAreaPadding(.bottom, BottomNavigationMetrics.totalHeight)
 
-            AndroidBottomNavigationBar(selection: $selection)
+            BottomNavigationBar(selection: $selection)
         }
-        .background(Color.streamBackground.ignoresSafeArea())
         .preferredColorScheme(.dark)
     }
 
@@ -77,35 +79,5 @@ struct MainTabView: View {
             .opacity(selection == destination ? 1 : 0)
             .allowsHitTesting(selection == destination)
             .accessibilityHidden(selection != destination)
-    }
-}
-
-private struct AndroidBottomNavigationBar: View {
-    @Binding var selection: AppDestination
-
-    var body: some View {
-        HStack(spacing: 0) {
-            ForEach(AppDestination.allCases) { destination in
-                Button {
-                    selection = destination
-                } label: {
-                    VStack(spacing: 1) {
-                        Image(selection == destination ? destination.selectedIcon : destination.unselectedIcon)
-                            .resizable()
-                            .frame(width: 28, height: 28)
-                        Text(destination.title)
-                            .font(.streamSemiBold(12))
-                            .foregroundStyle(selection == destination ? .white : Color.streamBottomNavText)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(destination.title)
-                .accessibilityAddTraits(selection == destination ? .isSelected : [])
-            }
-        }
-        .frame(height: 56)
-        .background(Color.black)
     }
 }

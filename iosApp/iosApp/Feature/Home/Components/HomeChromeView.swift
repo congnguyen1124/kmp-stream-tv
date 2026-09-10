@@ -4,6 +4,8 @@ enum HomeChromeMetrics {
     static let brandHeight: CGFloat = 48
     static let categoryHeight: CGFloat = 36
     static let totalHeight = brandHeight + categoryHeight
+    static let iconSize: CGFloat = 32
+    static let iconPadding: CGFloat = 4
 }
 
 enum HomeChromeAction: String, Identifiable {
@@ -26,6 +28,7 @@ enum HomeChromeAction: String, Identifiable {
     }
 }
 
+/// `fragment_home_tab.xml`: brand bar, category bar and the two stacked top-bar backgrounds.
 struct HomeChromeView: View {
     @Binding var selectedCategory: HomeCategory
     let scrimOpacity: Double
@@ -43,7 +46,7 @@ struct HomeChromeView: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .background(topbarBackground.ignoresSafeArea(edges: .top))
+        .background(alignment: .top) { topbarBackground }
     }
 
     private var brandBar: some View {
@@ -64,6 +67,7 @@ struct HomeChromeView: View {
             HStack(spacing: 8) {
                 actionButton(.search, image: "ic_search")
                 actionButton(.notifications, image: "ic_notification_normal")
+                    .padding(.horizontal, HomeChromeMetrics.iconPadding)
                 actionButton(.profile, image: "ic_user_circle")
             }
         }
@@ -71,6 +75,7 @@ struct HomeChromeView: View {
         .frame(height: HomeChromeMetrics.brandHeight)
     }
 
+    /// `HomeCategoriesBar` keeps every category left aligned while the row fits the bar width.
     private var categoryBar: some View {
         HStack(spacing: 0) {
             ForEach(HomeCategory.allCases) { category in
@@ -112,24 +117,20 @@ struct HomeChromeView: View {
         .frame(height: HomeChromeMetrics.categoryHeight)
     }
 
+    /// `ivTopBarBehind` fades in with the feed, then `bg_topbar` and the unscaled blur artwork.
     private var topbarBackground: some View {
-        ZStack {
-            LinearGradient(
-                colors: [.streamBackground, Color.streamBackground.opacity(0.8)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .opacity(scrimOpacity)
+        ZStack(alignment: .topLeading) {
+            LinearGradient.streamTopbarBehind
+                .opacity(scrimOpacity)
+
+            LinearGradient.streamTopbar
 
             Image("bg_topbar_blur")
                 .resizable()
-                .scaledToFill()
-
-            LinearGradient(
-                colors: [.streamBackground, .clear],
-                startPoint: .top,
-                endPoint: .bottom
-            )
+                .frame(
+                    width: StreamCardSize.topbarBlur.width,
+                    height: StreamCardSize.topbarBlur.height
+                )
         }
         .frame(height: HomeChromeMetrics.totalHeight)
         .clipped()
@@ -141,8 +142,11 @@ struct HomeChromeView: View {
         } label: {
             Image(image)
                 .resizable()
-                .frame(width: 24, height: 24)
-                .frame(width: 32, height: 32)
+                .frame(
+                    width: HomeChromeMetrics.iconSize - 2 * HomeChromeMetrics.iconPadding,
+                    height: HomeChromeMetrics.iconSize - 2 * HomeChromeMetrics.iconPadding
+                )
+                .frame(width: HomeChromeMetrics.iconSize, height: HomeChromeMetrics.iconSize)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

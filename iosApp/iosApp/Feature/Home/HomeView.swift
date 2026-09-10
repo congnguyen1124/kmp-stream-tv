@@ -55,15 +55,15 @@ struct HomeView: View {
                 .frame(height: 0)
                 .id(Self.feedTopID)
 
-            LazyVStack(alignment: .leading, spacing: 0) {
-                    ForEach(store.state.sections, id: \.id) { section in
-                        HomeSectionView(section: section) { content in
+                LazyVStack(alignment: .leading, spacing: 0) {
+                    ForEach(Array(store.state.sections.enumerated()), id: \.element.id) { index, section in
+                        HomeSectionView(section: section, index: index) { content in
                             playerSelection = PlayerSelection(content: content)
                         }
                     }
                 }
                 .padding(.top, contentTopInset)
-                .padding(.bottom, 32)
+                .padding(.bottom, StreamMetrics.homeContentPaddingBottom)
             }
             .coordinateSpace(name: "home-feed")
             .onPreferenceChange(HomeFeedOffsetPreferenceKey.self, perform: onScrollOffsetChanged)

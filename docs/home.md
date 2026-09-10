@@ -67,14 +67,37 @@ SwiftUI section families; `HomeContentCard` owns the reusable landscape, portrai
 short, continue-watching and ranked card families.
 
 Android resources are the visual source of truth on both platforms. iOS embeds the same Gilroy
-Regular/Medium/Semibold/Bold files, raster logo/background/rank artwork from `drawable-xxxhdpi`, and
-SVG conversions of every Android vector drawable. `scripts/sync_ios_android_assets.py` regenerates
-those iOS resources from `androidApp/src/main/res`; selectors are represented by their individual
-selected and unselected SVG assets. SwiftUI uses the XML dp dimensions directly as points and does
-not add card labels, gradients or metadata absent from the corresponding Android item layout.
+Regular/Medium/Semibold/Bold files, raster logo/background/tag/rank artwork from `drawable-xxxhdpi`,
+and SVG conversions of every Android vector drawable. `scripts/sync_ios_android_assets.py`
+regenerates those iOS resources from `androidApp/src/main/res`, prunes imagesets whose Android
+source has been retired, and represents selectors by their individual selected and unselected SVG
+assets. `StreamMetrics`, `StreamCardSize` and the `LinearGradient` extensions in `Core/UI` hold the
+`dimens.xml`, item-layout and gradient-drawable values so SwiftUI uses the XML dp numbers directly
+as points; nothing is added that the corresponding Android item layout does not draw.
 
 Story, wide/tall highlights, Top 10 and Mini Apps have dedicated section files because they own
-layout behavior beyond an ordinary horizontal rail. Shared theme and remote-artwork primitives live
-under `Core/UI`, while app navigation, Home, placeholders and player code live in independent
-`App`/`Feature` directories. Android-specific Fragment/RecyclerView ownership does not cross the KMP
-boundary.
+layout behavior beyond an ordinary horizontal rail. `HomeCarousel` ports `CarouseView` for both
+highlights: looping pages, a page pitch equal to the card width, the same 85 %–100 % scale ramp
+resolved from each card's distance to the viewport centre, and the proportional shrink to the source
+40 pt minimum side padding. Tall Highlight adds the blurred active poster at 0.8 opacity, the two
+source carousel gradients over their exact spans, the gradient Watch now button, the Watch later
+selected/unselected playlist icons and an Information action that opens playback like the source
+click handler. Top 10 keeps the section artwork at full opacity and shrinks and fades its title
+column across the same title-plus-poster scroll distance. The Short rail carries the `ic_lightning`
+title drawable and the wider vertical padding applied by `LayoutGeneralView.bindShort`.
+
+`RemoteArtwork` draws fill-scaled photos inside a layout-neutral base; without that a background
+photo reports its filled width and widens the section, which silently breaks any carousel that sizes
+itself from the viewport. Android `Toast` feedback — Watch later and the Continue watching overflow
+button — is routed to the single `HomeTabView` toast through the `homeToast` environment value.
+Shared theme and remote-artwork primitives live under `Core/UI`, while app navigation, Home,
+placeholders and player code live in independent `App`/`Feature` directories. Android-specific
+Fragment/RecyclerView ownership does not cross the KMP boundary.
+
+## Bottom navigation
+
+Android keeps the labelled `BottomNavigationView` over an opaque black bar. iOS deliberately differs:
+`BottomNavigationBar` is an icon-only floating capsule using Liquid Glass on iOS 26 and a material
+capsule below it, so the feed scrolls underneath. Both platforms use the same four 28 dp
+selected/unselected icons and the same white/`bombay` tints. The destinations reserve
+`BottomNavigationMetrics.totalHeight` of bottom safe area so the floating bar never covers content.

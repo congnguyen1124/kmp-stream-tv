@@ -33,10 +33,17 @@ requester or focus restoration contract.
 ## Native visual parity
 
 Android XML is the sizing and composition reference for iOS SwiftUI. Both native trees use the same
-Gilroy font files, palette, logo, editorial backgrounds, rank artwork and selected/unselected icon
-paths. Android vector drawables are converted to SVG for iOS rather than replaced with SF Symbols.
-Cards render only the content visible in their Android XML counterpart, and carousel/card dimensions
-use the Android dp values as iOS points while retaining the same compact-width shrink behavior.
+Gilroy font files, palette, logo, editorial backgrounds, tag artwork, rank artwork and
+selected/unselected icon paths. Android vector drawables are converted to SVG for iOS rather than
+replaced with SF Symbols. Cards render only the content visible in their Android XML counterpart,
+and carousel/card dimensions use the Android dp values as iOS points while retaining the same
+compact-width shrink behavior. Both highlight carousels loop, use a page pitch equal to the card
+width and apply the same 85 %–100 % scale ramp. Layout gradients, the exclusive tag, the placeholder
+artwork and every `Toast` message have iOS counterparts driven by the same shared state.
+
+The bottom navigation bar is the one deliberate divergence: iOS presents an icon-only floating
+Liquid Glass capsule that content scrolls beneath, while Android keeps its labelled opaque bar. The
+icon set, selected/unselected artwork and tints stay shared.
 ## Android rendering contract
 
 - Section holders must inflate the matching `item_layout*` custom-view wrapper used by the mobile

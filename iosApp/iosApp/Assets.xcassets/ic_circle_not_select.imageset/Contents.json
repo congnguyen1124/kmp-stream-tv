@@ -1,7 +1,7 @@
 {
   "images": [
     {
-      "filename": "img_topbar_home.png",
+      "filename": "ic_circle_not_select.svg",
       "idiom": "universal",
       "scale": "1x"
     },
@@ -17,5 +17,8 @@
   "info": {
     "author": "xcode",
     "version": 1
+  },
+  "properties": {
+    "preserves-vector-representation": true
   }
 }

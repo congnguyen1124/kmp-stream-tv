@@ -20,15 +20,18 @@ AAPT_NS = "{http://schemas.android.com/aapt}"
 
 RASTER_NAMES = (
     "bg_story_layout",
+    "bg_tag_saymee",
     "bg_topbar_blur",
     "ic_fire",
     "ic_notification_active",
     "ic_profile_placeholder",
     "ic_search_with_shadow",
     "img_logo_app",
-    "img_topbar_home",
     *(f"number_{index}" for index in range(1, 11)),
 )
+
+# Imagesets whose Android source has been removed; pruned so iOS stays in step.
+RETIRED_NAMES = ("img_topbar_home",)
 
 FONT_NAMES = (
     "svn_gilroy_regular.otf",
@@ -193,6 +196,11 @@ def sync_rasters() -> None:
         )
 
 
+def prune_retired() -> None:
+    for name in RETIRED_NAMES:
+        shutil.rmtree(ASSETS / f"{name}.imageset", ignore_errors=True)
+
+
 def sync_fonts() -> None:
     FONTS.mkdir(parents=True, exist_ok=True)
     for name in FONT_NAMES:
@@ -202,4 +210,5 @@ def sync_fonts() -> None:
 if __name__ == "__main__":
     sync_vectors()
     sync_rasters()
+    prune_retired()
     sync_fonts()
