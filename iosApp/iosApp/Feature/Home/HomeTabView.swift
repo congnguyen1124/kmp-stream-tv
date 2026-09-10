@@ -3,7 +3,8 @@ import SwiftUI
 struct HomeTabView: View {
     @StateObject private var store = HomeStore()
     @State private var selectedCategory = HomeCategory.home
-    @State private var activeAction: HomeChromeAction?
+    @State private var toastMessage: String?
+    @State private var isCategoryPickerPresented = false
     @State private var feedOffset: CGFloat = 0
 
     var body: some View {
@@ -12,7 +13,7 @@ struct HomeTabView: View {
 
             HomeView(
                 store: store,
-                contentTopInset: HomeChromeMetrics.totalHeight + 12,
+                contentTopInset: HomeChromeMetrics.totalHeight,
                 onScrollOffsetChanged: { feedOffset = $0 }
             )
             .opacity(selectedCategory == .home ? 1 : 0)
@@ -22,8 +23,7 @@ struct HomeTabView: View {
             if selectedCategory != .home {
                 PlaceholderView(
                     title: selectedCategory.title,
-                    message: selectedCategory.placeholderMessage,
-                    systemImage: selectedCategory.systemImage
+                    message: selectedCategory.placeholderMessage
                 )
                 .padding(.top, HomeChromeMetrics.totalHeight)
             }
@@ -31,19 +31,77 @@ struct HomeTabView: View {
             HomeChromeView(
                 selectedCategory: $selectedCategory,
                 scrimOpacity: selectedCategory == .home ? toolbarScrimOpacity : 0.82,
-                onAction: { activeAction = $0 }
+                onAction: showToast,
+                onCategoryPicker: { isCategoryPickerPresented = true }
             )
-        }
-        .alert(item: $activeAction) { action in
-            Alert(
-                title: Text(action.title),
-                message: Text(action.message),
-                dismissButton: .default(Text("OK"))
-            )
+
+            if isCategoryPickerPresented {
+                categoryPicker
+            }
+
+            if let toastMessage {
+                Text(toastMessage)
+                    .font(.streamRegular(14))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 16)
+                    .frame(minHeight: 48)
+                    .background(Color.black.opacity(0.88))
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    .padding(.horizontal, 24)
+                    .frame(maxHeight: .infinity, alignment: .bottom)
+                    .padding(.bottom, 32)
+                    .transition(.opacity)
+            }
         }
     }
 
     private var toolbarScrimOpacity: Double {
         min(max(Double(feedOffset / 250), 0), 0.82)
+    }
+
+    private var categoryPicker: some View {
+        ZStack {
+            Color.black.opacity(0.55)
+                .ignoresSafeArea()
+                .onTapGesture { isCategoryPickerPresented = false }
+
+            VStack(alignment: .leading, spacing: 0) {
+                Text("Browse categories")
+                    .font(.streamBold(20))
+                    .foregroundStyle(.white)
+                    .padding(24)
+
+                ForEach(HomeCategory.allCases) { category in
+                    Button {
+                        selectedCategory = category
+                        isCategoryPickerPresented = false
+                    } label: {
+                        Text(category.title)
+                            .font(.streamRegular(16))
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .frame(height: 48)
+                            .padding(.horizontal, 24)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.bottom, 8)
+            .frame(maxWidth: 320)
+            .background(Color.streamSurface)
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .padding(32)
+        }
+        .transition(.opacity)
+    }
+
+    private func showToast(_ action: HomeChromeAction) {
+        let message = action.message
+        withAnimation { toastMessage = message }
+        Task {
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            guard toastMessage == message else { return }
+            withAnimation { toastMessage = nil }
+        }
     }
 }

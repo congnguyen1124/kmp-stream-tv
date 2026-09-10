@@ -22,9 +22,10 @@ struct HomeView: View {
     @ViewBuilder
     private var content: some View {
         if store.state.sections.isEmpty && store.state.isLoading {
-            ProgressView("Loading your StreamTV home…")
+            ProgressView()
                 .tint(.streamAccentBright)
-                .foregroundStyle(.white)
+                .frame(width: 44, height: 44)
+                .accessibilityLabel("Loading Home content")
                 .padding(.top, contentTopInset)
         } else if let message = store.state.errorMessage {
             VStack(spacing: 16) {
@@ -54,7 +55,7 @@ struct HomeView: View {
                 .frame(height: 0)
                 .id(Self.feedTopID)
 
-                LazyVStack(alignment: .leading, spacing: StreamMetrics.sectionSpacing) {
+            LazyVStack(alignment: .leading, spacing: 0) {
                     ForEach(store.state.sections, id: \.id) { section in
                         HomeSectionView(section: section) { content in
                             playerSelection = PlayerSelection(content: content)
@@ -62,7 +63,7 @@ struct HomeView: View {
                     }
                 }
                 .padding(.top, contentTopInset)
-                .padding(.bottom, 90)
+                .padding(.bottom, 32)
             }
             .coordinateSpace(name: "home-feed")
             .onPreferenceChange(HomeFeedOffsetPreferenceKey.self, perform: onScrollOffsetChanged)

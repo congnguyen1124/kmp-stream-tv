@@ -66,6 +66,11 @@ The native source tree mirrors Android's ownership boundaries:
 - `Feature/Player` owns AVPlayer state, UIKit bridging and playback controls.
 - `Core/UI` owns platform-wide visual tokens and remote artwork.
 
+Native rendering code remains separate, but visual resources have one source: Android `res/`.
+`scripts/sync_ios_android_assets.py` copies the approved Gilroy weights and raster artwork, and
+mechanically converts Android vector path data into vector-preserving iOS SVG image sets. This keeps
+pixel parity without moving View or SwiftUI concepts across the shared ViewModel boundary.
+
 The domain class for short-form media is named `ShortVideo`; `Short` is reserved by Kotlin's numeric
 type and would export a duplicate `SharedShort` Objective-C symbol when the static iOS framework is
 linked.

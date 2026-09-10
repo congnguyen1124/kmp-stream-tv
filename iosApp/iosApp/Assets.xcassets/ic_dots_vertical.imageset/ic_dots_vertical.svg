@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <g>
+    <path d="M12,13C12.552,13 13,12.552 13,12C13,11.448 12.552,11 12,11C11.448,11 11,11.448 11,12C11,12.552 11.448,13 12,13Z" fill="#ffffff" />
+    <path d="M12,6C12.552,6 13,5.552 13,5C13,4.448 12.552,4 12,4C11.448,4 11,4.448 11,5C11,5.552 11.448,6 12,6Z" fill="#ffffff" />
+    <path d="M12,20C12.552,20 13,19.552 13,19C13,18.448 12.552,18 12,18C11.448,18 11,18.448 11,19C11,19.552 11.448,20 12,20Z" fill="#ffffff" />
+    <path d="M12,13C12.552,13 13,12.552 13,12C13,11.448 12.552,11 12,11C11.448,11 11,11.448 11,12C11,12.552 11.448,13 12,13Z" fill="none" stroke="#ffffff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M12,6C12.552,6 13,5.552 13,5C13,4.448 12.552,4 12,4C11.448,4 11,4.448 11,5C11,5.552 11.448,6 12,6Z" fill="none" stroke="#ffffff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M12,20C12.552,20 13,19.552 13,19C13,18.448 12.552,18 12,18C11.448,18 11,18.448 11,19C11,19.552 11.448,20 12,20Z" fill="none" stroke="#ffffff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+</svg>

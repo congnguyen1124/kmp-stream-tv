@@ -15,7 +15,7 @@ enum HomeCategory: String, CaseIterable, Identifiable {
         case .movies: "Movies"
         case .series: "Series"
         case .live: "Live"
-        case .more: "More"
+        case .more: "More ▾"
         }
     }
 
@@ -23,13 +23,4 @@ enum HomeCategory: String, CaseIterable, Identifiable {
         "The \(title) category is wired into Home navigation and ready for its screen."
     }
 
-    var systemImage: String {
-        switch self {
-        case .home: "house"
-        case .movies: "film"
-        case .series: "rectangle.stack"
-        case .live: "dot.radiowaves.left.and.right"
-        case .more: "ellipsis"
-        }
-    }
 }

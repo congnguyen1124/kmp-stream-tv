@@ -24,10 +24,12 @@ progress and seeking.
 `StreamPlayer` is a native Swift owner around `AVPlayer`. It replaces media items, toggles playback,
 seeks, samples time twice per second and removes its observer during teardown.
 
-`PlayerView` renders an `AVPlayerViewController` with app-owned controls. Live channels omit seek and
-progress UI. It pauses when the scene leaves the foreground, then stops and clears its item when the
-full-screen player disappears. `NativePlayerView` is kept in its own bridge file so UIKit surface
-ownership stays separate from SwiftUI controls.
+`PlayerView` renders an `AVPlayerViewController` with app-owned controls that mirror the Android XML:
+a 20-point padded scrim header with Back/live/title, plus a 20-point padded bottom scrim with the
+progress bar, elapsed time and text-based −10/play/+10 controls. Live channels omit seek and progress
+UI. It pauses when the scene leaves the foreground, then stops and clears its item when the full-screen
+player disappears. `NativePlayerView` is kept in its own bridge file so UIKit surface ownership stays
+separate from SwiftUI controls.
 
 ## Non-goal
 

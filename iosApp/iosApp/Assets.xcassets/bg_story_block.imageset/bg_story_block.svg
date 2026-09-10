@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="137" height="32" viewBox="0 0 137 32">
+  <defs>
+    <linearGradient id="gradient-0" gradientUnits="userSpaceOnUse" x1="0" y1="16" x2="137" y2="16">
+      <stop offset="0" stop-color="#8F38BF" stop-opacity="1" />
+      <stop offset="1" stop-color="#5014AD" stop-opacity="1" />
+    </linearGradient>
+  </defs>
+  <g>
+    <path d="M0,0H137L120.49,32H0V0Z" fill="url(#gradient-0)" />
+  </g>
+</svg>
