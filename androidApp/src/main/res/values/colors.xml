@@ -1,16 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="stream_background">#090B10</color>
-    <color name="stream_surface">#171A22</color>
-    <color name="stream_surface_high">#2A2E39</color>
-    <color name="stream_navigation">#0D0F15</color>
-    <color name="stream_text">#FFF8F3</color>
-    <color name="stream_text_secondary">#B9BBC5</color>
-    <color name="stream_text_muted">#777B87</color>
-    <color name="stream_accent">#FF5A36</color>
-    <color name="stream_accent_soft">#33FF5A36</color>
-    <color name="stream_live">#E32636</color>
-    <color name="stream_divider">#26FFFFFF</color>
-    <color name="stream_scrim">#B3000000</color>
+    <color name="black">#FF000000</color>
+    <color name="black_60">#99000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="white_10">#1AFFFFFF</color>
+    <color name="white_30">#4DFFFFFF</color>
+    <color name="white_40">#66FFFFFF</color>
+    <color name="codGray3">#111111</color>
+    <color name="codGray3_80">#CC111111</color>
+    <color name="shark">#2C2C2E</color>
+    <color name="silverChalice">#ADADAD</color>
+    <color name="bombay">#AEAEB2</color>
+    <color name="red">#FB0000</color>
+    <color name="alizarinCrimson">#DC1F26</color>
+    <color name="heliotrope">#B446F0</color>
+    <color name="purpleHeart">#6419DA</color>
     <color name="transparent">#00000000</color>
+    <color name="appBackground">@color/codGray3</color>
+
+    <color name="stream_surface">@color/shark</color>
+    <color name="stream_text">@color/white</color>
+    <color name="stream_text_secondary">@color/silverChalice</color>
+    <color name="stream_accent">@color/purpleHeart</color>
+    <color name="stream_accent_soft">#336419DA</color>
+    <color name="stream_live">@color/alizarinCrimson</color>
+    <color name="stream_scrim">@color/black_60</color>
 </resources>

@@ -3,31 +3,21 @@ package com.congnguyencn.kmpstreamtv.feature.home
 import android.content.Context
 import android.util.AttributeSet
 import android.view.Gravity
-import android.widget.HorizontalScrollView
+import android.view.LayoutInflater
+import android.view.View
 import android.widget.LinearLayout
-import android.widget.TextView
-import androidx.core.content.ContextCompat
 import com.congnguyencn.kmpstreamtv.R
-import com.congnguyencn.kmpstreamtv.core.ui.dp
+import com.congnguyencn.kmpstreamtv.databinding.ViewMenuItemBinding
 
 class HomeCategoriesBar @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-) : HorizontalScrollView(context, attrs) {
-    private val row = LinearLayout(context).apply {
-        orientation = LinearLayout.HORIZONTAL
-        gravity = Gravity.CENTER_VERTICAL
-        setPadding(12.dp, 0, 12.dp, 0)
-    }
+) : LinearLayout(context, attrs) {
     private var categories: List<HomeCategory> = emptyList()
-    private var selectedId: String = "home"
     private var onSelected: (HomeCategory) -> Unit = {}
 
     init {
-        isHorizontalScrollBarEnabled = false
-        isFillViewport = false
-        overScrollMode = OVER_SCROLL_NEVER
-        addView(row, LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT))
+        orientation = HORIZONTAL
     }
 
     fun submit(
@@ -36,44 +26,47 @@ class HomeCategoriesBar @JvmOverloads constructor(
         onSelected: (HomeCategory) -> Unit,
     ) {
         categories = items
-        selectedId = selected
         this.onSelected = onSelected
-        render()
+        post { render(selected) }
     }
 
-    private fun render() {
-        row.removeAllViews()
-        categories.forEach { category ->
-            row.addView(TextView(context).apply {
-                text = category.title
-                gravity = Gravity.CENTER
-                setTextColor(
-                    ContextCompat.getColor(
-                        context,
-                        if (category.id == selectedId) R.color.stream_text else R.color.stream_text_secondary,
-                    ),
-                )
-                setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 15f)
-                setPadding(13.dp, 0, 13.dp, 0)
-                minHeight = 40.dp
-                background = ContextCompat.getDrawable(
-                    context,
-                    if (category.id == selectedId) {
-                        R.drawable.category_selected_background
-                    } else {
-                        R.drawable.nav_item_background
-                    },
-                )
-                isClickable = true
-                isFocusable = false
-                setOnClickListener {
-                    if (selectedId != category.id) {
-                        selectedId = category.id
-                        render()
-                    }
-                    onSelected(category)
-                }
-            })
+    private fun render(selected: String) {
+        removeAllViews()
+        if (categories.isEmpty()) return
+
+        val probe = ViewMenuItemBinding.inflate(LayoutInflater.from(context), this, false)
+        val widths = categories.map { category ->
+            probe.root.text = category.title
+            probe.root.measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED)
+            probe.root.measuredWidth
+        }
+        val parentWidth = width - paddingLeft - paddingRight
+        if (widths.sum() < parentWidth) {
+            categories.forEach { addMenu(it, selected) }
+            gravity = Gravity.START
+            return
+        }
+
+        probe.root.setText(R.string.category_more)
+        probe.root.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.ic_arrow_down, 0)
+        probe.root.measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED)
+        probe.root.setOnClickListener { onSelected(categories.last()) }
+
+        var usedWidth = probe.root.measuredWidth
+        for ((index, category) in categories.dropLast(1).withIndex()) {
+            if (usedWidth + widths[index] >= parentWidth) break
+            addMenu(category, selected)
+            addView(View(context), LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f))
+            usedWidth += widths[index]
+        }
+        addView(probe.root)
+    }
+
+    private fun addMenu(category: HomeCategory, selected: String) {
+        ViewMenuItemBinding.inflate(LayoutInflater.from(context), this, true).root.apply {
+            text = category.title
+            isSelected = category.id == selected
+            setOnClickListener { onSelected(category) }
         }
     }
 }

@@ -8,50 +8,55 @@ import androidx.fragment.app.Fragment
 import com.congnguyencn.kmpstreamtv.R
 import com.congnguyencn.kmpstreamtv.databinding.FragmentHomeTabBinding
 import com.congnguyencn.kmpstreamtv.feature.placeholder.PlaceholderFragment
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class HomeTabFragment : Fragment(R.layout.fragment_home_tab) {
     private var _binding: FragmentHomeTabBinding? = null
     private val binding get() = requireNotNull(_binding)
+    private lateinit var categories: List<HomeCategory>
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentHomeTabBinding.bind(view)
 
-        val categories = listOf(
+        categories = listOf(
             HomeCategory("home", getString(R.string.category_home)),
             HomeCategory("movies", getString(R.string.category_movies)),
             HomeCategory("series", getString(R.string.category_series)),
             HomeCategory("live", getString(R.string.category_live)),
             HomeCategory("more", getString(R.string.category_more)),
         )
-        val restoredCategory = childFragmentManager.findFragmentById(R.id.fragmentContainerHome)
+        val restoredCategory = childFragmentManager.findFragmentById(R.id.fragmentContainerHomeTab)
             ?.tag
             ?.removePrefix(CATEGORY_TAG_PREFIX)
             ?: "home"
-        binding.categories.submit(
+        binding.layoutTopCategories.submit(
             items = categories,
             selected = restoredCategory,
             onSelected = ::showCategory,
         )
-        binding.search.setOnClickListener { showUnavailable(R.string.search_coming_soon) }
-        binding.notifications.setOnClickListener { showUnavailable(R.string.notifications_coming_soon) }
-        binding.profile.setOnClickListener { showUnavailable(R.string.profile_coming_soon) }
+        binding.btnSearch.setOnClickListener { showUnavailable(R.string.search_coming_soon) }
+        binding.btnNotification.setOnClickListener { showUnavailable(R.string.notifications_coming_soon) }
+        binding.btnProfile.setOnClickListener { showUnavailable(R.string.profile_coming_soon) }
+        binding.ivLogo.setOnClickListener { showCategory(categories.first()) }
+        binding.tvMainMenu.setOnClickListener(::showCategoryPicker)
 
-        if (childFragmentManager.findFragmentById(R.id.fragmentContainerHome) == null) {
+        updateMenuBar(restoredCategory)
+
+        if (childFragmentManager.findFragmentById(R.id.fragmentContainerHomeTab) == null) {
             showCategory(HomeCategory("home", getString(R.string.category_home)))
         }
     }
 
     fun updateToolbarForScroll(offset: Int) {
         if (_binding == null) return
-        val fraction = (offset / 180f).coerceIn(0f, 1f)
-        binding.topBarScrim.alpha = 0.32f + (0.68f * fraction)
-        binding.topBarDivider.isVisible = fraction > 0.75f
+        val highlightOffset = resources.getDimensionPixelSize(R.dimen.highlight_topbar_offset).toFloat()
+        binding.ivTopBarBehind.alpha = (offset / highlightOffset).coerceIn(0f, 1f)
     }
 
     private fun showCategory(category: HomeCategory) {
         val tag = "$CATEGORY_TAG_PREFIX${category.id}"
-        if (childFragmentManager.findFragmentById(R.id.fragmentContainerHome)?.tag == tag) return
+        if (childFragmentManager.findFragmentById(R.id.fragmentContainerHomeTab)?.tag == tag) return
         val fragment = if (category.id == "home") {
             HomeFragment()
         } else {
@@ -61,8 +66,26 @@ class HomeTabFragment : Fragment(R.layout.fragment_home_tab) {
             )
         }
         childFragmentManager.beginTransaction()
-            .replace(R.id.fragmentContainerHome, fragment, tag)
+            .replace(R.id.fragmentContainerHomeTab, fragment, tag)
             .commit()
+        updateMenuBar(category.id)
+    }
+
+    private fun updateMenuBar(categoryId: String) {
+        val isHome = categoryId == categories.first().id
+        binding.layoutTopCategories.isVisible = isHome
+        binding.layoutSubMenu.isVisible = !isHome
+        binding.tvMainMenu.text = categories.firstOrNull { it.id == categoryId }?.title.orEmpty()
+    }
+
+    private fun showCategoryPicker(@Suppress("UNUSED_PARAMETER") view: View) {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.browse_categories)
+            .setItems(categories.map(HomeCategory::title).toTypedArray()) { dialog, index ->
+                showCategory(categories[index])
+                dialog.dismiss()
+            }
+            .show()
     }
 
     private fun showUnavailable(message: Int) {

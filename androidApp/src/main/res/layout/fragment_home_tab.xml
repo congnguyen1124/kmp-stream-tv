@@ -1,96 +1,161 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/fragmentContainerHome"
+        android:id="@+id/fragmentContainerHomeTab"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <View
-        android:id="@+id/topBarScrim"
+    <ImageView
+        android:id="@+id/ivTopBarBehind"
         android:layout_width="match_parent"
-        android:layout_height="116dp"
-        android:alpha="0.32"
-        android:background="@drawable/topbar_gradient" />
+        android:layout_height="0dp"
+        android:alpha="0"
+        android:background="@drawable/bg_topbar_behind"
+        android:contentDescription="@null"
+        android:scaleType="fitStart"
+        app:layout_constraintBottom_toBottomOf="@id/barrierBottomTopBar"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@drawable/bg_topbar"
+        android:contentDescription="@null"
+        android:scaleType="matrix"
+        android:src="@drawable/bg_topbar_blur"
+        app:layout_constraintBottom_toBottomOf="@id/barrierBottomTopBar"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
+        android:id="@+id/layoutTopBarHome"
         android:layout_width="match_parent"
-        android:layout_height="116dp"
-        android:orientation="vertical">
+        android:layout_height="@dimen/topbar_height"
+        android:gravity="center_vertical"
+        android:paddingStart="@dimen/topbar_content_padding"
+        android:paddingEnd="@dimen/topbar_content_padding"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingStart="@dimen/screen_edge"
-            android:paddingEnd="12dp">
+        <ImageView
+            android:id="@+id/ivLogo"
+            android:layout_width="104dp"
+            android:layout_height="32dp"
+            android:adjustViewBounds="true"
+            android:contentDescription="@string/app_name"
+            android:scaleType="fitStart"
+            android:src="@drawable/img_logo_app" />
 
-            <ImageView
-                android:layout_width="128dp"
-                android:layout_height="44dp"
-                android:adjustViewBounds="true"
-                android:contentDescription="@string/app_name"
-                android:scaleType="fitCenter"
-                android:src="@drawable/img_logo_app" />
+        <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" />
 
-            <Space
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_weight="1" />
+        <ImageButton
+            style="@style/Widget.StreamTV.TopBarButton"
+            android:layout_marginStart="@dimen/margin_small"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_cast"
+            android:visibility="gone" />
+
+        <ImageButton
+            android:id="@+id/btnSearch"
+            style="@style/Widget.StreamTV.TopBarButton"
+            android:layout_marginStart="@dimen/margin_small"
+            android:contentDescription="@string/search"
+            android:src="@drawable/ic_search" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/topbar_icon_size"
+            android:layout_marginStart="@dimen/margin_small"
+            android:background="?attr/selectableItemBackground"
+            android:paddingHorizontal="@dimen/margin_tiny">
 
             <ImageButton
-                android:id="@+id/search"
+                android:id="@+id/btnNotification"
                 style="@style/Widget.StreamTV.TopBarButton"
-                android:contentDescription="@string/search"
-                android:src="@drawable/ic_search" />
-
-            <FrameLayout
-                android:layout_width="44dp"
-                android:layout_height="44dp">
-
-                <ImageButton
-                    android:id="@+id/notifications"
-                    style="@style/Widget.StreamTV.TopBarButton"
-                    android:contentDescription="@string/notifications"
-                    android:src="@drawable/ic_notifications" />
-
-                <View
-                    android:layout_width="7dp"
-                    android:layout_height="7dp"
-                    android:layout_gravity="top|end"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginEnd="7dp"
-                    android:background="@drawable/notification_dot" />
-            </FrameLayout>
+                android:contentDescription="@string/notifications"
+                android:src="@drawable/ic_notification_normal"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
-                android:id="@+id/profile"
-                android:layout_width="34dp"
-                android:layout_height="34dp"
-                android:layout_marginStart="4dp"
-                android:background="@drawable/profile_background"
-                android:contentDescription="@string/profile"
+                android:id="@+id/tvBadgeNotification"
+                style="@style/Text.LabelText"
+                android:layout_width="@dimen/ic_badge_home_size"
+                android:layout_height="@dimen/ic_badge_home_size"
+                android:background="@drawable/badge_background"
+                android:backgroundTint="@color/red"
                 android:gravity="center"
-                android:text="@string/stream_initial"
-                android:textColor="@color/stream_text"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-        </LinearLayout>
+                android:textColor="@color/white"
+                android:visibility="invisible"
+                app:layout_constraintEnd_toEndOf="@id/btnNotification"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="9+" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <com.congnguyencn.kmpstreamtv.feature.home.HomeCategoriesBar
-            android:id="@+id/categories"
-            android:layout_width="match_parent"
-            android:layout_height="51dp" />
-
-        <View
-            android:id="@+id/topBarDivider"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/stream_divider"
-            android:visibility="gone" />
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/btnProfile"
+            android:layout_width="@dimen/topbar_icon_size"
+            android:layout_height="@dimen/topbar_icon_size"
+            android:layout_marginStart="@dimen/margin_small"
+            android:background="?attr/selectableItemBackground"
+            android:contentDescription="@string/profile"
+            android:padding="@dimen/topbar_icon_padding"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_user_circle"
+            app:shapeAppearanceOverlay="@style/CircularImage" />
     </LinearLayout>
 
-</FrameLayout>
+    <com.congnguyencn.kmpstreamtv.feature.home.HomeCategoriesBar
+        android:id="@+id/layoutTopCategories"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/top_menu_height"
+        android:layout_marginHorizontal="@dimen/margin_tiny_x"
+        android:gravity="start"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/layoutTopBarHome" />
+
+    <LinearLayout
+        android:id="@+id/layoutSubMenu"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/top_menu_height"
+        android:layout_marginHorizontal="@dimen/margin"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/layoutTopBarHome">
+
+        <TextView
+            android:id="@+id/tvMainMenu"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/size_1_5x"
+            android:drawablePadding="@dimen/margin_tiny"
+            android:gravity="center_vertical"
+            android:includeFontPadding="false"
+            android:textAppearance="@style/Text.Title2"
+            app:drawableEndCompat="@drawable/ic_chevron_down" />
+
+        <TextView
+            android:id="@+id/tvSubMenu"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/size_1_5x"
+            android:layout_marginStart="@dimen/margin"
+            android:drawablePadding="@dimen/margin_tiny"
+            android:gravity="center_vertical"
+            android:includeFontPadding="false"
+            android:textAppearance="@style/Text.Heading2"
+            android:visibility="gone"
+            app:drawableEndCompat="@drawable/ic_chevron_down" />
+    </LinearLayout>
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/barrierBottomTopBar"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="layoutTopCategories,layoutSubMenu" />
+</androidx.constraintlayout.widget.ConstraintLayout>

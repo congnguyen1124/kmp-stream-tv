@@ -8,19 +8,16 @@ import androidx.core.view.updateLayoutParams
 import coil3.load
 import coil3.request.crossfade
 import com.congnguyencn.kmpstreamtv.R
-import com.congnguyencn.kmpstreamtv.core.ui.dp
 import com.congnguyencn.kmpstreamtv.core.ui.recyclerview.BaseListAdapter
 import com.congnguyencn.kmpstreamtv.core.ui.recyclerview.BindableViewHolder
-import com.congnguyencn.kmpstreamtv.databinding.ItemHomeBannerBinding
-import com.congnguyencn.kmpstreamtv.databinding.ItemHomeCardCircleBinding
-import com.congnguyencn.kmpstreamtv.databinding.ItemHomeCardHighlightTallBinding
-import com.congnguyencn.kmpstreamtv.databinding.ItemHomeCardLandscapeBinding
-import com.congnguyencn.kmpstreamtv.databinding.ItemHomeCardMiniAppBinding
-import com.congnguyencn.kmpstreamtv.databinding.ItemHomeCardPortraitBinding
-import com.congnguyencn.kmpstreamtv.databinding.ItemHomeCardShortBinding
-import com.congnguyencn.kmpstreamtv.databinding.ItemHomeCardStoryBinding
-import com.congnguyencn.kmpstreamtv.databinding.ItemHomeCardTopTenBinding
-import com.congnguyencn.kmpstreamtv.databinding.ItemHomeCardWatchingBinding
+import com.congnguyencn.kmpstreamtv.databinding.ItemCircleBinding
+import com.congnguyencn.kmpstreamtv.databinding.ItemMiniAppBinding
+import com.congnguyencn.kmpstreamtv.databinding.ItemStoryBinding
+import com.congnguyencn.kmpstreamtv.databinding.ItemThumbShortBinding
+import com.congnguyencn.kmpstreamtv.databinding.ItemThumbnailBinding
+import com.congnguyencn.kmpstreamtv.databinding.ItemThumbnailCarouselBinding
+import com.congnguyencn.kmpstreamtv.databinding.ItemTopTenBinding
+import com.congnguyencn.kmpstreamtv.databinding.ItemWatchingBinding
 import com.congnguyencn.kmpstreamtv.feature.home.presentation.model.HomeContentUiModel
 import com.congnguyencn.kmpstreamtv.feature.home.presentation.model.HomeSectionUiModel
 
@@ -28,72 +25,41 @@ internal class HomeContentAdapter(
     private val style: HomeContentStyle,
     private val onContentClick: (HomeContentUiModel) -> Unit,
 ) : BaseListAdapter<HomeContentUiModel>(HomeContentDiffCallback) {
-    private var showsRanking = false
-
-    fun submitSection(section: HomeSectionUiModel) {
-        val rankingChanged = showsRanking != section.showsRanking
-        showsRanking = section.showsRanking
-        submitList(section.items) {
-            if (rankingChanged && itemCount > 0) notifyItemRangeChanged(0, itemCount)
-        }
-    }
+    fun submitSection(section: HomeSectionUiModel) = submitList(section.items)
 
     override fun getItemViewType(position: Int): Int = style.ordinal
 
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int,
-    ): BindableViewHolder<HomeContentUiModel> {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BindableViewHolder<HomeContentUiModel> {
         val inflater = LayoutInflater.from(parent.context)
-        return when (HomeContentStyle.entries[viewType]) {
-            HomeContentStyle.HighlightWide -> BannerViewHolder(
-                ItemHomeBannerBinding.inflate(inflater, parent, false),
+        return when (val itemStyle = HomeContentStyle.entries[viewType]) {
+            HomeContentStyle.Landscape,
+            HomeContentStyle.Portrait,
+            -> ThumbnailViewHolder(ItemThumbnailBinding.inflate(inflater, parent, false), itemStyle, onContentClick)
+
+            HomeContentStyle.HighlightWide,
+            HomeContentStyle.HighlightTall,
+            -> CarouselThumbnailViewHolder(
+                ItemThumbnailCarouselBinding.inflate(inflater, parent, false),
+                itemStyle,
                 onContentClick,
-            )
-            HomeContentStyle.HighlightTall -> HighlightTallViewHolder(
-                ItemHomeCardHighlightTallBinding.inflate(inflater, parent, false),
-                onContentClick,
-            )
-            HomeContentStyle.Landscape -> LandscapeViewHolder(
-                ItemHomeCardLandscapeBinding.inflate(inflater, parent, false),
-                onContentClick,
-                ::rankingFor,
-            )
-            HomeContentStyle.Portrait -> PortraitViewHolder(
-                ItemHomeCardPortraitBinding.inflate(inflater, parent, false),
-                onContentClick,
-                ::rankingFor,
             )
             HomeContentStyle.TopTen -> TopTenViewHolder(
-                ItemHomeCardTopTenBinding.inflate(inflater, parent, false),
+                ItemTopTenBinding.inflate(inflater, parent, false),
                 onContentClick,
-                ::rankingFor,
+                ::positionFor,
             )
-            HomeContentStyle.Story -> StoryViewHolder(
-                ItemHomeCardStoryBinding.inflate(inflater, parent, false),
-                onContentClick,
-            )
-            HomeContentStyle.Short -> ShortViewHolder(
-                ItemHomeCardShortBinding.inflate(inflater, parent, false),
-                onContentClick,
-            )
-            HomeContentStyle.Circle -> CircleViewHolder(
-                ItemHomeCardCircleBinding.inflate(inflater, parent, false),
-                onContentClick,
-            )
+            HomeContentStyle.Story -> StoryViewHolder(ItemStoryBinding.inflate(inflater, parent, false), onContentClick)
+            HomeContentStyle.Short -> ShortViewHolder(ItemThumbShortBinding.inflate(inflater, parent, false), onContentClick)
+            HomeContentStyle.Circle -> CircleViewHolder(ItemCircleBinding.inflate(inflater, parent, false), onContentClick)
             HomeContentStyle.ContinueWatching -> WatchingViewHolder(
-                ItemHomeCardWatchingBinding.inflate(inflater, parent, false),
+                ItemWatchingBinding.inflate(inflater, parent, false),
                 onContentClick,
             )
-            HomeContentStyle.MiniApp -> MiniAppViewHolder(
-                ItemHomeCardMiniAppBinding.inflate(inflater, parent, false),
-                onContentClick,
-            )
+            HomeContentStyle.MiniApp -> MiniAppViewHolder(ItemMiniAppBinding.inflate(inflater, parent, false), onContentClick)
         }
     }
 
-    private fun rankingFor(item: HomeContentUiModel): String? =
-        if (showsRanking) (currentList.indexOf(item) + 1).toString() else null
+    private fun positionFor(item: HomeContentUiModel): Int = currentList.indexOf(item).coerceAtLeast(0)
 }
 
 internal enum class HomeContentStyle {
@@ -125,142 +91,133 @@ private abstract class ClickableContentViewHolder(
     }
 }
 
-private class BannerViewHolder(
-    private val binding: ItemHomeBannerBinding,
+private class ThumbnailViewHolder(
+    private val binding: ItemThumbnailBinding,
+    style: HomeContentStyle,
     onClick: (HomeContentUiModel) -> Unit,
 ) : ClickableContentViewHolder(binding.root, onClick) {
     init {
-        val availableWidth = binding.root.resources.displayMetrics.widthPixels - 40.dp
-        val bannerWidth = availableWidth.coerceAtMost(340.dp)
-        binding.root.updateLayoutParams {
-            width = bannerWidth
-            height = bannerWidth * 9 / 16
+        val dimensions = when (style) {
+            HomeContentStyle.Landscape -> R.dimen.ephemeral_wide_thumbnail_width to R.dimen.ephemeral_wide_thumbnail_height
+            else -> R.dimen.ephemeral_tall_thumbnail_width to R.dimen.ephemeral_tall_thumbnail_height
+        }
+        binding.ivThumbnail.updateLayoutParams {
+            width = binding.root.resources.getDimensionPixelSize(dimensions.first)
+            height = binding.root.resources.getDimensionPixelSize(dimensions.second)
         }
     }
 
     override fun bind(item: HomeContentUiModel) = with(binding) {
         bindClick(item)
-        artwork.load(item.thumbnailUrl) { crossfade(true) }
-        title.text = item.title
-        description.text = item.description
-        age.text = item.ageRestriction
-        age.isVisible = !item.ageRestriction.isNullOrBlank()
+        ivThumbnail.load(item.thumbnailUrl) { crossfade(true) }
+        tvBadgeLive.isVisible = item.isLive
     }
 }
 
-private class HighlightTallViewHolder(
-    private val binding: ItemHomeCardHighlightTallBinding,
+private class CarouselThumbnailViewHolder(
+    private val binding: ItemThumbnailCarouselBinding,
+    style: HomeContentStyle,
     onClick: (HomeContentUiModel) -> Unit,
 ) : ClickableContentViewHolder(binding.root, onClick) {
-    override fun bind(item: HomeContentUiModel) = with(binding) {
-        bindClick(item)
-        artwork.load(item.thumbnailUrl) { crossfade(true) }
-        title.text = item.title
-        duration.text = item.durationLabel
+    init {
+        val dimensions = if (style == HomeContentStyle.HighlightWide) {
+            R.dimen.highlight_wide_thumbnail_width to R.dimen.highlight_wide_thumbnail_height
+        } else {
+            R.dimen.highlight_tall_thumbnail_width to R.dimen.highlight_tall_thumbnail_height
+        }
+        val desiredWidth = binding.root.resources.getDimensionPixelSize(dimensions.first)
+        val desiredHeight = binding.root.resources.getDimensionPixelSize(dimensions.second)
+        val screenWidth = binding.root.resources.displayMetrics.widthPixels
+        val minimumPadding = binding.root.resources.getDimensionPixelSize(R.dimen.carousel_padding_horizontal_min)
+        val availableWidth = screenWidth - (minimumPadding * 2)
+        val actualWidth = minOf(desiredWidth, availableWidth)
+        val actualHeight = actualWidth * desiredHeight / desiredWidth
+        binding.ivThumbnailCarousel.updateLayoutParams {
+            width = actualWidth
+            height = actualHeight
+        }
     }
-}
 
-private class LandscapeViewHolder(
-    private val binding: ItemHomeCardLandscapeBinding,
-    onClick: (HomeContentUiModel) -> Unit,
-    private val ranking: (HomeContentUiModel) -> String?,
-) : ClickableContentViewHolder(binding.root, onClick) {
-    override fun bind(item: HomeContentUiModel) = with(binding) {
+    override fun bind(item: HomeContentUiModel) {
         bindClick(item)
-        artwork.load(item.thumbnailUrl) { crossfade(true) }
-        title.text = item.title
-        liveBadge.isVisible = item.isLive
-        episodeBadge.isVisible = item.episodeCount > 0
-        episodeBadge.text = root.resources.getQuantityString(
-            R.plurals.episode_count,
-            item.episodeCount,
-            item.episodeCount,
-        )
-        rank.text = ranking(item)
-        rank.isVisible = !rank.text.isNullOrBlank()
-    }
-}
-
-private class PortraitViewHolder(
-    private val binding: ItemHomeCardPortraitBinding,
-    onClick: (HomeContentUiModel) -> Unit,
-    private val ranking: (HomeContentUiModel) -> String?,
-) : ClickableContentViewHolder(binding.root, onClick) {
-    override fun bind(item: HomeContentUiModel) = with(binding) {
-        bindClick(item)
-        artwork.load(item.thumbnailUrl) { crossfade(true) }
-        title.text = item.title
-        rank.text = ranking(item)
-        rank.isVisible = !rank.text.isNullOrBlank()
+        binding.ivThumbnailCarousel.load(item.thumbnailUrl) { crossfade(true) }
     }
 }
 
 private class TopTenViewHolder(
-    private val binding: ItemHomeCardTopTenBinding,
+    private val binding: ItemTopTenBinding,
     onClick: (HomeContentUiModel) -> Unit,
-    private val ranking: (HomeContentUiModel) -> String?,
+    private val positionFor: (HomeContentUiModel) -> Int,
 ) : ClickableContentViewHolder(binding.root, onClick) {
     override fun bind(item: HomeContentUiModel) = with(binding) {
         bindClick(item)
-        artwork.load(item.thumbnailUrl) { crossfade(true) }
-        rank.text = ranking(item)
+        ivTopTenThumbnail.load(item.thumbnailUrl) { crossfade(true) }
+        ivTopTenPosition.setImageResource(RANK_DRAWABLES[positionFor(item).coerceIn(RANK_DRAWABLES.indices)])
+    }
+
+    private companion object {
+        val RANK_DRAWABLES = intArrayOf(
+            R.drawable.number_1, R.drawable.number_2, R.drawable.number_3, R.drawable.number_4, R.drawable.number_5,
+            R.drawable.number_6, R.drawable.number_7, R.drawable.number_8, R.drawable.number_9, R.drawable.number_10,
+        )
     }
 }
 
 private class StoryViewHolder(
-    private val binding: ItemHomeCardStoryBinding,
+    private val binding: ItemStoryBinding,
     onClick: (HomeContentUiModel) -> Unit,
 ) : ClickableContentViewHolder(binding.root, onClick) {
-    override fun bind(item: HomeContentUiModel) = with(binding) {
-        bindClick(item)
-        artwork.load(item.thumbnailUrl) { crossfade(true) }
-        provider.load(item.providerAvatarUrl) { crossfade(true) }
-        Unit
+    override fun bind(item: HomeContentUiModel) {
+        with(binding) {
+            bindClick(item)
+            ivStoryThumbnail.load(item.thumbnailUrl) { crossfade(true) }
+            ivStoryProvider.load(item.providerAvatarUrl) { crossfade(true) }
+        }
     }
 }
 
 private class ShortViewHolder(
-    private val binding: ItemHomeCardShortBinding,
+    private val binding: ItemThumbShortBinding,
     onClick: (HomeContentUiModel) -> Unit,
 ) : ClickableContentViewHolder(binding.root, onClick) {
     override fun bind(item: HomeContentUiModel) = with(binding) {
         bindClick(item)
-        artwork.load(item.thumbnailUrl) { crossfade(true) }
-        views.text = item.viewCountLabel
+        ivShortThumbnail.load(item.thumbnailUrl) { crossfade(true) }
+        tvShortNumView.text = item.viewCountLabel
     }
 }
 
 private class CircleViewHolder(
-    private val binding: ItemHomeCardCircleBinding,
+    private val binding: ItemCircleBinding,
     onClick: (HomeContentUiModel) -> Unit,
 ) : ClickableContentViewHolder(binding.root, onClick) {
     override fun bind(item: HomeContentUiModel) = with(binding) {
         bindClick(item)
-        artwork.load(item.thumbnailUrl) { crossfade(true) }
-        title.text = item.title
+        ivThumbnail.load(item.thumbnailUrl) { crossfade(true) }
+        tvName.text = item.title
     }
 }
 
 private class WatchingViewHolder(
-    private val binding: ItemHomeCardWatchingBinding,
+    private val binding: ItemWatchingBinding,
     onClick: (HomeContentUiModel) -> Unit,
 ) : ClickableContentViewHolder(binding.root, onClick) {
     override fun bind(item: HomeContentUiModel) = with(binding) {
         bindClick(item)
-        artwork.load(item.thumbnailUrl) { crossfade(true) }
-        title.text = item.title
-        subtitle.text = item.subtitle
-        progress.progress = item.progressPercent
+        ivThumbnail.load(item.thumbnailUrl) { crossfade(true) }
+        tvTitle.text = item.title
+        tvSubTitle.text = item.subtitle
+        progressTimeWatched.progress = item.progressPercent
     }
 }
 
 private class MiniAppViewHolder(
-    private val binding: ItemHomeCardMiniAppBinding,
+    private val binding: ItemMiniAppBinding,
     onClick: (HomeContentUiModel) -> Unit,
 ) : ClickableContentViewHolder(binding.root, onClick) {
     override fun bind(item: HomeContentUiModel) = with(binding) {
         bindClick(item)
-        artwork.load(item.thumbnailUrl) { crossfade(true) }
-        title.text = item.title
+        ivAppIcon.load(item.thumbnailUrl) { crossfade(true) }
+        tvAppName.text = item.title
     }
 }

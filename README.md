@@ -69,7 +69,7 @@ See [player integration](docs/player.md) for lifecycle details.
 
 ## Android navigation shell
 
-`MainActivity` owns the four-item bottom navigation (`Home`, `Music`, `Shorts`, `Playlist`) and
+`MainActivity` owns the four-item bottom navigation (`Home`, `Music`, `Short`, `Playlist`) and
 keeps destination fragments alive while switching tabs. `HomeTabFragment` owns the overlaid brand,
 search, notification, profile and category bars. `HomeFragment` is only responsible for loading and
 rendering the shared state. Non-Home destinations and non-Home categories intentionally point to

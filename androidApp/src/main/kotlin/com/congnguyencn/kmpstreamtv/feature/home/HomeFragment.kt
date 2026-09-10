@@ -13,7 +13,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.congnguyencn.kmpstreamtv.R
-import com.congnguyencn.kmpstreamtv.core.ui.dp
 import com.congnguyencn.kmpstreamtv.databinding.FragmentHomeBinding
 import com.congnguyencn.kmpstreamtv.feature.home.presentation.HomeUiState
 import com.congnguyencn.kmpstreamtv.feature.home.presentation.HomeViewModel
@@ -41,7 +40,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
         homeAdapter = sectionAdapter
 
-        binding.sections.apply {
+        binding.rcvHomepage.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = sectionAdapter
             setHasFixedSize(false)
@@ -53,9 +52,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             })
         }
         binding.swipeRefresh.apply {
-            setColorSchemeResources(R.color.stream_accent)
-            setProgressBackgroundColorSchemeResource(R.color.stream_surface)
-            setProgressViewOffset(false, 92.dp, 140.dp)
+            setColorSchemeResources(R.color.heliotrope)
+            setProgressBackgroundColorSchemeResource(R.color.shark)
+            val topOffset = resources.getDimensionPixelSize(R.dimen.home_content_padding_top)
+            val endOffset = topOffset + resources.getDimensionPixelSize(R.dimen.margin_4x)
+            setProgressViewOffset(false, topOffset, endOffset)
             setOnRefreshListener(viewModel::loadHome)
         }
         binding.retry.setOnClickListener { viewModel.loadHome() }
@@ -71,14 +72,14 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         val hasContent = state.sections.isNotEmpty()
         swipeRefresh.isRefreshing = state.isLoading && hasContent
         loading.isVisible = state.isLoading && !hasContent
-        sections.isVisible = hasContent && state.errorMessage == null
+        rcvHomepage.isVisible = hasContent && state.errorMessage == null
         errorGroup.isVisible = !state.isLoading && state.errorMessage != null
         errorMessage.text = state.errorMessage
         homeAdapter?.submitList(state.sections)
     }
 
     override fun onDestroyView() {
-        binding.sections.adapter = null
+        binding.rcvHomepage.adapter = null
         homeAdapter = null
         _binding = null
         super.onDestroyView()

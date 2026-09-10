@@ -13,6 +13,7 @@ internal class HomeDummyDataSource {
     suspend fun getHomeSections(): List<HomeSection> {
         delay(DUMMY_LATENCY_MILLIS)
         return listOf(
+            HomeSection("popular-shorts", "Stories for you", HomeSectionViewType.ShortsPopular, shorts),
             HomeSection("featured", "Featured today", HomeSectionViewType.Banner, videos),
             HomeSection("for-you", "Videos for you", HomeSectionViewType.Videos, videos.reversed()),
             HomeSection("popular-videos", "Popular videos", HomeSectionViewType.VideosPopular, videos),
@@ -21,7 +22,6 @@ internal class HomeDummyDataSource {
             HomeSection("portrait", "Editor's spotlight", HomeSectionViewType.VerticalBanner, shorts),
             HomeSection("continue", "Continue watching", HomeSectionViewType.ContinueWatching, videos.drop(2) + videos.take(2)),
             HomeSection("shorts", "Fresh shorts", HomeSectionViewType.Shorts, shorts.reversed()),
-            HomeSection("popular-shorts", "Stories for you", HomeSectionViewType.ShortsPopular, shorts),
             HomeSection("mini-apps", "Explore StreamTV", HomeSectionViewType.MiniApps, videos.take(5)),
         )
     }

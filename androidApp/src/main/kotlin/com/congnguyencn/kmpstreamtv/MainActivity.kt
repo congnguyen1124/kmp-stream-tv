@@ -15,14 +15,15 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.bottomNavMain.isItemActiveIndicatorEnabled = false
 
         binding.bottomNavMain.setOnItemSelectedListener { item ->
             showDestination(item.itemId)
             true
         }
         binding.bottomNavMain.selectedItemId = savedInstanceState
-            ?.getInt(STATE_SELECTED_DESTINATION, R.id.nav_home)
-            ?: R.id.nav_home
+            ?.getInt(STATE_SELECTED_DESTINATION, R.id.home)
+            ?: R.id.home
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -47,16 +48,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun createDestination(@IdRes destinationId: Int): Fragment = when (destinationId) {
-        R.id.nav_home -> HomeTabFragment()
-        R.id.nav_music -> PlaceholderFragment.newInstance(
+        R.id.home -> HomeTabFragment()
+        R.id.tvcab -> PlaceholderFragment.newInstance(
             title = getString(R.string.nav_music),
             description = getString(R.string.placeholder_music),
         )
-        R.id.nav_shorts -> PlaceholderFragment.newInstance(
+        R.id.shorts -> PlaceholderFragment.newInstance(
             title = getString(R.string.nav_shorts),
             description = getString(R.string.placeholder_shorts),
         )
-        R.id.nav_playlist -> PlaceholderFragment.newInstance(
+        R.id.playlist -> PlaceholderFragment.newInstance(
             title = getString(R.string.nav_playlist),
             description = getString(R.string.placeholder_playlist),
         )

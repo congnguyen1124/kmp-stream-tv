@@ -72,7 +72,7 @@ private fun Content.toUiModel() = HomeContentUiModel(
         is Channel -> "Live now"
         is Series -> "${episodes.size} episodes"
         is Short -> "Short video"
-        else -> "Continue watching"
+        else -> "Episode ${1 + seed() % 8}"
     },
     durationLabel = when (this) {
         is Channel -> "LIVE"

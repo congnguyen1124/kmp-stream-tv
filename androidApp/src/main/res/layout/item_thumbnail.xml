@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content" android:layout_height="wrap_content" android:clickable="true" android:foreground="?attr/selectableItemBackground" android:paddingStart="0dp" android:paddingEnd="@dimen/horizontal_list_divider">
+    <com.google.android.material.imageview.ShapeableImageView android:id="@+id/ivThumbnail" android:layout_width="@dimen/ephemeral_tall_thumbnail_width" android:layout_height="@dimen/ephemeral_tall_thumbnail_height" android:background="@drawable/image_placeholder" android:contentDescription="@null" android:scaleType="centerCrop" app:shapeAppearanceOverlay="@style/GenericThumbnail" />
+    <TextView android:id="@+id/tvBadgeLive" style="@style/Text.LabelText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="start|bottom" android:layout_margin="@dimen/margin_tiny" android:background="@drawable/bg_thumbnail_live" android:gravity="center" android:paddingHorizontal="@dimen/margin_tiny_x" android:paddingBottom="@dimen/margin_super_tiny" android:text="@string/live" android:textColor="@color/white" android:visibility="gone" />
+</FrameLayout>

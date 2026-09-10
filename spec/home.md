@@ -26,5 +26,6 @@ Section compatibility:
 - Channels accepts Channel.
 - Vertical Banner, Shorts and Popular Shorts accept Short.
 
-All ten section types must occur exactly once in the deterministic fixture. Selecting a media item
-opens playback. Home contains no explicit focus requester or focus restoration contract.
+All ten section types must occur exactly once in the deterministic fixture, and Story must be the
+first returned section. Selecting a media item opens playback. Home contains no explicit focus
+requester or focus restoration contract.

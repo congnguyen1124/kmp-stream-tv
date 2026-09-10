@@ -8,4 +8,6 @@ abstract class BindableViewHolder<T> protected constructor(root: View) : Recycle
     protected constructor(binding: ViewBinding) : this(binding.root)
 
     abstract fun bind(item: T)
+
+    open fun bind(item: T, position: Int) = bind(item)
 }

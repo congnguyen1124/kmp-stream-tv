@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="@dimen/margin">
+    <LinearLayout android:id="@+id/llMiniApps" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="@drawable/bg_mini_app_content" android:minHeight="@dimen/layout_mini_app_min_height" android:orientation="horizontal" android:padding="@dimen/margin_small" />
+</FrameLayout>

@@ -1,56 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.KmpStreamTv" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="android:fontFamily">sans</item>
+        <item name="android:fontFamily">@font/svn_gilroy</item>
+        <item name="fontFamily">@font/svn_gilroy</item>
         <item name="android:windowActionModeOverlay">true</item>
-        <item name="android:windowBackground">@color/stream_background</item>
-        <item name="android:colorAccent">@color/stream_accent</item>
-        <item name="android:navigationBarColor">@color/stream_background</item>
-        <item name="android:statusBarColor">@color/stream_background</item>
+        <item name="android:windowBackground">@color/appBackground</item>
+        <item name="android:colorAccent">@color/purpleHeart</item>
+        <item name="android:navigationBarColor">@color/black</item>
+        <item name="android:statusBarColor">@color/appBackground</item>
         <item name="android:windowLightStatusBar">false</item>
-        <item name="colorPrimary">@color/stream_accent</item>
-        <item name="colorPrimaryVariant">@color/stream_accent</item>
-        <item name="colorOnPrimary">@color/stream_text</item>
-        <item name="colorSecondary">@color/stream_accent</item>
-        <item name="colorOnSurface">@color/stream_text</item>
+        <item name="colorPrimary">@color/purpleHeart</item>
+        <item name="colorPrimaryVariant">@color/purpleHeart</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/heliotrope</item>
+        <item name="colorOnSurface">@color/white</item>
     </style>
 
-    <style name="Widget.StreamTV.TopBarButton" parent="@android:style/Widget.ImageButton">
-        <item name="android:layout_width">44dp</item>
-        <item name="android:layout_height">44dp</item>
-        <item name="android:background">@drawable/nav_item_background</item>
-        <item name="android:padding">10dp</item>
-        <item name="android:tint">@color/stream_text</item>
-    </style>
+    <style name="Text"><item name="android:textStyle">normal</item></style>
+    <style name="Text.Title1"><item name="android:textSize">@dimen/sp_20</item><item name="fontFamily">@font/svn_gilroy_bold</item><item name="android:fontFamily">@font/svn_gilroy_bold</item></style>
+    <style name="Text.Title2"><item name="android:textSize">@dimen/sp_18</item><item name="fontFamily">@font/svn_gilroy_bold</item><item name="android:fontFamily">@font/svn_gilroy_bold</item><item name="android:lineSpacingMultiplier">1.22</item></style>
+    <style name="Text.Heading2"><item name="android:textSize">@dimen/sp_16</item><item name="fontFamily">@font/svn_gilroy_semi_bold</item><item name="android:fontFamily">@font/svn_gilroy_semi_bold</item><item name="android:lineSpacingMultiplier">1.25</item></style>
+    <style name="Text.Body3"><item name="android:textSize">@dimen/sp_14</item><item name="fontFamily">@font/svn_gilroy_medium</item><item name="android:fontFamily">@font/svn_gilroy_medium</item><item name="android:lineSpacingMultiplier">1.28</item></style>
+    <style name="Text.Caption1"><item name="android:textSize">@dimen/sp_12</item><item name="fontFamily">@font/svn_gilroy_regular</item><item name="android:fontFamily">@font/svn_gilroy_regular</item><item name="android:lineSpacingMultiplier">1.25</item></style>
+    <style name="Text.Caption2"><item name="android:textSize">@dimen/sp_12</item><item name="fontFamily">@font/svn_gilroy_semi_bold</item><item name="android:fontFamily">@font/svn_gilroy_semi_bold</item><item name="android:lineSpacingMultiplier">1.25</item></style>
+    <style name="Text.Caption3"><item name="android:textSize">@dimen/sp_12</item><item name="fontFamily">@font/svn_gilroy_medium</item><item name="android:fontFamily">@font/svn_gilroy_medium</item><item name="android:lineSpacingMultiplier">1.25</item></style>
+    <style name="Text.LabelText"><item name="android:textSize">@dimen/sp_10</item><item name="fontFamily">@font/svn_gilroy_bold</item><item name="android:fontFamily">@font/svn_gilroy_bold</item></style>
+    <style name="Text.Button" parent="TextAppearance.MaterialComponents.Button"><item name="textAllCaps">false</item><item name="android:textSize">@dimen/sp_16</item><item name="fontFamily">@font/svn_gilroy_semi_bold</item><item name="android:fontFamily">@font/svn_gilroy_semi_bold</item></style>
 
-    <style name="Widget.StreamTV.PrimaryButton" parent="Widget.MaterialComponents.Button">
-        <item name="android:textAllCaps">false</item>
-        <item name="android:textStyle">bold</item>
-        <item name="backgroundTint">@color/stream_accent</item>
-        <item name="cornerRadius">8dp</item>
-    </style>
+    <style name="Button" parent="Widget.MaterialComponents.Button.TextButton"><item name="android:minHeight">@dimen/button_height</item><item name="android:textColor">@color/white</item><item name="android:textAppearance">@style/Text.Button</item><item name="iconTint">@color/white</item><item name="cornerRadius">@dimen/button_radius</item><item name="android:insetTop">0dp</item><item name="android:insetBottom">0dp</item><item name="android:letterSpacing">0.0</item></style>
+    <style name="Button.Primary" parent="Button"><item name="backgroundTint">@color/purpleHeart</item><item name="android:textColor">@color/white</item></style>
+    <style name="Button.Icon" parent="Button"><item name="iconTint">@color/white</item></style>
+    <style name="Button.Icon.Large" parent="Button.Icon"><item name="iconSize">@dimen/icon_button_size_x</item><item name="iconGravity">textTop</item><item name="android:textAppearance">@style/Text.Caption2</item><item name="android:textColor">@color/silverChalice</item><item name="android:minWidth">@dimen/size_3_5x</item><item name="android:minHeight">@dimen/size_3_5x</item></style>
 
-    <style name="Widget.StreamTV.BottomNavigation.ActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
-        <item name="android:color">@color/stream_accent_soft</item>
-    </style>
+    <style name="GenericThumbnail"><item name="cornerFamily">rounded</item><item name="cornerSize">@dimen/thumbnail_corner</item></style>
+    <style name="StoryThumbnail"><item name="cornerFamily">rounded</item><item name="cornerSize">@dimen/story_thumbnail_corner</item></style>
+    <style name="CircularImage"><item name="cornerFamily">rounded</item><item name="cornerSize">50%</item></style>
+    <style name="LogoAppStyle"><item name="cornerFamily">rounded</item><item name="cornerSize">@dimen/logo_app_corner</item></style>
+    <style name="LinearProgressIndicator"><item name="indicatorColor">@color/white</item><item name="trackColor">@color/white_40</item><item name="trackCornerRadius">@dimen/radius_small</item><item name="trackThickness">@dimen/linear_progress_height</item></style>
 
-    <style name="ShapeAppearance.StreamTV.Card" parent="">
-        <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">10dp</item>
-    </style>
-
-    <style name="ShapeAppearance.StreamTV.Story" parent="">
-        <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">14dp</item>
-    </style>
-
-    <style name="ShapeAppearance.StreamTV.Circle" parent="">
-        <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">50%</item>
-    </style>
-
-    <style name="ShapeAppearance.StreamTV.MiniApp" parent="">
-        <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">13dp</item>
-    </style>
+    <style name="Widget.StreamTV.TopBarButton" parent="@android:style/Widget.ImageButton"><item name="android:layout_width">@dimen/topbar_icon_size</item><item name="android:layout_height">@dimen/topbar_icon_size</item><item name="android:background">?attr/selectableItemBackgroundBorderless</item><item name="android:padding">@dimen/topbar_icon_padding</item><item name="android:tint">@color/white</item></style>
 </resources>

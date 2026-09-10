@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tvMenu"
+    android:layout_width="wrap_content"
+    android:layout_height="@dimen/top_menu_height"
+    android:background="?attr/selectableItemBackground"
+    android:drawablePadding="@dimen/margin_tiny"
+    android:gravity="center"
+    android:paddingHorizontal="@dimen/margin_small_xx"
+    android:text="@string/category_more"
+    android:textAlignment="center"
+    android:textAppearance="@style/Text.Heading2"
+    android:textColor="@color/white" />

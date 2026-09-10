@@ -1,16 +1,16 @@
 <resources>
     <string name="app_name">StreamTV</string>
     <string name="stream_initial">S</string>
-    <string name="top_ten">TOP\n10</string>
     <string name="nav_home">Home</string>
     <string name="nav_music">Music</string>
-    <string name="nav_shorts">Shorts</string>
+    <string name="nav_shorts">Short</string>
     <string name="nav_playlist">Playlist</string>
     <string name="category_home">Home</string>
     <string name="category_movies">Movies</string>
     <string name="category_series">Series</string>
     <string name="category_live">Live</string>
     <string name="category_more">More ▾</string>
+    <string name="browse_categories">Browse categories</string>
     <string name="search">Search</string>
     <string name="notifications">Notifications</string>
     <string name="profile">Profile</string>
@@ -37,8 +37,4 @@
     <string name="play">Play</string>
     <string name="pause">Pause</string>
     <string name="elapsed_time">%1$s / %2$s</string>
-    <plurals name="episode_count">
-        <item quantity="one">%d episode</item>
-        <item quantity="other">%d episodes</item>
-    </plurals>
 </resources>

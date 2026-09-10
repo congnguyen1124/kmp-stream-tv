@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="wrap_content">
+    <ImageView android:id="@+id/ivLayoutBackground" android:layout_width="match_parent" android:layout_height="match_parent" android:contentDescription="@null" android:scaleType="centerCrop" android:visibility="gone" />
+    <androidx.recyclerview.widget.RecyclerView android:id="@+id/carouselView" android:layout_width="match_parent" android:layout_height="@dimen/highlight_wide_thumbnail_height" android:layout_marginVertical="@dimen/margin_xx" android:clipToPadding="false" android:paddingHorizontal="@dimen/content_padding_horizontal" />
+</FrameLayout>
