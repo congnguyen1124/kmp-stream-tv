@@ -45,7 +45,7 @@ data class Channel(
     override val ageRestriction: String?,
 ) : Content
 
-data class Short(
+data class ShortVideo(
     override val id: String,
     override val videoUrl: String,
     override val trailerUrl: String,

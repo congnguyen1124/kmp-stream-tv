@@ -51,6 +51,14 @@ scale neighboring pages from 85% to 100% as the centered item changes.
 
 ## iOS
 
-`HomeStore` observes the same expanded state. The existing SwiftUI feed continues to render all
-sections and opens the native AVPlayer sheet. Android-specific Fragment/navigation ownership does
-not cross the KMP boundary.
+`HomeStore` observes the same expanded state and remains owned by `HomeTabView` while categories
+change. `HomeView` handles loading, retry, pull-to-refresh, scroll reporting and full-screen native
+AVPlayer presentation. `HomeSectionView` exhaustively maps the ten shared semantic presentations to
+SwiftUI section families; `HomeContentCard` owns the reusable landscape, portrait, circle, story,
+short, continue-watching and ranked card families.
+
+Story, wide/tall highlights, Top 10 and Mini Apps have dedicated section files because they own
+layout behavior beyond an ordinary horizontal rail. Shared theme and remote-artwork primitives live
+under `Core/UI`, while app navigation, Home, placeholders and player code live in independent
+`App`/`Feature` directories. Android-specific Fragment/RecyclerView ownership does not cross the KMP
+boundary.

@@ -1,3 +1,4 @@
+import Combine
 import Foundation
 import Shared
 
@@ -24,6 +25,14 @@ final class HomeStore: ObservableObject {
 
     func retry() {
         viewModel.loadHome()
+    }
+
+    func refresh() async {
+        retry()
+        await Task.yield()
+        while state.isLoading && !Task.isCancelled {
+            try? await Task.sleep(nanoseconds: 50_000_000)
+        }
     }
 
     deinit {

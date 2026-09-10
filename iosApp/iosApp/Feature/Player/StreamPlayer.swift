@@ -35,9 +35,13 @@ final class StreamPlayer: ObservableObject {
             player.play()
             isPlaying = true
         } else {
-            player.pause()
-            isPlaying = false
+            pause()
         }
+    }
+
+    func pause() {
+        player.pause()
+        isPlaying = false
     }
 
     func seek(by seconds: Double) {
@@ -46,9 +50,10 @@ final class StreamPlayer: ObservableObject {
     }
 
     func stop() {
-        player.pause()
+        pause()
         player.replaceCurrentItem(with: nil)
-        isPlaying = false
+        currentTime = 0
+        duration = 0
     }
 
     deinit {

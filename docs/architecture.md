@@ -9,7 +9,7 @@ mapping, validation and state transitions.
 ```text
 Native UI
   Android: MainActivity → HomeTabFragment → HomeFragment → section/content adapters → XML ViewHolder
-  iOS:     HomeView → HomeSectionView → BannerCard / ContentCard
+  iOS:     MainTabView → HomeTabView → HomeView → section/content SwiftUI views
                              │
                              ▼
 Shared presentation: HomeViewModel → HomeUiState
@@ -57,6 +57,18 @@ behavior, while Android's normal View focus remains available for accessibility 
 `HomeStore` owns the shared ViewModel and converts its `StateFlow` to `@Published` state through the
 shared `Observation` handle. It cancels observation and disposes the ViewModel with the Swift owner.
 The SwiftUI tree contains no repository or fixture logic.
+
+The native source tree mirrors Android's ownership boundaries:
+
+- `App` owns persistent app-level destinations.
+- `Feature/Home` owns the store, category shell, feed and section/card renderers.
+- `Feature/Placeholder` owns reusable unfinished destinations.
+- `Feature/Player` owns AVPlayer state, UIKit bridging and playback controls.
+- `Core/UI` owns platform-wide visual tokens and remote artwork.
+
+The domain class for short-form media is named `ShortVideo`; `Short` is reserved by Kotlin's numeric
+type and would export a duplicate `SharedShort` Objective-C symbol when the static iOS framework is
+linked.
 
 ## Dependency injection lifecycle
 

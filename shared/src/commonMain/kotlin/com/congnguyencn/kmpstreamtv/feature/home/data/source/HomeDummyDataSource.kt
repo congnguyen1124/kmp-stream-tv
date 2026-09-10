@@ -4,7 +4,7 @@ import com.congnguyencn.kmpstreamtv.feature.home.domain.model.Channel
 import com.congnguyencn.kmpstreamtv.feature.home.domain.model.HomeSection
 import com.congnguyencn.kmpstreamtv.feature.home.domain.model.HomeSectionViewType
 import com.congnguyencn.kmpstreamtv.feature.home.domain.model.Series
-import com.congnguyencn.kmpstreamtv.feature.home.domain.model.Short
+import com.congnguyencn.kmpstreamtv.feature.home.domain.model.ShortVideo
 import com.congnguyencn.kmpstreamtv.feature.home.domain.model.Video
 import kotlinx.coroutines.delay
 
@@ -122,7 +122,7 @@ internal class HomeDummyDataSource {
             age: String = "P",
         ) = Video("video-$id", url, trailer, image, title, description, age)
 
-        fun short(id: String, url: String, image: String, title: String, description: String) = Short(
+        fun short(id: String, url: String, image: String, title: String, description: String) = ShortVideo(
             id = "short-$id",
             videoUrl = url,
             trailerUrl = StreamUrls.APPLE_FMP4,
