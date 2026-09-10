@@ -10,7 +10,7 @@
     <color name="codGray3_80">#CC111111</color>
     <color name="shark">#2C2C2E</color>
     <color name="silverChalice">#ADADAD</color>
-    <color name="gray">#8E8E93</color>
+    <color name="gray">#8D8D8D</color>
     <color name="persianIndigo">#2D0A69</color>
     <color name="honeyFlower">#4A146D</color>
     <color name="bombay">#AEAEB2</color>
@@ -20,6 +20,7 @@
     <color name="purpleHeart">#6419DA</color>
     <color name="transparent">#00000000</color>
     <color name="appBackground">@color/codGray3</color>
+    <color name="colorControlHighlight">@color/gray</color>
 
     <color name="stream_surface">@color/shark</color>
     <color name="stream_text">@color/white</color>

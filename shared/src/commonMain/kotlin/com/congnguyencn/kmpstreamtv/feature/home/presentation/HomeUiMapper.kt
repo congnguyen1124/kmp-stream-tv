@@ -17,7 +17,7 @@ internal class HomeUiMapper {
             title = section.title,
             items = section.items.map(Content::toUiModel),
             presentation = section.viewType.toPresentation(),
-            backgroundUrl = section.items.firstOrNull()?.thumbnailUrl,
+            backgroundUrl = section.backgroundUrl,
             isBanner = section.viewType == HomeSectionViewType.Banner,
             usesPortraitCards = section.viewType in portraitSectionTypes,
             showsRanking = section.viewType in rankedSectionTypes,

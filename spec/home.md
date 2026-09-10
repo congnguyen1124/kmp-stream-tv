@@ -43,6 +43,8 @@ use the Android dp values as iOS points while retaining the same compact-width s
   reference instead of flattening the outer hierarchy into the page adapter.
 - Ordinary layouts use nested horizontal RecyclerViews; both highlight layouts use `ViewPager2`
   through the cloned carousel behavior with the reference size, scale, translation and looping.
+- A layout background is rendered only when the section explicitly supplies one. Never promote the
+  first item thumbnail into a layout background implicitly.
 - Tall Highlight must retain every source child: active blurred artwork, the two source carousel
   background drawables, carousel, Watch later, Watch now, Information, click proxy, bottom spacer,
   loading overlay and error overlay.

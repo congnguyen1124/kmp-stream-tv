@@ -23,7 +23,9 @@ English error message. Calling `loadHome()` cancels an in-flight load before ret
 
 `HomeSection` rejects empty or type-incompatible content. `HomeUiMapper` adds native-ready metadata
 such as provider, subtitle, duration, view count, progress and section presentation without leaking
-Android resource concepts into shared code.
+Android resource concepts into shared code. Layout background artwork is explicit section data; it
+is never synthesized from the first item thumbnail. The fixture supplies it only to the Top Ten
+layout, so the wide highlight matches the reference's background-free payload.
 
 The fixture intentionally returns the Story section first. This mirrors the production payload
 shape while keeping all ten supported layout families deterministic for UI development and tests.
@@ -51,9 +53,10 @@ wordmark and launcher assets remain sourced from `android_stream_tv`.
 Wide and tall highlights use the source `CarouseView` algorithm around `ViewPager2`: 1,000-page
 looping, three offscreen pages, unclipped side cards, the same translation formula and 85%–100%
 page scale. They preserve the reference card sizes on roomy displays and shrink proportionally to
-the source 40 dp minimum side padding on compact phones. Tall highlights keep the original blurred
-active-poster background, source carousel top/bottom drawables, three actions, click proxy, bottom
-spacer, loading overlay and error overlay; no additional scrim or gradient layer is introduced.
+the source 40 dp minimum side padding on compact phones. Tall highlights use the reference active
+poster blur parameters (radius 5, downsampling 25), source carousel top/bottom drawables, three
+actions, click proxy, bottom spacer, loading overlay and error overlay; no additional scrim or
+gradient layer is introduced.
 
 ## iOS
 

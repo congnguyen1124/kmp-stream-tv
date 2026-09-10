@@ -5,6 +5,7 @@ data class HomeSection(
     val title: String,
     val viewType: HomeSectionViewType,
     val items: List<Content>,
+    val backgroundUrl: String? = null,
 ) {
     init {
         require(items.isNotEmpty()) { "Home section $id must not be empty" }

@@ -9,6 +9,8 @@ import com.congnguyencn.kmpstreamtv.feature.home.presentation.model.HomeSectionP
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNull
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.test.runTest
 
@@ -37,6 +39,8 @@ class HomeModelTest {
 
         assertEquals(HomeSectionPresentation.entries.toSet(), uiSections.map { it.presentation }.toSet())
         assertEquals(HomeSectionPresentation.Story, uiSections.first().presentation)
+        assertNull(uiSections.single { it.presentation == HomeSectionPresentation.HighlightWide }.backgroundUrl)
+        assertNotNull(uiSections.single { it.presentation == HomeSectionPresentation.TopTen }.backgroundUrl)
         assertTrue(uiSections.flatMap { it.items }.all { it.progressPercent in 1..99 })
         assertTrue(uiSections.flatMap { it.items }.all { it.durationLabel.isNotBlank() })
         assertTrue(uiSections.flatMap { it.items }.all { it.providerName.isNotBlank() })

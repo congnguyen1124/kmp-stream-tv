@@ -1,14 +1,11 @@
 package com.congnguyencn.kmpstreamtv.feature.home.widget.layout
 
 import android.content.Context
-import android.graphics.RenderEffect
-import android.graphics.Shader
-import android.os.Build
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import android.widget.Toast
+import android.widget.ImageView
 import androidx.core.view.setPadding
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,8 +15,6 @@ import coil3.request.crossfade
 import com.congnguyencn.kmpstreamtv.R
 import com.congnguyencn.kmpstreamtv.databinding.ItemMiniAppBinding
 import com.congnguyencn.kmpstreamtv.databinding.LayoutBackgroundViewBinding
-import com.congnguyencn.kmpstreamtv.databinding.LayoutHighlightTallViewBinding
-import com.congnguyencn.kmpstreamtv.databinding.LayoutHighlightWideViewBinding
 import com.congnguyencn.kmpstreamtv.databinding.LayoutMiniAppViewBinding
 import com.congnguyencn.kmpstreamtv.databinding.LayoutViewBinding
 import com.congnguyencn.kmpstreamtv.feature.home.HomeContentAdapter
@@ -27,7 +22,6 @@ import com.congnguyencn.kmpstreamtv.feature.home.HomeContentStyle
 import com.congnguyencn.kmpstreamtv.feature.home.presentation.model.HomeContentUiModel
 import com.congnguyencn.kmpstreamtv.feature.home.presentation.model.HomeSectionPresentation
 import com.congnguyencn.kmpstreamtv.feature.home.presentation.model.HomeSectionUiModel
-import com.congnguyencn.kmpstreamtv.feature.home.widget.CarouseView
 
 interface HomeLayoutItemClickable {
     fun setOnContentClickListener(listener: ((HomeContentUiModel) -> Unit)?)
@@ -43,6 +37,17 @@ abstract class HomeLayoutBaseView @JvmOverloads constructor(
 
     override fun setOnContentClickListener(listener: ((HomeContentUiModel) -> Unit)?) {
         onContentClick = listener
+    }
+
+    protected fun bindLayoutBackground(view: ImageView, backgroundUrl: String?) {
+        val url = backgroundUrl?.takeIf(String::isNotBlank)
+        if (url == null) {
+            view.visibility = GONE
+            view.load(null)
+            return
+        }
+        view.visibility = VISIBLE
+        view.load(url) { crossfade(true) }
     }
 }
 
@@ -208,107 +213,11 @@ class LayoutBackgroundView @JvmOverloads constructor(
         ivLayoutIcon.setImageResource(R.drawable.ic_fire)
         ivLayoutIcon.visibility = VISIBLE
         viewDivider.visibility = VISIBLE
-        data.backgroundUrl?.let { url ->
-            ivLayoutBackground.visibility = VISIBLE
-            ivLayoutBackground.load(url) { crossfade(true) }
-        } ?: run { ivLayoutBackground.visibility = GONE }
+        bindLayoutBackground(ivLayoutBackground, data.backgroundUrl)
         rcvItems.visibility = VISIBLE
         pbLoading.visibility = GONE
         errorView.visibility = GONE
         adapter.submitSection(data)
-    }
-}
-
-class LayoutHighlightWideView @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0,
-    defStyleRes: Int = 0,
-) : HomeLayoutBaseView(context, attrs, defStyleAttr, defStyleRes) {
-    private val binding = LayoutHighlightWideViewBinding.inflate(LayoutInflater.from(context), this, true)
-    private var items: List<HomeContentUiModel> = emptyList()
-
-    init {
-        binding.carouselView.onItemClickListener = CarouseView.OnItemClickCallback { position ->
-            items.getOrNull(position)?.let { onContentClick?.invoke(it) }
-        }
-        binding.errorView.setOnActionButtonClicked { binding.errorView.visibility = GONE }
-    }
-
-    fun bindLayout(data: HomeSectionUiModel) = with(binding) {
-        items = data.items
-        data.backgroundUrl?.let { url ->
-            ivLayoutBackground.visibility = VISIBLE
-            ivLayoutBackground.load(url) { crossfade(true) }
-        } ?: run { ivLayoutBackground.visibility = GONE }
-        carouselView.bindItems(items)
-        pbLoading.visibility = GONE
-        errorView.visibility = GONE
-    }
-}
-
-class LayoutHighlightTallView @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0,
-    defStyleRes: Int = 0,
-) : HomeLayoutBaseView(context, attrs, defStyleAttr, defStyleRes), CarouseView.OnPageChangeCallback {
-    private val binding = LayoutHighlightTallViewBinding.inflate(LayoutInflater.from(context), this, true)
-    private var items: List<HomeContentUiModel> = emptyList()
-    private var activePosition = 0
-
-    private val activeItem: HomeContentUiModel?
-        get() = items.getOrNull(activePosition)
-
-    init {
-        binding.carouselView.onPageChangeCallback = this
-        binding.carouselView.onItemClickListener = CarouseView.OnItemClickCallback {
-            activeItem?.let { item -> onContentClick?.invoke(item) }
-        }
-        binding.errorView.setOnActionButtonClicked { binding.errorView.visibility = GONE }
-    }
-
-    fun bindLayout(data: HomeSectionUiModel) = bindLayout(data, false)
-
-    fun bindLayout(data: HomeSectionUiModel, isTopLayout: Boolean) = with(binding) {
-        items = data.items
-        activePosition = 0
-        showActiveItem()
-        carouselView.bindItems(items)
-        carouselView.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-            val divider = resources.getDimensionPixelSize(R.dimen.vertical_list_divider)
-            topMargin = if (isTopLayout) {
-                divider + resources.getDimensionPixelSize(R.dimen.home_content_padding_top)
-            } else {
-                divider
-            }
-        }
-        btnPlay.setOnClickListener { activeItem?.let { item -> onContentClick?.invoke(item) } }
-        btnWatchLater.setOnClickListener {
-            btnWatchLater.isSelected = !btnWatchLater.isSelected
-            Toast.makeText(context, R.string.added_to_watch_later, Toast.LENGTH_SHORT).show()
-        }
-        btnInfo.setOnClickListener {
-            activeItem?.let { item -> Toast.makeText(context, item.description, Toast.LENGTH_LONG).show() }
-        }
-        pbLoading.visibility = GONE
-        errorView.visibility = GONE
-    }
-
-    override fun onPageChanged(position: Int) {
-        activePosition = position
-        showActiveItem()
-    }
-
-    private fun showActiveItem() {
-        val item = activeItem ?: return
-        binding.ivCarouselBlur.load(item.thumbnailUrl) { crossfade(true) }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            binding.ivCarouselBlur.setRenderEffect(
-                RenderEffect.createBlurEffect(25f, 25f, Shader.TileMode.CLAMP),
-            )
-        }
-        binding.btnWatchLater.isSelected = false
     }
 }
 
