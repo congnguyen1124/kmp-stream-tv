@@ -1,56 +1,111 @@
 import SwiftUI
 
-enum AppDestination: Hashable {
+enum AppDestination: String, CaseIterable, Identifiable {
     case home
     case music
     case shorts
     case playlist
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .home: "Home"
+        case .music: "Music"
+        case .shorts: "Short"
+        case .playlist: "Playlist"
+        }
+    }
+
+    var selectedIcon: String {
+        switch self {
+        case .home: "ic_home_fill"
+        case .music: "ic_tv_fill"
+        case .shorts: "ic_short_fill"
+        case .playlist: "ic_playlist_fill"
+        }
+    }
+
+    var unselectedIcon: String {
+        switch self {
+        case .home: "ic_home_outline"
+        case .music: "ic_tv_outline"
+        case .shorts: "ic_short_outline"
+        case .playlist: "ic_playlist_outline"
+        }
+    }
 }
 
 struct MainTabView: View {
     @State private var selection = AppDestination.home
 
     var body: some View {
-        TabView(selection: $selection) {
-            HomeTabView()
-                .tag(AppDestination.home)
-                .tabItem {
-                    Label("Home", systemImage: selection == .home ? "house.fill" : "house")
+        VStack(spacing: 0) {
+            ZStack {
+                destination(.home) { HomeTabView() }
+                destination(.music) {
+                    PlaceholderView(
+                        title: "Music",
+                        message: "The Music fragment shell is ready for its feature implementation."
+                    )
                 }
-
-            PlaceholderView(
-                title: "Music",
-                message: "The Music screen is ready for its feature implementation.",
-                systemImage: "music.note"
-            )
-            .tag(AppDestination.music)
-            .tabItem {
-                Label("Music", systemImage: selection == .music ? "music.note.list" : "music.note")
+                destination(.shorts) {
+                    PlaceholderView(
+                        title: "Short",
+                        message: "The Shorts fragment shell is ready for its vertical feed."
+                    )
+                }
+                destination(.playlist) {
+                    PlaceholderView(
+                        title: "Playlist",
+                        message: "The Playlist fragment shell is ready for saved content."
+                    )
+                }
             }
 
-            PlaceholderView(
-                title: "Short",
-                message: "The Shorts screen is ready for its vertical feed.",
-                systemImage: "play.rectangle"
-            )
-            .tag(AppDestination.shorts)
-            .tabItem {
-                Label("Short", systemImage: selection == .shorts ? "play.rectangle.fill" : "play.rectangle")
-            }
+            AndroidBottomNavigationBar(selection: $selection)
+        }
+        .background(Color.streamBackground.ignoresSafeArea())
+        .preferredColorScheme(.dark)
+    }
 
-            PlaceholderView(
-                title: "Playlist",
-                message: "The Playlist screen is ready for saved content.",
-                systemImage: "text.badge.plus"
-            )
-            .tag(AppDestination.playlist)
-            .tabItem {
-                Label("Playlist", systemImage: selection == .playlist ? "list.bullet.rectangle.fill" : "list.bullet.rectangle")
+    private func destination<Content: View>(
+        _ destination: AppDestination,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        content()
+            .opacity(selection == destination ? 1 : 0)
+            .allowsHitTesting(selection == destination)
+            .accessibilityHidden(selection != destination)
+    }
+}
+
+private struct AndroidBottomNavigationBar: View {
+    @Binding var selection: AppDestination
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(AppDestination.allCases) { destination in
+                Button {
+                    selection = destination
+                } label: {
+                    VStack(spacing: 1) {
+                        Image(selection == destination ? destination.selectedIcon : destination.unselectedIcon)
+                            .resizable()
+                            .frame(width: 28, height: 28)
+                        Text(destination.title)
+                            .font(.streamSemiBold(12))
+                            .foregroundStyle(selection == destination ? .white : Color.streamBottomNavText)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(destination.title)
+                .accessibilityAddTraits(selection == destination ? .isSelected : [])
             }
         }
-        .tint(.white)
-        .toolbarBackground(.black, for: .tabBar)
-        .toolbarBackgroundVisibility(.visible, for: .tabBar)
-        .preferredColorScheme(.dark)
+        .frame(height: 56)
+        .background(Color.black)
     }
 }

@@ -30,11 +30,17 @@ explicit “coming later” feedback instead of dead click targets.
 
 ## iOS
 
-`MainTabView` owns the same persistent Home, Music, Short and Playlist destinations through a native
-SwiftUI `TabView`. `HomeTabView` owns Home's brand row, working search/notification/profile feedback,
+`MainTabView` owns the same persistent Home, Music, Short and Playlist destinations through an
+app-owned SwiftUI bottom bar. It deliberately avoids the system `TabView` chrome so the black
+56-point bar, 28-point Android SVG state icons and Gilroy 12-point labels stay visually identical to
+the Android Material bar. `HomeTabView` owns Home's brand row, working search/notification/profile feedback,
 the Home/Movies/Series/Live/More category controls and the toolbar scrim. The loaded `HomeStore` and
 its feed remain alive while a placeholder category is shown, preserving shared state and scroll
 identity in the same ownership layer used by Android's `HomeTabFragment`.
+
+The iOS brand row and category row use the Android 48/36-point heights, source logo and converted
+toolbar SVGs. Non-Home categories use the compact submenu and app-owned category dialog; unavailable
+toolbar actions use transient feedback rather than iOS alert chrome.
 
 The SwiftUI hierarchy follows the Android feature split without sharing native rendering code:
 

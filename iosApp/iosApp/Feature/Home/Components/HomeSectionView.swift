@@ -67,7 +67,8 @@ private struct HomeRailSectionView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(section.title)
-                .font(.title3.bold())
+                .font(.streamBold(18))
+                .foregroundStyle(.white)
                 .padding(.horizontal, StreamMetrics.contentInset)
 
             ScrollView(.horizontal, showsIndicators: false) {
@@ -85,5 +86,6 @@ private struct HomeRailSectionView: View {
                 .padding(.horizontal, StreamMetrics.contentInset)
             }
         }
+        .padding(.vertical, 16)
     }
 }

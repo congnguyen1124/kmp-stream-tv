@@ -29,3 +29,11 @@ Section compatibility:
 All ten section types must occur exactly once in the deterministic fixture, and Story must be the
 first returned section. Selecting a media item opens playback. Home contains no explicit focus
 requester or focus restoration contract.
+
+## Native visual parity
+
+Android XML is the sizing and composition reference for iOS SwiftUI. Both native trees use the same
+Gilroy font files, palette, logo, editorial backgrounds, rank artwork and selected/unselected icon
+paths. Android vector drawables are converted to SVG for iOS rather than replaced with SF Symbols.
+Cards render only the content visible in their Android XML counterpart, and carousel/card dimensions
+use the Android dp values as iOS points while retaining the same compact-width shrink behavior.

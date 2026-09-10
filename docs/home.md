@@ -5,15 +5,15 @@ the mobile XML/RecyclerView layout families used by `on-tv-android`.
 
 | Shared presentation | Android view | Dummy content |
 |---|---|---|
-| Story | Editorial gradient block, story cards and provider avatar | Story shorts; always first |
+| Story | Android artwork block, 162 × 288 story cards and 32 dp provider avatar | Story shorts; always first |
 | HighlightWide | 340 × 191 artwork carousel rail | Featured videos |
-| GeneralWide | Compact 16:9 thumbnail rail | Recommended videos |
+| GeneralWide | 172 × 97 thumbnail rail | Recommended videos |
 | TopTen | Background artwork, fixed title block and numbered posters | Popular videos |
-| GeneralTall | Compact portrait cards | Documentary series |
-| Circle | Circular artwork and two-line label | Live channels |
-| HighlightTall | Blurred artwork field, large portraits and three actions | Editor spotlight shorts |
+| GeneralTall | 106 × 185 portrait cards | Documentary series |
+| Circle | 64 dp circular artwork and 80 dp two-line label | Live channels |
+| HighlightTall | Artwork field, 294 × 441 portraits and three actions | Editor spotlight shorts |
 | ContinueWatching | 16:9 cards with subtitle and progress | Partially watched videos |
-| Short | Large portrait cards with play/view metadata | Fresh shorts |
+| Short | 162 × 288 portrait cards | Fresh shorts |
 | MiniApps | Rounded utility panel with compact icon tiles | Dummy StreamTV destinations |
 
 ## Shared state
@@ -56,6 +56,13 @@ change. `HomeView` handles loading, retry, pull-to-refresh, scroll reporting and
 AVPlayer presentation. `HomeSectionView` exhaustively maps the ten shared semantic presentations to
 SwiftUI section families; `HomeContentCard` owns the reusable landscape, portrait, circle, story,
 short, continue-watching and ranked card families.
+
+Android resources are the visual source of truth on both platforms. iOS embeds the same Gilroy
+Regular/Medium/Semibold/Bold files, raster logo/background/rank artwork from `drawable-xxxhdpi`, and
+SVG conversions of every Android vector drawable. `scripts/sync_ios_android_assets.py` regenerates
+those iOS resources from `androidApp/src/main/res`; selectors are represented by their individual
+selected and unselected SVG assets. SwiftUI uses the XML dp dimensions directly as points and does
+not add card labels, gradients or metadata absent from the corresponding Android item layout.
 
 Story, wide/tall highlights, Top 10 and Mini Apps have dedicated section files because they own
 layout behavior beyond an ordinary horizontal rail. Shared theme and remote-artwork primitives live

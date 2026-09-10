@@ -6,58 +6,42 @@ struct HighlightWideSectionView: View {
     let onSelect: (HomeContentUiModel) -> Void
 
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            LazyHStack(spacing: 12) {
-                ForEach(section.items, id: \.id) { item in
-                    Button {
-                        onSelect(item)
-                    } label: {
-                        HighlightWideCard(item: item)
+        GeometryReader { geometry in
+            let width = min(340, max(0, geometry.size.width - 80))
+            let height = width * 191 / 340
+            let edgePadding = max(40, (geometry.size.width - 340) / 2)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                LazyHStack(spacing: 8) {
+                    ForEach(section.items, id: \.id) { item in
+                        Button {
+                            onSelect(item)
+                        } label: {
+                            RemoteArtwork(url: item.thumbnailUrl)
+                                .frame(width: width, height: height)
+                                .background(Color.streamSurface)
+                                .clipShape(
+                                    RoundedRectangle(
+                                        cornerRadius: StreamMetrics.thumbnailCorner,
+                                        style: .continuous
+                                    )
+                                )
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(item.title)
+                        .scrollTransition(.interactive, axis: .horizontal) { content, phase in
+                            content.scaleEffect(1 - (0.15 * abs(phase.value)))
+                        }
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(item.title)
                 }
+                .scrollTargetLayout()
+                .frame(height: 191, alignment: .top)
+                .padding(.horizontal, edgePadding)
             }
-            .scrollTargetLayout()
-            .padding(.horizontal, 40)
+            .scrollTargetBehavior(.viewAligned(limitBehavior: .always))
+            .padding(.vertical, 24)
         }
-        .scrollTargetBehavior(.viewAligned)
-    }
-}
-
-private struct HighlightWideCard: View {
-    let item: HomeContentUiModel
-
-    var body: some View {
-        ZStack(alignment: .bottomLeading) {
-            RemoteArtwork(url: item.thumbnailUrl)
-            LinearGradient(
-                colors: [.black.opacity(0.88), .black.opacity(0.12), .clear],
-                startPoint: .leading,
-                endPoint: .trailing
-            )
-            LinearGradient(colors: [.clear, .black.opacity(0.58)], startPoint: .center, endPoint: .bottom)
-
-            VStack(alignment: .leading, spacing: 7) {
-                if let age = item.ageRestriction {
-                    StreamBadge(text: age)
-                }
-                Text(item.title)
-                    .font(.title3.bold())
-                    .lineLimit(2)
-                Text(item.description_)
-                    .font(.caption)
-                    .foregroundStyle(.white.opacity(0.82))
-                    .lineLimit(2)
-                Label("Watch now", systemImage: "play.fill")
-                    .font(.caption.bold())
-            }
-            .frame(maxWidth: 230, alignment: .leading)
-            .padding(16)
-        }
-        .foregroundStyle(.white)
-        .frame(width: 340, height: 191)
-        .clipShape(RoundedRectangle(cornerRadius: StreamMetrics.cornerRadius, style: .continuous))
+        .frame(height: 239)
     }
 }
 
@@ -73,80 +57,55 @@ struct HighlightTallSectionView: View {
     }
 
     var body: some View {
-        ZStack {
-            if let backgroundUrl = activeItem?.thumbnailUrl ?? section.backgroundUrl {
-                RemoteArtwork(url: backgroundUrl)
-                    .blur(radius: 30)
-                    .overlay(Color.black.opacity(0.58))
-                    .clipped()
-            }
+        GeometryReader { geometry in
+            let width = min(294, max(0, geometry.size.width - 80))
+            let height = width * 441 / 294
+            let edgePadding = max(40, (geometry.size.width - 294) / 2)
 
-            VStack(alignment: .leading, spacing: 14) {
-                Text(section.title)
-                    .font(.title3.bold())
-                    .padding(.horizontal, StreamMetrics.contentInset)
+            ZStack(alignment: .top) {
+                background
 
-                ScrollView(.horizontal, showsIndicators: false) {
-                    LazyHStack(spacing: 14) {
-                        ForEach(section.items, id: \.id) { item in
-                            RemoteArtwork(url: item.thumbnailUrl)
-                                .frame(width: 236, height: 354)
-                                .clipShape(RoundedRectangle(cornerRadius: StreamMetrics.cornerRadius, style: .continuous))
-                                .overlay {
-                                    RoundedRectangle(cornerRadius: StreamMetrics.cornerRadius, style: .continuous)
-                                        .stroke(item.id == activeItem?.id ? Color.white : .clear, lineWidth: 2)
+                VStack(spacing: 0) {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        LazyHStack(spacing: 8) {
+                            ForEach(section.items, id: \.id) { item in
+                                Button {
+                                    onSelect(item)
+                                } label: {
+                                    RemoteArtwork(url: item.thumbnailUrl)
+                                        .frame(width: width, height: height)
+                                        .background(Color.streamSurface)
+                                        .clipShape(
+                                            RoundedRectangle(
+                                                cornerRadius: StreamMetrics.thumbnailCorner,
+                                                style: .continuous
+                                            )
+                                        )
                                 }
-                                .scaleEffect(item.id == activeItem?.id ? 1 : 0.92)
-                                .animation(.easeOut(duration: 0.2), value: activeItemID)
-                                .onTapGesture { activeItemID = item.id }
+                                .buttonStyle(.plain)
+                                .id(item.id)
                                 .accessibilityLabel(item.title)
+                                .scrollTransition(.interactive, axis: .horizontal) { content, phase in
+                                    content.scaleEffect(1 - (0.15 * abs(phase.value)))
+                                }
+                            }
                         }
+                        .scrollTargetLayout()
+                        .frame(height: 441, alignment: .top)
+                        .padding(.horizontal, edgePadding)
                     }
-                    .padding(.horizontal, 40)
-                }
+                    .scrollPosition(id: $activeItemID, anchor: .center)
+                    .scrollTargetBehavior(.viewAligned(limitBehavior: .always))
+                    .padding(.top, 24)
 
-                if let activeItem {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text(activeItem.title)
-                            .font(.headline)
-                        Text(activeItem.description_)
-                            .font(.caption)
-                            .foregroundStyle(.white.opacity(0.76))
-                            .lineLimit(2)
+                    actionBar
+                        .padding(.top, 32)
 
-                        HStack(spacing: 10) {
-                            Button {
-                                onSelect(activeItem)
-                            } label: {
-                                Label("Watch now", systemImage: "play.fill")
-                            }
-                            .buttonStyle(.borderedProminent)
-                            .tint(.white)
-                            .foregroundStyle(.black)
-
-                            Button {
-                                feedbackMessage = "Added to Watch later"
-                            } label: {
-                                Label("Watch later", systemImage: "plus")
-                            }
-                            .buttonStyle(.bordered)
-
-                            Button {
-                                feedbackMessage = activeItem.description_
-                            } label: {
-                                Image(systemName: "info.circle")
-                            }
-                            .buttonStyle(.bordered)
-                            .accessibilityLabel("Information")
-                        }
-                        .font(.caption.weight(.semibold))
-                    }
-                    .padding(.horizontal, StreamMetrics.contentInset)
+                    Color.clear.frame(height: 20)
                 }
             }
-            .padding(.vertical, 18)
         }
-        .frame(maxWidth: .infinity)
+        .frame(height: 573)
         .onAppear {
             if activeItemID == nil {
                 activeItemID = section.items.first?.id
@@ -157,6 +116,77 @@ struct HighlightTallSectionView: View {
         } message: {
             Text(feedbackMessage ?? "")
         }
+    }
+
+    private var background: some View {
+        ZStack {
+            if let backgroundUrl = activeItem?.thumbnailUrl ?? section.backgroundUrl {
+                RemoteArtwork(url: backgroundUrl)
+                    .opacity(0.8)
+            }
+
+            LinearGradient(
+                stops: [
+                    .init(color: .streamBackground, location: 0),
+                    .init(color: .clear, location: 0.18),
+                    .init(color: .clear, location: 0.68),
+                    .init(color: .streamBackground, location: 1),
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        }
+        .clipped()
+    }
+
+    private var actionBar: some View {
+        HStack(spacing: 0) {
+            actionButton(title: "Watch later", icon: "ic_playlist_plus") {
+                feedbackMessage = "Added to Watch later"
+            }
+
+            Button {
+                if let activeItem {
+                    onSelect(activeItem)
+                }
+            } label: {
+                HStack(spacing: 8) {
+                    Image("ic_play_round")
+                        .resizable()
+                        .frame(width: 24, height: 24)
+                    Text("Watch now")
+                        .font(.streamSemiBold(16))
+                }
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 48)
+                .background(Color.streamAccent)
+                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            }
+            .buttonStyle(.plain)
+            .padding(.horizontal, 4)
+
+            actionButton(title: "Information", icon: "ic_info_circle") {
+                feedbackMessage = activeItem?.description_ ?? ""
+            }
+        }
+        .frame(height: 56)
+    }
+
+    private func actionButton(title: String, icon: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: 8) {
+                Image(icon)
+                    .resizable()
+                    .frame(width: 24, height: 24)
+                Text(title)
+                    .font(.streamSemiBold(12))
+                    .foregroundStyle(Color.streamSecondaryText)
+                    .lineLimit(1)
+            }
+            .frame(minWidth: 92, minHeight: 56)
+        }
+        .buttonStyle(.plain)
     }
 
     private var feedbackPresented: Binding<Bool> {

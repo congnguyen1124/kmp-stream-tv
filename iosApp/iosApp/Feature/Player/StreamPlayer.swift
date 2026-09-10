@@ -16,11 +16,13 @@ final class StreamPlayer: ObservableObject {
             forInterval: CMTime(seconds: 0.5, preferredTimescale: 600),
             queue: .main
         ) { [weak self] time in
-            guard let self else { return }
-            currentTime = time.seconds.isFinite ? time.seconds : 0
-            let itemDuration = player.currentItem?.duration.seconds ?? 0
-            duration = itemDuration.isFinite ? itemDuration : 0
-            isPlaying = player.rate != 0
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                currentTime = time.seconds.isFinite ? time.seconds : 0
+                let itemDuration = player.currentItem?.duration.seconds ?? 0
+                duration = itemDuration.isFinite ? itemDuration : 0
+                isPlaying = player.rate != 0
+            }
         }
     }
 

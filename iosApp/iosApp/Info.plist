@@ -4,5 +4,12 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>UIAppFonts</key>
+	<array>
+		<string>svn_gilroy_regular.otf</string>
+		<string>svn_gilroy_medium.otf</string>
+		<string>svn_gilroy_semi_bold.otf</string>
+		<string>svn_gilroy_bold.otf</string>
+	</array>
 </dict>
 </plist>

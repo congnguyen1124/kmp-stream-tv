@@ -2,30 +2,59 @@ import SwiftUI
 
 enum StreamMetrics {
     static let contentInset: CGFloat = 16
-    static let sectionSpacing: CGFloat = 24
     static let cardSpacing: CGFloat = 8
-    static let cornerRadius: CGFloat = 12
+    static let thumbnailCorner: CGFloat = 8
+    static let storyCorner: CGFloat = 12
 }
 
 extension Color {
-    static let streamBackground = Color(red: 0.067, green: 0.067, blue: 0.067)
-    static let streamSurface = Color(red: 0.173, green: 0.173, blue: 0.18)
-    static let streamSecondaryText = Color(red: 0.678, green: 0.678, blue: 0.678)
-    static let streamAccent = Color(red: 0.392, green: 0.098, blue: 0.855)
-    static let streamAccentBright = Color(red: 0.706, green: 0.275, blue: 0.941)
-    static let streamLive = Color(red: 0.863, green: 0.122, blue: 0.149)
+    static let streamBackground = Color(hex: 0x111111)
+    static let streamSurface = Color(hex: 0x2C2C2E)
+    static let streamSecondaryText = Color(hex: 0xADADAD)
+    static let streamBottomNavText = Color(hex: 0xAEAEB2)
+    static let streamAccent = Color(hex: 0x6419DA)
+    static let streamAccentBright = Color(hex: 0xB446F0)
+    static let streamLive = Color(hex: 0xDC1F26)
+
+    init(hex: UInt32, alpha: Double = 1) {
+        self.init(
+            red: Double((hex >> 16) & 0xFF) / 255,
+            green: Double((hex >> 8) & 0xFF) / 255,
+            blue: Double(hex & 0xFF) / 255,
+            opacity: alpha
+        )
+    }
+}
+
+extension Font {
+    static func streamRegular(_ size: CGFloat) -> Font {
+        .custom("SVN-Gilroy", size: size)
+    }
+
+    static func streamMedium(_ size: CGFloat) -> Font {
+        .custom("SVN-GilroyMedium", size: size)
+    }
+
+    static func streamSemiBold(_ size: CGFloat) -> Font {
+        .custom("SVN-GilroySemiBold", size: size)
+    }
+
+    static func streamBold(_ size: CGFloat) -> Font {
+        .custom("SVN-GilroyBold", size: size)
+    }
 }
 
 struct StreamBadge: View {
     let text: String
-    var color: Color = .black.opacity(0.68)
+    var color: Color = .black.opacity(0.7)
 
     var body: some View {
         Text(text)
-            .font(.caption2.weight(.bold))
+            .font(.streamBold(10))
             .foregroundStyle(.white)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 5)
-            .background(color, in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+            .padding(.horizontal, 6)
+            .padding(.bottom, 2)
+            .frame(minHeight: 18)
+            .background(color, in: RoundedRectangle(cornerRadius: 4, style: .continuous))
     }
 }

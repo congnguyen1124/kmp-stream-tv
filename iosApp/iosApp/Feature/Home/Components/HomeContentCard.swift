@@ -20,9 +20,9 @@ struct HomeContentCard: View {
     var body: some View {
         switch style {
         case .landscape:
-            StandardContentCard(item: item, width: 172, artworkHeight: 97)
+            ThumbnailContentCard(item: item, width: 172, height: 97)
         case .portrait:
-            StandardContentCard(item: item, width: 122, artworkHeight: 190)
+            ThumbnailContentCard(item: item, width: 106, height: 185)
         case .circle:
             CircleContentCard(item: item)
         case .short:
@@ -37,35 +37,22 @@ struct HomeContentCard: View {
     }
 }
 
-private struct StandardContentCard: View {
+private struct ThumbnailContentCard: View {
     let item: HomeContentUiModel
     let width: CGFloat
-    let artworkHeight: CGFloat
+    let height: CGFloat
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 7) {
-            RemoteArtwork(url: item.thumbnailUrl)
-                .frame(width: width, height: artworkHeight)
-                .overlay(alignment: .topLeading) {
-                    if item.isLive {
-                        StreamBadge(text: "LIVE", color: .streamLive)
-                            .padding(8)
-                    }
+        RemoteArtwork(url: item.thumbnailUrl)
+            .frame(width: width, height: height)
+            .background(Color.streamSurface)
+            .clipShape(RoundedRectangle(cornerRadius: StreamMetrics.thumbnailCorner, style: .continuous))
+            .overlay(alignment: .bottomLeading) {
+                if item.isLive {
+                    StreamBadge(text: "LIVE", color: .streamLive)
+                        .padding(4)
                 }
-                .overlay(alignment: .bottomTrailing) {
-                    if item.episodeCount > 0 {
-                        StreamBadge(text: "\(item.episodeCount) episodes")
-                            .padding(8)
-                    }
-                }
-                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-
-            Text(item.title)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.white)
-                .lineLimit(2)
-                .frame(width: width, alignment: .leading)
-        }
+            }
     }
 }
 
@@ -73,25 +60,22 @@ private struct CircleContentCard: View {
     let item: HomeContentUiModel
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 0) {
             RemoteArtwork(url: item.thumbnailUrl)
-                .frame(width: 80, height: 80)
-                .overlay {
-                    Circle().stroke(.white.opacity(0.18), lineWidth: 1)
-                }
+                .frame(width: 64, height: 64)
+                .background(Color.streamSurface)
                 .clipShape(Circle())
-                .overlay(alignment: .topLeading) {
-                    StreamBadge(text: "LIVE", color: .streamLive)
-                        .scaleEffect(0.82, anchor: .topLeading)
-                }
+                .padding(.top, 8)
 
             Text(item.title)
-                .font(.caption.weight(.semibold))
+                .font(.streamRegular(12))
+                .foregroundStyle(.white)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
-                .frame(width: 92)
+                .frame(width: 80)
+                .padding(.top, 4)
         }
-        .foregroundStyle(.white)
+        .frame(width: 80)
     }
 }
 
@@ -99,26 +83,10 @@ private struct ShortContentCard: View {
     let item: HomeContentUiModel
 
     var body: some View {
-        ZStack(alignment: .bottomLeading) {
-            RemoteArtwork(url: item.thumbnailUrl)
-            LinearGradient(colors: [.clear, .black.opacity(0.82)], startPoint: .center, endPoint: .bottom)
-
-            VStack(alignment: .leading, spacing: 6) {
-                Image(systemName: "play.circle.fill")
-                    .font(.title2)
-                Text(item.title)
-                    .font(.subheadline.bold())
-                    .lineLimit(2)
-                Label(item.viewCountLabel, systemImage: "eye.fill")
-                    .font(.caption2)
-                    .foregroundStyle(.white.opacity(0.82))
-            }
-            .frame(width: 138, alignment: .leading)
-            .padding(12)
-        }
-        .foregroundStyle(.white)
-        .frame(width: 162, height: 288)
-        .clipShape(RoundedRectangle(cornerRadius: StreamMetrics.cornerRadius, style: .continuous))
+        RemoteArtwork(url: item.thumbnailUrl)
+            .frame(width: 162, height: 288)
+            .background(Color.streamSurface)
+            .clipShape(RoundedRectangle(cornerRadius: StreamMetrics.thumbnailCorner, style: .continuous))
     }
 }
 
@@ -126,31 +94,18 @@ private struct StoryContentCard: View {
     let item: HomeContentUiModel
 
     var body: some View {
-        ZStack(alignment: .bottomLeading) {
-            RemoteArtwork(url: item.thumbnailUrl)
-            LinearGradient(colors: [.clear, .black.opacity(0.9)], startPoint: .center, endPoint: .bottom)
-
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 7) {
-                    RemoteArtwork(url: item.providerAvatarUrl)
-                        .frame(width: 28, height: 28)
-                        .clipShape(Circle())
-                    Text(item.providerName)
-                        .font(.caption.bold())
-                        .lineLimit(1)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                Text(item.title)
-                    .font(.subheadline.bold())
-                    .lineLimit(2)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+        RemoteArtwork(url: item.thumbnailUrl)
+            .frame(width: 162, height: 288)
+            .background(Color.streamSurface)
+            .clipShape(RoundedRectangle(cornerRadius: StreamMetrics.storyCorner, style: .continuous))
+            .overlay(alignment: .topLeading) {
+                RemoteArtwork(url: item.providerAvatarUrl)
+                    .frame(width: 30, height: 30)
+                    .clipShape(Circle())
+                    .padding(1)
+                    .background(Color.black, in: Circle())
+                    .padding(8)
             }
-            .frame(width: 138, alignment: .leading)
-            .padding(12)
-        }
-        .foregroundStyle(.white)
-        .frame(width: 162, height: 288)
-        .clipShape(RoundedRectangle(cornerRadius: StreamMetrics.cornerRadius, style: .continuous))
     }
 }
 
@@ -158,26 +113,57 @@ private struct ContinueWatchingCard: View {
     let item: HomeContentUiModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 7) {
-            ZStack(alignment: .bottom) {
-                RemoteArtwork(url: item.thumbnailUrl)
-                ProgressView(value: Double(item.progressPercent), total: 100)
-                    .tint(.streamAccentBright)
-                    .background(.white.opacity(0.25))
-            }
-            .frame(width: 220, height: 124)
-            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        VStack(alignment: .leading, spacing: 0) {
+            RemoteArtwork(url: item.thumbnailUrl)
+                .frame(width: 172, height: 97)
+                .background(Color.streamSurface)
+                .clipShape(RoundedRectangle(cornerRadius: StreamMetrics.thumbnailCorner, style: .continuous))
+                .overlay(alignment: .bottom) {
+                    LinearGradient(
+                        colors: [.clear, .streamBackground],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: 32)
+                }
+                .overlay(alignment: .bottom) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(item.subtitle)
+                            .font(.streamRegular(12))
+                            .foregroundStyle(.white)
+                            .lineLimit(1)
+                            .frame(maxWidth: .infinity, alignment: .leading)
 
-            Text(item.title)
-                .font(.subheadline.bold())
-                .lineLimit(1)
-            Text(item.subtitle)
-                .font(.caption)
-                .foregroundStyle(Color.streamSecondaryText)
-                .lineLimit(1)
+                        GeometryReader { geometry in
+                            ZStack(alignment: .leading) {
+                                Capsule().fill(Color.white.opacity(0.4))
+                                Capsule()
+                                    .fill(Color.white)
+                                    .frame(width: geometry.size.width * CGFloat(item.progressPercent) / 100)
+                            }
+                        }
+                        .frame(height: 2)
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.bottom, 8)
+                }
+
+            HStack(spacing: 0) {
+                Text(item.title)
+                    .font(.streamMedium(14))
+                    .foregroundStyle(.white)
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                Image("ic_dots_vertical")
+                    .resizable()
+                    .frame(width: 16, height: 16)
+                    .frame(width: 24, height: 24)
+            }
+            .frame(width: 172, height: 24)
+            .padding(.top, 8)
         }
-        .frame(width: 220, alignment: .leading)
-        .foregroundStyle(.white)
+        .frame(width: 172, alignment: .leading)
     }
 }
 
@@ -186,16 +172,23 @@ private struct TopTenContentCard: View {
     let rank: Int
 
     var body: some View {
-        ZStack(alignment: .bottomLeading) {
+        ZStack(alignment: .topLeading) {
             RemoteArtwork(url: item.thumbnailUrl)
-            LinearGradient(colors: [.clear, .black.opacity(0.68)], startPoint: .center, endPoint: .bottom)
-            Text("\(rank)")
-                .font(.system(size: 58, weight: .black, design: .rounded))
-                .foregroundStyle(.white)
-                .shadow(color: .black, radius: 5, x: 2, y: 2)
-                .padding(8)
+                .frame(width: 134, height: 201)
+                .background(Color.streamSurface)
+                .clipShape(RoundedRectangle(cornerRadius: StreamMetrics.thumbnailCorner, style: .continuous))
+                .offset(x: 22, y: 8)
+
+            Image("number_\(min(max(rank, 1), 10))")
+                .resizable()
+                .scaledToFit()
+                .frame(width: rankWidth, height: 61, alignment: .leading)
         }
-        .frame(width: 134, height: 201)
-        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .frame(width: 166, height: 209, alignment: .topLeading)
+    }
+
+    private var rankWidth: CGFloat {
+        let widths: [CGFloat] = [77.56, 74.94, 77.56, 75.81, 76.69, 76.69, 76.69, 74.94, 76.69, 77.56]
+        return widths[min(max(rank - 1, 0), widths.count - 1)]
     }
 }
