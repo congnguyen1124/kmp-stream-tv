@@ -1,5 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="wrap_content">
-    <ImageView android:id="@+id/ivLayoutBackground" android:layout_width="match_parent" android:layout_height="match_parent" android:contentDescription="@null" android:scaleType="centerCrop" android:visibility="gone" />
-    <androidx.recyclerview.widget.RecyclerView android:id="@+id/carouselView" android:layout_width="match_parent" android:layout_height="@dimen/highlight_wide_thumbnail_height" android:layout_marginVertical="@dimen/margin_xx" android:clipToPadding="false" android:paddingHorizontal="@dimen/content_padding_horizontal" />
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/ivLayoutBackground"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@null"
+        android:scaleType="centerCrop"
+        android:visibility="gone" />
+
+    <com.congnguyencn.kmpstreamtv.feature.home.widget.CarouseView
+        android:id="@+id/carouselView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="@dimen/margin_xx"
+        android:minHeight="@dimen/highlight_wide_thumbnail_height"
+        app:thumbHeight="@dimen/highlight_wide_thumbnail_height"
+        app:thumbWidth="@dimen/highlight_wide_thumbnail_width" />
+
+    <ProgressBar
+        android:id="@+id/pbLoading"
+        style="@style/ContentLoading"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
+    <com.congnguyencn.kmpstreamtv.feature.home.widget.LayoutErrorView
+        android:id="@+id/errorView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
 </FrameLayout>

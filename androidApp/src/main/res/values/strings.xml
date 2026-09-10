@@ -25,6 +25,9 @@
     <string name="added_to_watch_later">Added to Watch later</string>
     <string name="information">Information</string>
     <string name="retry">Try again</string>
+    <string name="layout_error_title">Data error</string>
+    <string name="try_again_later_with_retry_action">Please try again in a few minutes.</string>
+    <string name="exclusive_label">StreamTV</string>
     <string name="watch_now">Watch now</string>
     <string name="live">LIVE</string>
     <string name="loading_home">Loading Home content</string>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/appBackground"
+    android:gravity="center"
+    android:orientation="vertical"
+    tools:parentTag="android.widget.LinearLayout">
+
+    <TextView
+        android:id="@+id/tvErrorTitle"
+        style="@style/Text.Title2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:drawablePadding="@dimen/margin_small"
+        android:textColor="@color/gray"
+        app:drawableStartCompat="@drawable/ic_info_circle_small"
+        app:drawableTint="@color/gray" />
+
+    <TextView
+        android:id="@+id/tvErrorMessage"
+        style="@style/Text.Body2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/margin_small"
+        android:layout_marginTop="@dimen/margin_small"
+        android:gravity="center"
+        android:text="@string/try_again_later_with_retry_action"
+        android:textColor="@color/gray" />
+</merge>

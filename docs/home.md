@@ -31,23 +31,29 @@ shape while keeping all ten supported layout families deterministic for UI devel
 ## Android
 
 `HomeFragment` collects state only while its View lifecycle is started. A vertical RecyclerView owns
-section holders; every rail owns a horizontal RecyclerView and shares one recycled view pool. The
-pool and adapter are released in `onDestroyView`, preventing old Activity Views from surviving a
-configuration change. Pull-to-refresh, centered first-load progress and retry error states are
-mutually exclusive.
+section holders; ordinary content rails own horizontal RecyclerViews. The adapter is released in
+`onDestroyView`, preventing old Activity Views from surviving a configuration change.
+Pull-to-refresh, centered first-load progress and retry error states are mutually exclusive.
 
-`HomeSectionAdapter` selects the outer general, highlight-tall, background/top-ten or mini-app
-layout. `HomeContentAdapter` then selects the exact card family. Standard mobile press/ripple
-behavior is used; there is no focus requester or TV remote focus restoration.
+`HomeSectionAdapter` follows the source `HomePageAdapter` contract: each section id has a unique
+view type and maps to a dedicated holder in `HomeItemViewHolders.kt`. Those holders inflate the
+source-shaped `item_layout*` wrappers, whose roots are custom general, Story, Watching,
+background/Top Ten, wide-highlight, tall-highlight or Mini App views. Each cloned layout keeps its
+original loading and error children even though the deterministic fixture binds immediately.
+`HomeContentAdapter` selects the exact card family. Standard mobile press behavior is used; there
+is no focus requester or TV remote focus restoration.
 
 The Android visual layer ports the relevant `on-tv-android` resource graph: SVN Gilroy font-family
 weights, `#111111` surface palette, top-bar gradients/blur assets, Story background/dividers,
 numbered Top 10 artwork, card ratios and the four bottom-navigation state icons. StreamTV's own
 wordmark and launcher assets remain sourced from `android_stream_tv`.
 
-Wide and tall highlights use centered, snapping RecyclerViews. They preserve the reference card
-sizes on roomy displays, responsively shrink to a 40 dp minimum side peek on compact phones, and
-scale neighboring pages from 85% to 100% as the centered item changes.
+Wide and tall highlights use the source `CarouseView` algorithm around `ViewPager2`: 1,000-page
+looping, three offscreen pages, unclipped side cards, the same translation formula and 85%–100%
+page scale. They preserve the reference card sizes on roomy displays and shrink proportionally to
+the source 40 dp minimum side padding on compact phones. Tall highlights keep the original blurred
+active-poster background, source carousel top/bottom drawables, three actions, click proxy, bottom
+spacer, loading overlay and error overlay; no additional scrim or gradient layer is introduced.
 
 ## iOS
 

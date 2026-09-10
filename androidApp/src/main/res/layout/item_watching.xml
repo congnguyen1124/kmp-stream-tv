@@ -1,10 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginEnd="@dimen/horizontal_list_divider" android:clickable="true" android:foreground="?attr/selectableItemBackground">
-    <com.google.android.material.imageview.ShapeableImageView android:id="@+id/ivThumbnail" android:layout_width="@dimen/ephemeral_wide_thumbnail_width" android:layout_height="@dimen/ephemeral_wide_thumbnail_height" android:background="@drawable/image_placeholder" android:contentDescription="@null" android:scaleType="centerCrop" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" app:shapeAppearanceOverlay="@style/GenericThumbnail" />
-    <com.google.android.material.imageview.ShapeableImageView android:id="@+id/ivForeground" android:layout_width="0dp" android:layout_height="0dp" android:background="@color/white_30" android:visibility="gone" app:layout_constraintBottom_toBottomOf="@id/ivThumbnail" app:layout_constraintEnd_toEndOf="@id/ivThumbnail" app:layout_constraintStart_toStartOf="@id/ivThumbnail" app:layout_constraintTop_toTopOf="@id/ivThumbnail" app:shapeAppearanceOverlay="@style/GenericThumbnail" />
-    <View android:layout_width="0dp" android:layout_height="@dimen/margin_4x" android:background="@drawable/bg_watching_shadow" app:layout_constraintBottom_toBottomOf="@id/ivThumbnail" app:layout_constraintEnd_toEndOf="@id/ivThumbnail" app:layout_constraintStart_toStartOf="@id/ivThumbnail" />
-    <com.google.android.material.progressindicator.LinearProgressIndicator android:id="@+id/progressTimeWatched" style="@style/LinearProgressIndicator" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginHorizontal="@dimen/margin_small" android:layout_marginBottom="@dimen/margin_small" android:max="100" app:layout_constraintBottom_toBottomOf="@id/ivThumbnail" app:layout_constraintEnd_toEndOf="@id/ivThumbnail" app:layout_constraintStart_toStartOf="@id/ivThumbnail" />
-    <TextView android:id="@+id/tvSubTitle" style="@style/Text.Caption1" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginBottom="@dimen/margin_tiny" android:ellipsize="end" android:maxLines="1" android:textColor="@color/white" app:layout_constraintBottom_toTopOf="@id/progressTimeWatched" app:layout_constraintEnd_toEndOf="@id/progressTimeWatched" app:layout_constraintStart_toStartOf="@id/progressTimeWatched" />
-    <TextView android:id="@+id/tvTitle" style="@style/Text.Body3" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginTop="@dimen/margin_small" android:layout_marginEnd="@dimen/margin_small" android:ellipsize="end" android:maxLines="1" android:textColor="@color/white" app:layout_constraintEnd_toStartOf="@id/btnMore" app:layout_constraintStart_toStartOf="@id/ivThumbnail" app:layout_constraintTop_toBottomOf="@id/ivThumbnail" />
-    <ImageButton android:id="@+id/btnMore" android:layout_width="@dimen/size_1_5x" android:layout_height="@dimen/size_1_5x" android:background="?attr/selectableItemBackgroundBorderless" android:contentDescription="@null" android:padding="@dimen/margin_tiny" android:src="@drawable/ic_dots_vertical" app:layout_constraintBottom_toBottomOf="@id/tvTitle" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="@id/tvTitle" />
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="@dimen/horizontal_list_divider"
+    tools:ignore="contentDescription">
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/ivThumbnail"
+        android:layout_width="@dimen/ephemeral_wide_thumbnail_width"
+        android:layout_height="@dimen/ephemeral_wide_thumbnail_height"
+        android:background="@drawable/image_placeholder"
+        android:scaleType="centerCrop"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:shapeAppearance="@style/GenericThumbnail" />
+
+    <TextView
+        android:id="@+id/tvSaymeLabel"
+        style="@style/SaymeeLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/margin_tiny_x"
+        android:background="@drawable/bg_tag_saymee"
+        android:text="@string/exclusive_label"
+        app:layout_constraintStart_toStartOf="@id/ivThumbnail"
+        app:layout_constraintTop_toTopOf="@id/ivThumbnail" />
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/ivForeground"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/white_30"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/ivThumbnail"
+        app:layout_constraintEnd_toEndOf="@id/ivThumbnail"
+        app:layout_constraintStart_toStartOf="@id/ivThumbnail"
+        app:layout_constraintTop_toTopOf="@id/ivThumbnail"
+        app:shapeAppearance="@style/GenericThumbnail" />
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="@dimen/margin_4x"
+        android:background="@drawable/bg_watching_shadow"
+        app:layout_constraintBottom_toBottomOf="@id/ivThumbnail"
+        app:layout_constraintEnd_toEndOf="@id/ivThumbnail"
+        app:layout_constraintStart_toStartOf="@id/ivThumbnail" />
+
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/progressTimeWatched"
+        style="@style/LinearProgressIndicator"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/margin_small"
+        android:layout_marginBottom="@dimen/margin_small"
+        android:progress="50"
+        app:layout_constraintBottom_toBottomOf="@id/ivThumbnail"
+        app:layout_constraintEnd_toEndOf="@id/ivThumbnail"
+        app:layout_constraintStart_toStartOf="@id/ivThumbnail" />
+
+    <TextView
+        android:id="@+id/tvSubTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/margin_tiny"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textAppearance="@style/Text.Caption1"
+        app:layout_constraintBottom_toTopOf="@id/progressTimeWatched"
+        app:layout_constraintEnd_toEndOf="@id/progressTimeWatched"
+        app:layout_constraintStart_toStartOf="@id/progressTimeWatched"
+        tools:text="Episode 1" />
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_small"
+        android:layout_marginEnd="@dimen/margin_small"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textAppearance="@style/Text.Body3"
+        app:layout_constraintEnd_toStartOf="@id/btnMore"
+        app:layout_constraintStart_toStartOf="@id/ivThumbnail"
+        app:layout_constraintTop_toBottomOf="@id/ivThumbnail"
+        tools:text="The best match highlights" />
+
+    <ImageButton
+        android:id="@+id/btnMore"
+        android:layout_width="@dimen/size_1_5x"
+        android:layout_height="@dimen/size_1_5x"
+        android:background="?selectableItemBackgroundBorderless"
+        android:contentDescription="@null"
+        android:padding="@dimen/margin_tiny"
+        android:src="@drawable/ic_dots_vertical"
+        app:layout_constraintBottom_toBottomOf="@id/tvTitle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tvTitle" />
+
+    <ImageView
+        android:id="@+id/ivSelect"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/topbar_icon_size"
+        android:layout_gravity="end"
+        android:layout_marginStart="@dimen/margin_small"
+        android:contentDescription="@null"
+        android:padding="@dimen/topbar_icon_padding"
+        android:src="@drawable/ic_circle_selected_state"
+        app:layout_constraintEnd_toEndOf="@id/ivThumbnail"
+        app:layout_constraintTop_toTopOf="@id/ivThumbnail" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -29,3 +29,15 @@ Section compatibility:
 All ten section types must occur exactly once in the deterministic fixture, and Story must be the
 first returned section. Selecting a media item opens playback. Home contains no explicit focus
 requester or focus restoration contract.
+
+## Android rendering contract
+
+- Section holders must inflate the matching `item_layout*` custom-view wrapper used by the mobile
+  reference instead of flattening the outer hierarchy into the page adapter.
+- Ordinary layouts use nested horizontal RecyclerViews; both highlight layouts use `ViewPager2`
+  through the cloned carousel behavior with the reference size, scale, translation and looping.
+- Tall Highlight must retain every source child: active blurred artwork, the two source carousel
+  background drawables, carousel, Watch later, Watch now, Information, click proxy, bottom spacer,
+  loading overlay and error overlay.
+- Loading/error views remain part of every source layout family even when dummy content resolves
+  synchronously. Do not add display-only scrims or gradients that are absent from the reference XML.
