@@ -258,7 +258,6 @@ class LayoutBackgroundView
                 ivLayoutIcon.setImageResource(R.drawable.ic_fire)
                 ivLayoutIcon.visibility = VISIBLE
                 viewDivider.visibility = VISIBLE
-                bindLayoutBackground(ivLayoutBackground, data.backgroundUrl)
                 rcvItems.visibility = VISIBLE
                 pbLoading.visibility = GONE
                 errorView.visibility = GONE
