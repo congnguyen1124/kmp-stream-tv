@@ -52,10 +52,7 @@ struct MainTabView: View {
                     )
                 }
                 destination(.shorts) {
-                    PlaceholderView(
-                        title: "Short",
-                        message: "The Shorts fragment shell is ready for its vertical feed."
-                    )
+                    ShortMediaView(isDestinationActive: selection == .shorts)
                 }
                 destination(.playlist) {
                     PlaceholderView(

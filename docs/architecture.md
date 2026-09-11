@@ -2,9 +2,10 @@
 
 ## Boundary
 
-The sharing boundary ends at `HomeViewModel`. Everything above it is native UI; everything below it
-is common Kotlin. This avoids a shared rendering framework while still sharing loading, retry,
-mapping, validation and state transitions.
+The sharing boundary ends at the feature ViewModels (`HomeViewModel`, `ShortViewModel` and
+`StoryGroupViewModel`). Everything above them is native UI; everything below them is common Kotlin.
+This avoids a shared rendering framework while still sharing loading, retry, mapping, validation
+and state transitions.
 
 ```text
 Native UI
@@ -20,6 +21,10 @@ Shared domain/data: HomeRepository → HomeDummyDataSource
                              └── future remote source → StreamTvApiClient (Ktor)
 ```
 
+The short slice mirrors this flow through `ShortRepository` into either `ShortUiState` for the
+vertical feed or `StoryGroupUiState` for a selected provider group. Native players consume the
+selected item's URL; decoder state never crosses the sharing boundary.
+
 ## Shared layers
 
 - `domain/model` defines typed content and validates section/content compatibility.
@@ -27,7 +32,7 @@ Shared domain/data: HomeRepository → HomeDummyDataSource
 - `data/source` owns deterministic fixtures and simulated latency.
 - `data/repository` hides the active source from presentation.
 - `presentation` maps domain objects into flat Swift-friendly immutable UI models and exposes one
-  `StateFlow<HomeUiState>`.
+  `StateFlow` per screen owner.
 - `di` owns the Koin graph and platform bootstrap entry points.
 - `core/network` owns Ktor and selects OkHttp or Darwin with `expect`/`actual`.
 
@@ -62,6 +67,7 @@ The native source tree mirrors Android's ownership boundaries:
 
 - `App` owns persistent app-level destinations.
 - `Feature/Home` owns the store, category shell, feed and section/card renderers.
+- `Feature/Short` and `Feature/Story` own their stores and full-screen renderers.
 - `Feature/Placeholder` owns reusable unfinished destinations.
 - `Feature/Player` owns AVPlayer state, UIKit bridging and playback controls.
 - `Core/UI` owns platform-wide visual tokens and remote artwork.
@@ -77,8 +83,8 @@ linked.
 
 ## Dependency injection lifecycle
 
-Each process starts Koin once. Home ViewModels are factories because each native screen owns its
-lifecycle. Android places the instance in `ViewModelStore`; iOS owns it in `HomeStore`.
+Each process starts Koin once. Feature ViewModels are factories because each native screen owns its
+lifecycle. Android places the instance in `ViewModelStore`; iOS owns it in a feature Store.
 
 ## Networking lifecycle
 

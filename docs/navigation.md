@@ -11,9 +11,14 @@ The bar uses the reference black surface, 28 dp selected/unselected icon pairs, 
 colors and Gilroy semibold 12 sp labels. The Material active pill is disabled to preserve the
 reference appearance.
 
-Home is implemented by `HomeTabFragment`; the other three destinations use `PlaceholderFragment`.
-To implement a destination, replace its factory branch in `MainActivity.createDestination` while
-keeping the menu id and tag stable.
+Home is implemented by `HomeTabFragment` and Short by `ShortMediaFragment`. Music and Playlist use
+`PlaceholderFragment`. Destination fragments keep their stable menu id/tag and are hidden/shown so
+the Short selection and the Home scroll position survive tab changes.
+
+Selecting a normal short card routes to the Short destination and positions its feed at that item.
+Selecting a card in the `Story` section opens `StoryGroupFragment` in a full-window overlay. The
+story overlay hides bottom/system chrome until it closes. Expanded or mini long-form playback is
+closed before either exclusive short-form experience starts, preventing overlapping audio.
 
 ## Home destinations
 
@@ -49,5 +54,7 @@ MainActivity / MainTabView
   ├── HomeTabFragment / HomeTabView
   │     ├── HomeFragment / HomeView
   │     └── Home chrome and categories
+  ├── ShortMediaFragment / ShortMediaView
+  ├── StoryGroupFragment / StoryGroupView (full-screen overlay)
   └── PlaceholderFragment / PlaceholderView
 ```

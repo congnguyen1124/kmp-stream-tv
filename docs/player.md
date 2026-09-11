@@ -3,6 +3,10 @@
 Playback remains platform-owned. Shared Home supplies immutable content metadata; decoder state,
 surface ownership, controls, rotation and teardown stay native.
 
+Short-form playback follows the same ownership rule but uses the low-latency feed configuration.
+Android lends at most three engines from `StreamTvPlayerPool`; iOS keeps AVPlayer inside each active
+native short page and unloads it as the page becomes inactive. See [shorts and stories](shorts.md).
+
 ## Android implementation
 
 Android combines two sibling reference projects with separate responsibilities:

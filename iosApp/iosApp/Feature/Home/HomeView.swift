@@ -7,6 +7,8 @@ struct HomeView: View {
     let onScrollOffsetChanged: (CGFloat) -> Void
 
     @State private var playerSelection: PlayerSelection?
+    @State private var shortSelection: ShortSelection?
+    @State private var storySelection: StorySelection?
     @State private var positionedInitialFeed = false
 
     var body: some View {
@@ -16,6 +18,12 @@ struct HomeView: View {
         }
         .fullScreenCover(item: $playerSelection) { selection in
             PlayerView(content: selection.content)
+        }
+        .fullScreenCover(item: $shortSelection) { selection in
+            ShortMediaView(initialId: selection.id, showsCloseButton: true)
+        }
+        .fullScreenCover(item: $storySelection) { selection in
+            StoryGroupView(initialId: selection.id)
         }
     }
 
@@ -58,7 +66,13 @@ struct HomeView: View {
                 LazyVStack(alignment: .leading, spacing: 0) {
                     ForEach(Array(store.state.sections.enumerated()), id: \.element.id) { index, section in
                         HomeSectionView(section: section, index: index) { content in
-                            playerSelection = PlayerSelection(content: content)
+                            if section.presentation.name == "Story" {
+                                storySelection = StorySelection(id: content.id)
+                            } else if content.isShort {
+                                shortSelection = ShortSelection(id: content.id)
+                            } else {
+                                playerSelection = PlayerSelection(content: content)
+                            }
                         }
                     }
                 }
@@ -84,6 +98,14 @@ struct HomeView: View {
 private struct PlayerSelection: Identifiable {
     let content: HomeContentUiModel
     var id: String { content.id }
+}
+
+private struct ShortSelection: Identifiable {
+    let id: String
+}
+
+private struct StorySelection: Identifiable {
+    let id: String
 }
 
 private struct HomeFeedOffsetPreferenceKey: PreferenceKey {

@@ -17,6 +17,7 @@ import com.congnguyencn.kmpstreamtv.R
 import com.congnguyencn.kmpstreamtv.databinding.FragmentHomeBinding
 import com.congnguyencn.kmpstreamtv.feature.home.presentation.HomeUiState
 import com.congnguyencn.kmpstreamtv.feature.home.presentation.HomeViewModel
+import com.congnguyencn.kmpstreamtv.feature.home.presentation.model.HomeSectionPresentation
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.getKoin
 
@@ -38,8 +39,13 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         super.onViewCreated(view, savedInstanceState)
         bindingRef = FragmentHomeBinding.bind(view)
         val sectionAdapter =
-            HomeSectionAdapter { content ->
-                (activity as? MainActivity)?.openPlayer(content)
+            HomeSectionAdapter { section, content ->
+                val activity = activity as? MainActivity ?: return@HomeSectionAdapter
+                when {
+                    section.presentation == HomeSectionPresentation.Story -> activity.openStory(content.id)
+                    content.isShort -> activity.openShort(content.id)
+                    else -> activity.openPlayer(content)
+                }
             }
         homeAdapter = sectionAdapter
 

@@ -5,3 +5,4 @@ These files describe observable behavior independently of Android XML or SwiftUI
 - [Home](home.md)
 - [Navigation](navigation.md)
 - [Player](player.md)
+- [Short feed and stories](shorts.md)

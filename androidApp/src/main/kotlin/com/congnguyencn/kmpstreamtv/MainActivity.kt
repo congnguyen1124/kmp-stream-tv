@@ -20,6 +20,8 @@ import com.congnguyencn.kmpstreamtv.feature.home.presentation.model.HomeContentU
 import com.congnguyencn.kmpstreamtv.feature.placeholder.PlaceholderFragment
 import com.congnguyencn.kmpstreamtv.feature.player.PlayerFragment
 import com.congnguyencn.kmpstreamtv.feature.player.PlayerPresentation
+import com.congnguyencn.kmpstreamtv.feature.short.ShortMediaFragment
+import com.congnguyencn.kmpstreamtv.feature.story.StoryGroupFragment
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -84,6 +86,44 @@ class MainActivity : AppCompatActivity() {
                 PlayerFragment.newInstance(content),
                 PlayerFragment.TAG,
             ).commitNow()
+    }
+
+    fun openShort(initialId: String? = null) {
+        activePlayer()?.let(::closePlayer)
+        binding.bottomNavMain.selectedItemId = R.id.shorts
+        initialId?.let { id ->
+            (supportFragmentManager.findFragmentByTag(R.id.shorts.toString()) as? ShortMediaFragment)
+                ?.show(id)
+        }
+    }
+
+    fun openStory(initialId: String) {
+        activePlayer()?.let(::closePlayer)
+        val existing = supportFragmentManager.findFragmentByTag(StoryGroupFragment.TAG)
+        if (existing != null) supportFragmentManager.beginTransaction().remove(existing).commitNowAllowingStateLoss()
+        binding.storyFragmentContainer.isVisible = true
+        supportFragmentManager
+            .beginTransaction()
+            .replace(
+                R.id.storyFragmentContainer,
+                StoryGroupFragment.newInstance(initialId),
+                StoryGroupFragment.TAG,
+            ).commitNow()
+    }
+
+    fun presentStory(visible: Boolean) {
+        binding.storyFragmentContainer.isVisible = visible
+        binding.bottomNavMain.isVisible = !visible
+        binding.fragmentContainerMain.importantForAccessibility =
+            if (visible) View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS else View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
+        setSystemBarsHidden(visible)
+    }
+
+    fun closeStory(fragment: StoryGroupFragment) {
+        if (fragment.isAdded) {
+            supportFragmentManager.beginTransaction().remove(fragment).commitNowAllowingStateLoss()
+        }
+        presentStory(false)
     }
 
     internal fun presentPlayer(presentation: PlayerPresentation) {
@@ -161,6 +201,7 @@ class MainActivity : AppCompatActivity() {
     private fun showDestination(
         @IdRes destinationId: Int,
     ) {
+        if (destinationId == R.id.shorts) activePlayer()?.let(::closePlayer)
         val tag = destinationId.toString()
         val existing = supportFragmentManager.findFragmentByTag(tag)
         val target = existing ?: createDestination(destinationId)
@@ -169,7 +210,7 @@ class MainActivity : AppCompatActivity() {
             .beginTransaction()
             .apply {
                 supportFragmentManager.fragments
-                    .filterNot { it.tag == PlayerFragment.TAG }
+                    .filterNot { it.tag == PlayerFragment.TAG || it.tag == StoryGroupFragment.TAG }
                     .forEach(::hide)
                 if (existing == null) {
                     add(R.id.fragmentContainerMain, target, tag)
@@ -196,10 +237,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             R.id.shorts -> {
-                PlaceholderFragment.newInstance(
-                    title = getString(R.string.nav_shorts),
-                    description = getString(R.string.placeholder_shorts),
-                )
+                ShortMediaFragment.newInstance()
             }
 
             R.id.playlist -> {

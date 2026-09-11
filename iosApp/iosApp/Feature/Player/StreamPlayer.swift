@@ -8,8 +8,10 @@ final class StreamPlayer: ObservableObject {
     @Published private(set) var isPlaying = false
     @Published private(set) var currentTime: Double = 0
     @Published private(set) var duration: Double = 0
+    @Published private(set) var completionCount = 0
 
     private var timeObserver: Any?
+    private var endObserver: NSObjectProtocol?
 
     init() {
         timeObserver = player.addPeriodicTimeObserver(
@@ -24,9 +26,22 @@ final class StreamPlayer: ObservableObject {
                 isPlaying = player.rate != 0
             }
         }
+        endObserver = NotificationCenter.default.addObserver(
+            forName: AVPlayerItem.didPlayToEndTimeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            Task { @MainActor [weak self] in
+                guard let self, notification.object as? AVPlayerItem === player.currentItem else { return }
+                isPlaying = false
+                completionCount += 1
+            }
+        }
     }
 
     func load(url: URL) {
+        currentTime = 0
+        duration = 0
         player.replaceCurrentItem(with: AVPlayerItem(url: url))
         player.play()
         isPlaying = true
@@ -38,6 +53,17 @@ final class StreamPlayer: ObservableObject {
             isPlaying = true
         } else {
             pause()
+        }
+    }
+
+    func play() {
+        player.play()
+        isPlaying = true
+    }
+
+    func replay() {
+        player.seek(to: .zero) { [weak self] _ in
+            Task { @MainActor [weak self] in self?.play() }
         }
     }
 
@@ -61,6 +87,9 @@ final class StreamPlayer: ObservableObject {
     deinit {
         if let timeObserver {
             player.removeTimeObserver(timeObserver)
+        }
+        if let endObserver {
+            NotificationCenter.default.removeObserver(endObserver)
         }
     }
 }

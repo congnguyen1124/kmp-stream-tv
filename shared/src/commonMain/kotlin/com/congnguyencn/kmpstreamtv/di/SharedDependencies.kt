@@ -7,6 +7,12 @@ import com.congnguyencn.kmpstreamtv.feature.home.data.source.HomeDummyDataSource
 import com.congnguyencn.kmpstreamtv.feature.home.domain.repository.HomeRepository
 import com.congnguyencn.kmpstreamtv.feature.home.presentation.HomeUiMapper
 import com.congnguyencn.kmpstreamtv.feature.home.presentation.HomeViewModel
+import com.congnguyencn.kmpstreamtv.feature.short.data.repository.DummyShortRepository
+import com.congnguyencn.kmpstreamtv.feature.short.data.source.ShortDummyDataSource
+import com.congnguyencn.kmpstreamtv.feature.short.domain.repository.ShortRepository
+import com.congnguyencn.kmpstreamtv.feature.short.presentation.ShortUiMapper
+import com.congnguyencn.kmpstreamtv.feature.short.presentation.ShortViewModel
+import com.congnguyencn.kmpstreamtv.feature.short.presentation.StoryGroupViewModel
 import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
 import org.koin.dsl.KoinAppDeclaration
@@ -21,6 +27,11 @@ internal val sharedModule =
         single<HomeRepository> { DummyHomeRepository(get()) }
         single { HomeUiMapper() }
         factory { HomeViewModel(get(), get()) }
+        single { ShortDummyDataSource() }
+        single<ShortRepository> { DummyShortRepository(get()) }
+        single { ShortUiMapper() }
+        factory { ShortViewModel(get(), get()) }
+        factory { StoryGroupViewModel(get(), get()) }
     }
 
 private var sharedKoinApplication: KoinApplication? = null
@@ -34,4 +45,8 @@ internal fun initKoin(appDeclaration: KoinAppDeclaration = {}): KoinApplication 
 /** Stable facade used from Swift without exposing Koin lookup syntax to the native UI. */
 class SharedDependencies {
     fun homeViewModel(): HomeViewModel = KoinPlatform.getKoin().get()
+
+    fun shortViewModel(): ShortViewModel = KoinPlatform.getKoin().get()
+
+    fun storyGroupViewModel(): StoryGroupViewModel = KoinPlatform.getKoin().get()
 }
