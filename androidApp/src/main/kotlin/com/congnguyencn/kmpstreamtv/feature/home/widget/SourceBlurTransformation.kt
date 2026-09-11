@@ -26,12 +26,16 @@ internal class SourceBlurTransformation(
     override val cacheKey = "source-blur-radius=$radius-sampling=$sampling"
 
     @Suppress("DEPRECATION")
-    override suspend fun transform(input: Bitmap, size: Size): Bitmap {
-        val output = Bitmap.createBitmap(
-            max(1, input.width / sampling),
-            max(1, input.height / sampling),
-            Bitmap.Config.ARGB_8888,
-        )
+    override suspend fun transform(
+        input: Bitmap,
+        size: Size,
+    ): Bitmap {
+        val output =
+            Bitmap.createBitmap(
+                max(1, input.width / sampling),
+                max(1, input.height / sampling),
+                Bitmap.Config.ARGB_8888,
+            )
         Canvas(output).run {
             scale(1f / sampling, 1f / sampling)
             drawBitmap(input, 0f, 0f, Paint(Paint.FILTER_BITMAP_FLAG))

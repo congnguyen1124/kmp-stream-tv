@@ -28,25 +28,44 @@ internal class HomeContentAdapter(
 
     override fun getItemViewType(position: Int): Int = style.ordinal
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BindableViewHolder<HomeContentUiModel> {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): BindableViewHolder<HomeContentUiModel> {
         val inflater = LayoutInflater.from(parent.context)
         return when (val itemStyle = HomeContentStyle.entries[viewType]) {
             HomeContentStyle.Landscape,
             HomeContentStyle.Portrait,
-            -> ThumbnailViewHolder(ItemThumbnailBinding.inflate(inflater, parent, false), itemStyle, onContentClick)
+            -> {
+                ThumbnailViewHolder(ItemThumbnailBinding.inflate(inflater, parent, false), itemStyle, onContentClick)
+            }
 
-            HomeContentStyle.TopTen -> TopTenViewHolder(
-                ItemTopTenBinding.inflate(inflater, parent, false),
-                onContentClick,
-                ::positionFor,
-            )
-            HomeContentStyle.Story -> StoryViewHolder(ItemStoryBinding.inflate(inflater, parent, false), onContentClick)
-            HomeContentStyle.Short -> ShortViewHolder(ItemThumbShortBinding.inflate(inflater, parent, false), onContentClick)
-            HomeContentStyle.Circle -> CircleViewHolder(ItemCircleBinding.inflate(inflater, parent, false), onContentClick)
-            HomeContentStyle.ContinueWatching -> WatchingViewHolder(
-                ItemWatchingBinding.inflate(inflater, parent, false),
-                onContentClick,
-            )
+            HomeContentStyle.TopTen -> {
+                TopTenViewHolder(
+                    ItemTopTenBinding.inflate(inflater, parent, false),
+                    onContentClick,
+                    ::positionFor,
+                )
+            }
+
+            HomeContentStyle.Story -> {
+                StoryViewHolder(ItemStoryBinding.inflate(inflater, parent, false), onContentClick)
+            }
+
+            HomeContentStyle.Short -> {
+                ShortViewHolder(ItemThumbShortBinding.inflate(inflater, parent, false), onContentClick)
+            }
+
+            HomeContentStyle.Circle -> {
+                CircleViewHolder(ItemCircleBinding.inflate(inflater, parent, false), onContentClick)
+            }
+
+            HomeContentStyle.ContinueWatching -> {
+                WatchingViewHolder(
+                    ItemWatchingBinding.inflate(inflater, parent, false),
+                    onContentClick,
+                )
+            }
         }
     }
 
@@ -86,22 +105,30 @@ private class ThumbnailViewHolder(
     onClick: (HomeContentUiModel) -> Unit,
 ) : ClickableContentViewHolder(binding.root, binding.ivThumbnail, onClick) {
     init {
-        val dimensions = when (style) {
-            HomeContentStyle.Landscape -> R.dimen.ephemeral_wide_thumbnail_width to R.dimen.ephemeral_wide_thumbnail_height
-            else -> R.dimen.ephemeral_tall_thumbnail_width to R.dimen.ephemeral_tall_thumbnail_height
-        }
+        val dimensions =
+            when (style) {
+                HomeContentStyle.Landscape -> {
+                    R.dimen.ephemeral_wide_thumbnail_width to
+                        R.dimen.ephemeral_wide_thumbnail_height
+                }
+
+                else -> {
+                    R.dimen.ephemeral_tall_thumbnail_width to R.dimen.ephemeral_tall_thumbnail_height
+                }
+            }
         binding.ivThumbnail.updateLayoutParams {
             width = binding.root.resources.getDimensionPixelSize(dimensions.first)
             height = binding.root.resources.getDimensionPixelSize(dimensions.second)
         }
     }
 
-    override fun bind(item: HomeContentUiModel) = with(binding) {
-        bindClick(item)
-        ivThumbnail.load(item.thumbnailUrl) { crossfade(true) }
-        tvSaymee.isVisible = item.isDummyExclusive
-        tvBadgeLive.isVisible = item.isLive
-    }
+    override fun bind(item: HomeContentUiModel) =
+        with(binding) {
+            bindClick(item)
+            ivThumbnail.load(item.thumbnailUrl) { crossfade(true) }
+            tvSaymee.isVisible = item.isDummyExclusive
+            tvBadgeLive.isVisible = item.isLive
+        }
 }
 
 private class TopTenViewHolder(
@@ -109,18 +136,28 @@ private class TopTenViewHolder(
     onClick: (HomeContentUiModel) -> Unit,
     private val positionFor: (HomeContentUiModel) -> Int,
 ) : ClickableContentViewHolder(binding.root, binding.ivTopTenThumbnail, onClick) {
-    override fun bind(item: HomeContentUiModel) = with(binding) {
-        bindClick(item)
-        ivTopTenThumbnail.load(item.thumbnailUrl) { crossfade(true) }
-        tvSayme.isVisible = item.isDummyExclusive
-        ivTopTenPosition.setImageResource(RANK_DRAWABLES[positionFor(item).coerceIn(RANK_DRAWABLES.indices)])
-    }
+    override fun bind(item: HomeContentUiModel) =
+        with(binding) {
+            bindClick(item)
+            ivTopTenThumbnail.load(item.thumbnailUrl) { crossfade(true) }
+            tvSayme.isVisible = item.isDummyExclusive
+            ivTopTenPosition.setImageResource(RANK_DRAWABLES[positionFor(item).coerceIn(RANK_DRAWABLES.indices)])
+        }
 
     private companion object {
-        val RANK_DRAWABLES = intArrayOf(
-            R.drawable.number_1, R.drawable.number_2, R.drawable.number_3, R.drawable.number_4, R.drawable.number_5,
-            R.drawable.number_6, R.drawable.number_7, R.drawable.number_8, R.drawable.number_9, R.drawable.number_10,
-        )
+        val RANK_DRAWABLES =
+            intArrayOf(
+                R.drawable.number_1,
+                R.drawable.number_2,
+                R.drawable.number_3,
+                R.drawable.number_4,
+                R.drawable.number_5,
+                R.drawable.number_6,
+                R.drawable.number_7,
+                R.drawable.number_8,
+                R.drawable.number_9,
+                R.drawable.number_10,
+            )
     }
 }
 
@@ -142,22 +179,24 @@ private class ShortViewHolder(
     private val binding: ItemThumbShortBinding,
     onClick: (HomeContentUiModel) -> Unit,
 ) : ClickableContentViewHolder(binding.root, binding.ivShortThumbnail, onClick) {
-    override fun bind(item: HomeContentUiModel) = with(binding) {
-        bindClick(item)
-        ivShortThumbnail.load(item.thumbnailUrl) { crossfade(true) }
-        tvShortNumView.text = item.viewCountLabel
-    }
+    override fun bind(item: HomeContentUiModel) =
+        with(binding) {
+            bindClick(item)
+            ivShortThumbnail.load(item.thumbnailUrl) { crossfade(true) }
+            tvShortNumView.text = item.viewCountLabel
+        }
 }
 
 private class CircleViewHolder(
     private val binding: ItemCircleBinding,
     onClick: (HomeContentUiModel) -> Unit,
 ) : ClickableContentViewHolder(binding.root, binding.ivThumbnail, onClick) {
-    override fun bind(item: HomeContentUiModel) = with(binding) {
-        bindClick(item)
-        ivThumbnail.load(item.thumbnailUrl) { crossfade(true) }
-        tvName.text = item.title
-    }
+    override fun bind(item: HomeContentUiModel) =
+        with(binding) {
+            bindClick(item)
+            ivThumbnail.load(item.thumbnailUrl) { crossfade(true) }
+            tvName.text = item.title
+        }
 }
 
 private class WatchingViewHolder(
@@ -172,15 +211,16 @@ private class WatchingViewHolder(
         }
     }
 
-    override fun bind(item: HomeContentUiModel) = with(binding) {
-        bindClick(item)
-        ivThumbnail.load(item.thumbnailUrl) { crossfade(true) }
-        tvTitle.text = item.title
-        tvSubTitle.text = item.subtitle
-        tvSaymeLabel.isVisible = item.isDummyExclusive
-        ivSelect.visibility = View.GONE
-        progressTimeWatched.progress = item.progressPercent
-    }
+    override fun bind(item: HomeContentUiModel) =
+        with(binding) {
+            bindClick(item)
+            ivThumbnail.load(item.thumbnailUrl) { crossfade(true) }
+            tvTitle.text = item.title
+            tvSubTitle.text = item.subtitle
+            tvSaymeLabel.isVisible = item.isDummyExclusive
+            ivSelect.visibility = View.GONE
+            progressTimeWatched.progress = item.progressPercent
+        }
 }
 
 internal val HomeContentUiModel.isDummyExclusive: Boolean

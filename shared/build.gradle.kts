@@ -8,7 +8,7 @@ plugins {
 kotlin {
     listOf(
         iosArm64(),
-        iosSimulatorArm64()
+        iosSimulatorArm64(),
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = "Shared"
@@ -20,7 +20,10 @@ kotlin {
     android {
         namespace = "com.congnguyencn.kmpstreamtv.shared"
         compileSdk = 37
-        minSdk = libs.versions.android.minSdk.get().toInt()
+        minSdk =
+            libs.versions.android.minSdk
+                .get()
+                .toInt()
 
         compilerOptions {
             jvmTarget = JvmTarget.JVM_17

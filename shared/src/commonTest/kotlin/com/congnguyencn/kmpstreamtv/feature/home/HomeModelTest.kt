@@ -1,18 +1,18 @@
 package com.congnguyencn.kmpstreamtv.feature.home
 
+import com.congnguyencn.kmpstreamtv.feature.home.data.source.HomeDummyDataSource
 import com.congnguyencn.kmpstreamtv.feature.home.domain.model.HomeSection
 import com.congnguyencn.kmpstreamtv.feature.home.domain.model.HomeSectionViewType
 import com.congnguyencn.kmpstreamtv.feature.home.domain.model.ShortVideo
-import com.congnguyencn.kmpstreamtv.feature.home.data.source.HomeDummyDataSource
 import com.congnguyencn.kmpstreamtv.feature.home.presentation.HomeUiMapper
 import com.congnguyencn.kmpstreamtv.feature.home.presentation.model.HomeSectionPresentation
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.assertNull
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import kotlinx.coroutines.test.runTest
 
 class HomeModelTest {
     @Test
@@ -25,24 +25,26 @@ class HomeModelTest {
     }
 
     @Test
-    fun dummyCatalogueContainsEveryHomeSection() = runTest {
-        val sections = HomeDummyDataSource().getHomeSections()
+    fun dummyCatalogueContainsEveryHomeSection() =
+        runTest {
+            val sections = HomeDummyDataSource().getHomeSections()
 
-        assertEquals(HomeSectionViewType.entries.toSet(), sections.map { it.viewType }.toSet())
-        assertEquals(10, sections.size)
-        assertEquals(HomeSectionViewType.ShortsPopular, sections.first().viewType)
-    }
+            assertEquals(HomeSectionViewType.entries.toSet(), sections.map { it.viewType }.toSet())
+            assertEquals(10, sections.size)
+            assertEquals(HomeSectionViewType.ShortsPopular, sections.first().viewType)
+        }
 
     @Test
-    fun mapperProvidesEveryNativeLayoutFamilyAndCardMetadata() = runTest {
-        val uiSections = HomeUiMapper().map(HomeDummyDataSource().getHomeSections())
+    fun mapperProvidesEveryNativeLayoutFamilyAndCardMetadata() =
+        runTest {
+            val uiSections = HomeUiMapper().map(HomeDummyDataSource().getHomeSections())
 
-        assertEquals(HomeSectionPresentation.entries.toSet(), uiSections.map { it.presentation }.toSet())
-        assertEquals(HomeSectionPresentation.Story, uiSections.first().presentation)
-        assertNull(uiSections.single { it.presentation == HomeSectionPresentation.HighlightWide }.backgroundUrl)
-        assertNotNull(uiSections.single { it.presentation == HomeSectionPresentation.TopTen }.backgroundUrl)
-        assertTrue(uiSections.flatMap { it.items }.all { it.progressPercent in 1..99 })
-        assertTrue(uiSections.flatMap { it.items }.all { it.durationLabel.isNotBlank() })
-        assertTrue(uiSections.flatMap { it.items }.all { it.providerName.isNotBlank() })
-    }
+            assertEquals(HomeSectionPresentation.entries.toSet(), uiSections.map { it.presentation }.toSet())
+            assertEquals(HomeSectionPresentation.Story, uiSections.first().presentation)
+            assertNull(uiSections.single { it.presentation == HomeSectionPresentation.HighlightWide }.backgroundUrl)
+            assertNotNull(uiSections.single { it.presentation == HomeSectionPresentation.TopTen }.backgroundUrl)
+            assertTrue(uiSections.flatMap { it.items }.all { it.progressPercent in 1..99 })
+            assertTrue(uiSections.flatMap { it.items }.all { it.durationLabel.isNotBlank() })
+            assertTrue(uiSections.flatMap { it.items }.all { it.providerName.isNotBlank() })
+        }
 }

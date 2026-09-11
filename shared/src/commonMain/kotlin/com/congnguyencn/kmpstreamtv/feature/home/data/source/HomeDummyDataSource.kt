@@ -26,7 +26,12 @@ internal class HomeDummyDataSource {
             HomeSection("series", "Documentary series", HomeSectionViewType.Series, series),
             HomeSection("channels", "Live channels", HomeSectionViewType.Channels, channels),
             HomeSection("portrait", "Editor's spotlight", HomeSectionViewType.VerticalBanner, shorts),
-            HomeSection("continue", "Continue watching", HomeSectionViewType.ContinueWatching, videos.drop(2) + videos.take(2)),
+            HomeSection(
+                "continue",
+                "Continue watching",
+                HomeSectionViewType.ContinueWatching,
+                videos.drop(2) + videos.take(2),
+            ),
             HomeSection("shorts", "Fresh shorts", HomeSectionViewType.Shorts, shorts.reversed()),
             HomeSection("mini-apps", "Explore StreamTV", HomeSectionViewType.MiniApps, videos.take(5)),
         )
@@ -72,51 +77,199 @@ internal class HomeDummyDataSource {
                 "https://images.pexels.com/photos/31370378/pexels-photo-31370378.jpeg?auto=compress&cs=tinysrgb&w=1200"
         }
 
-        val videos = listOf(
-            video("basketball", StreamUrls.APPLE_TS, StreamUrls.APPLE_FMP4, Images.BASKETBALL,
-                "Pulse of the court", "Two athletes chase one decisive moment through speed, focus, and emotion."),
-            video("tiger", StreamUrls.TEARS_OF_STEEL, StreamUrls.SINTEL, Images.TIGER,
-                "Realm of the Bengal tiger", "A quiet journey through the hidden world of one of Asia's great predators.", "T13"),
-            video("tokyo", StreamUrls.BIG_BUCK_BUNNY, StreamUrls.TEARS_OF_STEEL, Images.TOKYO,
-                "Tokyo: Tradition in motion", "Explore Asakusa, where ancient temples and modern city life meet."),
-            video("festival", StreamUrls.TEARS_OF_STEEL, StreamUrls.BIG_BUCK_BUNNY, Images.FESTIVAL,
-                "Colors of a Chinese festival", "Costume, music, and community rituals bring a celebration to life."),
-            video("football", StreamUrls.APPLE_FMP4, StreamUrls.SHAKA_ANGEL, Images.FOOTBALL,
-                "The decisive touch", "A football match turns on one perfectly timed run and a fearless finish."),
-            video("cricket", StreamUrls.SHAKA_ANGEL, StreamUrls.SINTEL, Images.CRICKET,
-                "Under pressure at the crease", "A batter prepares for the delivery that could decide the match."),
-            video("new-year", StreamUrls.SINTEL, StreamUrls.APPLE_TS, Images.NEW_YEAR,
-                "Welcoming the new spring", "Red, gold, and generations of tradition fill a joyful Lunar New Year."),
-            video("ceremony", StreamUrls.BIG_BUCK_BUNNY, StreamUrls.APPLE_FMP4, Images.CEREMONY,
-                "Grace in every gesture", "A close look at the discipline and meaning of a Japanese ceremony."),
-        )
+        val videos =
+            listOf(
+                video(
+                    "basketball",
+                    StreamUrls.APPLE_TS,
+                    StreamUrls.APPLE_FMP4,
+                    Images.BASKETBALL,
+                    "Pulse of the court",
+                    "Two athletes chase one decisive moment through speed, focus, and emotion.",
+                ),
+                video(
+                    "tiger",
+                    StreamUrls.TEARS_OF_STEEL,
+                    StreamUrls.SINTEL,
+                    Images.TIGER,
+                    "Realm of the Bengal tiger",
+                    "A quiet journey through the hidden world of one of Asia's great predators.",
+                    "T13",
+                ),
+                video(
+                    "tokyo",
+                    StreamUrls.BIG_BUCK_BUNNY,
+                    StreamUrls.TEARS_OF_STEEL,
+                    Images.TOKYO,
+                    "Tokyo: Tradition in motion",
+                    "Explore Asakusa, where ancient temples and modern city life meet.",
+                ),
+                video(
+                    "festival",
+                    StreamUrls.TEARS_OF_STEEL,
+                    StreamUrls.BIG_BUCK_BUNNY,
+                    Images.FESTIVAL,
+                    "Colors of a Chinese festival",
+                    "Costume, music, and community rituals bring a celebration to life.",
+                ),
+                video(
+                    "football",
+                    StreamUrls.APPLE_FMP4,
+                    StreamUrls.SHAKA_ANGEL,
+                    Images.FOOTBALL,
+                    "The decisive touch",
+                    "A football match turns on one perfectly timed run and a fearless finish.",
+                ),
+                video(
+                    "cricket",
+                    StreamUrls.SHAKA_ANGEL,
+                    StreamUrls.SINTEL,
+                    Images.CRICKET,
+                    "Under pressure at the crease",
+                    "A batter prepares for the delivery that could decide the match.",
+                ),
+                video(
+                    "new-year",
+                    StreamUrls.SINTEL,
+                    StreamUrls.APPLE_TS,
+                    Images.NEW_YEAR,
+                    "Welcoming the new spring",
+                    "Red, gold, and generations of tradition fill a joyful Lunar New Year.",
+                ),
+                video(
+                    "ceremony",
+                    StreamUrls.BIG_BUCK_BUNNY,
+                    StreamUrls.APPLE_FMP4,
+                    Images.CEREMONY,
+                    "Grace in every gesture",
+                    "A close look at the discipline and meaning of a Japanese ceremony.",
+                ),
+            )
 
-        val shorts = listOf(
-            short("cricket", StreamUrls.JW_BUNNY, Images.CRICKET, "Before the strike", "A player finds complete focus."),
-            short("new-year", StreamUrls.APPLE_TS, Images.NEW_YEAR, "A spring in red and gold", "Lunar New Year among lanterns."),
-            short("ceremony", StreamUrls.MUX_TEST, Images.CEREMONY, "A Japanese ceremony", "Timeless gestures shape a ceremony."),
-            short("tiger", StreamUrls.BIG_BUCK_BUNNY, Images.TIGER_PORTRAIT, "The wild gaze", "A tiger's quiet power."),
-            short("football", StreamUrls.SHAKA_ANGEL, Images.FOOTBALL, "Motion on the pitch", "One decisive touch at full speed."),
-            short("basketball", StreamUrls.SINTEL, Images.BASKETBALL, "Above the rim", "A split-second contest above the basket."),
-            short("tokyo", StreamUrls.APPLE_FMP4, Images.TOKYO, "A minute in old Tokyo", "Every corner holds a story."),
-            short("festival", StreamUrls.BIG_BUCK_BUNNY, Images.FESTIVAL, "Festival colors", "Traditional costumes fill the frame."),
-        )
+        val shorts =
+            listOf(
+                short(
+                    "cricket",
+                    StreamUrls.JW_BUNNY,
+                    Images.CRICKET,
+                    "Before the strike",
+                    "A player finds complete focus.",
+                ),
+                short(
+                    "new-year",
+                    StreamUrls.APPLE_TS,
+                    Images.NEW_YEAR,
+                    "A spring in red and gold",
+                    "Lunar New Year among lanterns.",
+                ),
+                short(
+                    "ceremony",
+                    StreamUrls.MUX_TEST,
+                    Images.CEREMONY,
+                    "A Japanese ceremony",
+                    "Timeless gestures shape a ceremony.",
+                ),
+                short(
+                    "tiger",
+                    StreamUrls.BIG_BUCK_BUNNY,
+                    Images.TIGER_PORTRAIT,
+                    "The wild gaze",
+                    "A tiger's quiet power.",
+                ),
+                short(
+                    "football",
+                    StreamUrls.SHAKA_ANGEL,
+                    Images.FOOTBALL,
+                    "Motion on the pitch",
+                    "One decisive touch at full speed.",
+                ),
+                short(
+                    "basketball",
+                    StreamUrls.SINTEL,
+                    Images.BASKETBALL,
+                    "Above the rim",
+                    "A split-second contest above the basket.",
+                ),
+                short(
+                    "tokyo",
+                    StreamUrls.APPLE_FMP4,
+                    Images.TOKYO,
+                    "A minute in old Tokyo",
+                    "Every corner holds a story.",
+                ),
+                short(
+                    "festival",
+                    StreamUrls.BIG_BUCK_BUNNY,
+                    Images.FESTIVAL,
+                    "Festival colors",
+                    "Traditional costumes fill the frame.",
+                ),
+            )
 
-        val series = listOf(
-            series("wild-asia", Images.TIGER, "Wild Asia", "Asia's landscapes and remarkable wildlife.", videos[1], videos[0]),
-            series("heritage", Images.TOKYO, "Living heritage of East Asia", "People and living traditions of China and Japan.", videos[2], videos[3]),
-            series("performance", Images.BASKETBALL, "The edge of performance", "Preparation becomes instinct under pressure.", videos[0], videos[4]),
-            series("rituals", Images.CEREMONY, "Rituals of Asia", "Ceremonies that connect past and present.", videos[7], videos[6], videos[3]),
-        )
+        val series =
+            listOf(
+                series(
+                    "wild-asia",
+                    Images.TIGER,
+                    "Wild Asia",
+                    "Asia's landscapes and remarkable wildlife.",
+                    videos[1],
+                    videos[0],
+                ),
+                series(
+                    "heritage",
+                    Images.TOKYO,
+                    "Living heritage of East Asia",
+                    "People and living traditions of China and Japan.",
+                    videos[2],
+                    videos[3],
+                ),
+                series(
+                    "performance",
+                    Images.BASKETBALL,
+                    "The edge of performance",
+                    "Preparation becomes instinct under pressure.",
+                    videos[0],
+                    videos[4],
+                ),
+                series(
+                    "rituals",
+                    Images.CEREMONY,
+                    "Rituals of Asia",
+                    "Ceremonies that connect past and present.",
+                    videos[7],
+                    videos[6],
+                    videos[3],
+                ),
+            )
 
-        val channels = listOf(
-            channel("sport", Images.BASKETBALL, "StreamTV Sport", "The day's biggest sporting moments."),
-            channel("nature", Images.TIGER, "StreamTV Nature", "An uninterrupted window into the wild.", StreamUrls.SHAKA_LIVE),
-            channel("football", Images.FOOTBALL, "StreamTV Football", "Live matches and tactical analysis."),
-            channel("cricket", Images.CRICKET, "StreamTV Cricket", "International cricket throughout the day.", StreamUrls.SHAKA_LIVE),
-            channel("culture", Images.FESTIVAL, "StreamTV Culture", "Festivals, art, food, and living traditions."),
-            channel("cities", Images.TOKYO, "StreamTV Cities", "The streets and rhythms of remarkable cities.", StreamUrls.SHAKA_LIVE),
-        )
+        val channels =
+            listOf(
+                channel("sport", Images.BASKETBALL, "StreamTV Sport", "The day's biggest sporting moments."),
+                channel(
+                    "nature",
+                    Images.TIGER,
+                    "StreamTV Nature",
+                    "An uninterrupted window into the wild.",
+                    StreamUrls.SHAKA_LIVE,
+                ),
+                channel("football", Images.FOOTBALL, "StreamTV Football", "Live matches and tactical analysis."),
+                channel(
+                    "cricket",
+                    Images.CRICKET,
+                    "StreamTV Cricket",
+                    "International cricket throughout the day.",
+                    StreamUrls.SHAKA_LIVE,
+                ),
+                channel("culture", Images.FESTIVAL, "StreamTV Culture", "Festivals, art, food, and living traditions."),
+                channel(
+                    "cities",
+                    Images.TOKYO,
+                    "StreamTV Cities",
+                    "The streets and rhythms of remarkable cities.",
+                    StreamUrls.SHAKA_LIVE,
+                ),
+            )
 
         fun video(
             id: String,
@@ -128,7 +281,13 @@ internal class HomeDummyDataSource {
             age: String = "P",
         ) = Video("video-$id", url, trailer, image, title, description, age)
 
-        fun short(id: String, url: String, image: String, title: String, description: String) = ShortVideo(
+        fun short(
+            id: String,
+            url: String,
+            image: String,
+            title: String,
+            description: String,
+        ) = ShortVideo(
             id = "short-$id",
             videoUrl = url,
             trailerUrl = StreamUrls.APPLE_FMP4,
@@ -138,7 +297,13 @@ internal class HomeDummyDataSource {
             ageRestriction = "P",
         )
 
-        fun series(id: String, image: String, title: String, description: String, vararg episodes: Video) = Series(
+        fun series(
+            id: String,
+            image: String,
+            title: String,
+            description: String,
+            vararg episodes: Video,
+        ) = Series(
             id = "series-$id",
             videoUrl = episodes.first().videoUrl,
             trailerUrl = episodes.first().trailerUrl,

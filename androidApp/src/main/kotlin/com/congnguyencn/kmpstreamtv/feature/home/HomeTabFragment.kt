@@ -11,25 +11,31 @@ import com.congnguyencn.kmpstreamtv.feature.placeholder.PlaceholderFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class HomeTabFragment : Fragment(R.layout.fragment_home_tab) {
-    private var _binding: FragmentHomeTabBinding? = null
-    private val binding get() = requireNotNull(_binding)
+    private var bindingRef: FragmentHomeTabBinding? = null
+    private val binding get() = requireNotNull(bindingRef)
     private lateinit var categories: List<HomeCategory>
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
-        _binding = FragmentHomeTabBinding.bind(view)
+        bindingRef = FragmentHomeTabBinding.bind(view)
 
-        categories = listOf(
-            HomeCategory("home", getString(R.string.category_home)),
-            HomeCategory("movies", getString(R.string.category_movies)),
-            HomeCategory("series", getString(R.string.category_series)),
-            HomeCategory("live", getString(R.string.category_live)),
-            HomeCategory("more", getString(R.string.category_more)),
-        )
-        val restoredCategory = childFragmentManager.findFragmentById(R.id.fragmentContainerHomeTab)
-            ?.tag
-            ?.removePrefix(CATEGORY_TAG_PREFIX)
-            ?: "home"
+        categories =
+            listOf(
+                HomeCategory("home", getString(R.string.category_home)),
+                HomeCategory("movies", getString(R.string.category_movies)),
+                HomeCategory("series", getString(R.string.category_series)),
+                HomeCategory("live", getString(R.string.category_live)),
+                HomeCategory("more", getString(R.string.category_more)),
+            )
+        val restoredCategory =
+            childFragmentManager
+                .findFragmentById(R.id.fragmentContainerHomeTab)
+                ?.tag
+                ?.removePrefix(CATEGORY_TAG_PREFIX)
+                ?: "home"
         binding.layoutTopCategories.submit(
             items = categories,
             selected = restoredCategory,
@@ -49,7 +55,7 @@ class HomeTabFragment : Fragment(R.layout.fragment_home_tab) {
     }
 
     fun updateToolbarForScroll(offset: Int) {
-        if (_binding == null) return
+        if (bindingRef == null) return
         val highlightOffset = resources.getDimensionPixelSize(R.dimen.highlight_topbar_offset).toFloat()
         binding.ivTopBarBehind.alpha = (offset / highlightOffset).coerceIn(0f, 1f)
     }
@@ -57,15 +63,17 @@ class HomeTabFragment : Fragment(R.layout.fragment_home_tab) {
     private fun showCategory(category: HomeCategory) {
         val tag = "$CATEGORY_TAG_PREFIX${category.id}"
         if (childFragmentManager.findFragmentById(R.id.fragmentContainerHomeTab)?.tag == tag) return
-        val fragment = if (category.id == "home") {
-            HomeFragment()
-        } else {
-            PlaceholderFragment.newInstance(
-                title = category.title,
-                description = getString(R.string.placeholder_home_category, category.title),
-            )
-        }
-        childFragmentManager.beginTransaction()
+        val fragment =
+            if (category.id == "home") {
+                HomeFragment()
+            } else {
+                PlaceholderFragment.newInstance(
+                    title = category.title,
+                    description = getString(R.string.placeholder_home_category, category.title),
+                )
+            }
+        childFragmentManager
+            .beginTransaction()
             .replace(R.id.fragmentContainerHomeTab, fragment, tag)
             .commit()
         updateMenuBar(category.id)
@@ -78,14 +86,15 @@ class HomeTabFragment : Fragment(R.layout.fragment_home_tab) {
         binding.tvMainMenu.text = categories.firstOrNull { it.id == categoryId }?.title.orEmpty()
     }
 
-    private fun showCategoryPicker(@Suppress("UNUSED_PARAMETER") view: View) {
+    private fun showCategoryPicker(
+        @Suppress("UNUSED_PARAMETER") view: View,
+    ) {
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.browse_categories)
             .setItems(categories.map(HomeCategory::title).toTypedArray()) { dialog, index ->
                 showCategory(categories[index])
                 dialog.dismiss()
-            }
-            .show()
+            }.show()
     }
 
     private fun showUnavailable(message: Int) {
@@ -93,7 +102,7 @@ class HomeTabFragment : Fragment(R.layout.fragment_home_tab) {
     }
 
     override fun onDestroyView() {
-        _binding = null
+        bindingRef = null
         super.onDestroyView()
     }
 

@@ -28,10 +28,11 @@ enum class HomeSectionViewType {
     MiniApps,
     ;
 
-    fun accepts(content: Content): Boolean = when (this) {
-        Banner, Videos, VideosPopular, ContinueWatching, MiniApps -> content is Video
-        VerticalBanner, Shorts, ShortsPopular -> content is ShortVideo
-        Series -> content is com.congnguyencn.kmpstreamtv.feature.home.domain.model.Series
-        Channels -> content is Channel
-    }
+    fun accepts(content: Content): Boolean =
+        when (this) {
+            Banner, Videos, VideosPopular, ContinueWatching, MiniApps -> content is Video
+            VerticalBanner, Shorts, ShortsPopular -> content is ShortVideo
+            Series -> content is com.congnguyencn.kmpstreamtv.feature.home.domain.model.Series
+            Channels -> content is Channel
+        }
 }

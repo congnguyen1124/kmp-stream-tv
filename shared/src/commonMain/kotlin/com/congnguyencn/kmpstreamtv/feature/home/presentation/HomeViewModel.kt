@@ -30,26 +30,29 @@ class HomeViewModel internal constructor(
 
     fun loadHome() {
         loadJob?.cancel()
-        loadJob = viewModelScope.launch {
-            mutableUiState.update { it.copy(isLoading = true, errorMessage = null) }
-            try {
-                val sections = mapper.map(repository.getHomeSections())
-                mutableUiState.value = HomeUiState(isLoading = false, sections = sections)
-            } catch (cancellation: CancellationException) {
-                throw cancellation
-            } catch (error: Exception) {
-                mutableUiState.value = HomeUiState(
-                    isLoading = false,
-                    errorMessage = error.message ?: "Unable to load Home content",
-                )
+        loadJob =
+            viewModelScope.launch {
+                mutableUiState.update { it.copy(isLoading = true, errorMessage = null) }
+                try {
+                    val sections = mapper.map(repository.getHomeSections())
+                    mutableUiState.value = HomeUiState(isLoading = false, sections = sections)
+                } catch (cancellation: CancellationException) {
+                    throw cancellation
+                } catch (error: Exception) {
+                    mutableUiState.value =
+                        HomeUiState(
+                            isLoading = false,
+                            errorMessage = error.message ?: "Unable to load Home content",
+                        )
+                }
             }
-        }
     }
 
     /** Swift does not consume Flow directly, so it owns and cancels this lifecycle-bound bridge. */
-    fun observe(onState: (HomeUiState) -> Unit): Observation = Observation(
-        viewModelScope.launch { uiState.collect(onState) },
-    )
+    fun observe(onState: (HomeUiState) -> Unit): Observation =
+        Observation(
+            viewModelScope.launch { uiState.collect(onState) },
+        )
 
     /** Called by the Swift owner. Android's ViewModelStore invokes normal ViewModel clearing. */
     fun dispose() {

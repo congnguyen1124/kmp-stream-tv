@@ -20,40 +20,42 @@ internal data class PlayerMedia(
     val durationLabel: String,
     val viewCountLabel: String,
 ) {
-    fun toBundle(): Bundle = Bundle().apply {
-        putString(KEY_ID, id)
-        putString(KEY_URL, url)
-        putString(KEY_TITLE, title)
-        putString(KEY_THUMBNAIL_URL, thumbnailUrl)
-        putString(KEY_DESCRIPTION, description)
-        putString(KEY_AGE_RESTRICTION, ageRestriction)
-        putBoolean(KEY_IS_LIVE, isLive)
-        putBoolean(KEY_IS_SHORT, isShort)
-        putInt(KEY_EPISODE_COUNT, episodeCount)
-        putString(KEY_PROVIDER_NAME, providerName)
-        putString(KEY_PROVIDER_AVATAR_URL, providerAvatarUrl)
-        putString(KEY_SUBTITLE, subtitle)
-        putString(KEY_DURATION_LABEL, durationLabel)
-        putString(KEY_VIEW_COUNT_LABEL, viewCountLabel)
-    }
+    fun toBundle(): Bundle =
+        Bundle().apply {
+            putString(KEY_ID, id)
+            putString(KEY_URL, url)
+            putString(KEY_TITLE, title)
+            putString(KEY_THUMBNAIL_URL, thumbnailUrl)
+            putString(KEY_DESCRIPTION, description)
+            putString(KEY_AGE_RESTRICTION, ageRestriction)
+            putBoolean(KEY_IS_LIVE, isLive)
+            putBoolean(KEY_IS_SHORT, isShort)
+            putInt(KEY_EPISODE_COUNT, episodeCount)
+            putString(KEY_PROVIDER_NAME, providerName)
+            putString(KEY_PROVIDER_AVATAR_URL, providerAvatarUrl)
+            putString(KEY_SUBTITLE, subtitle)
+            putString(KEY_DURATION_LABEL, durationLabel)
+            putString(KEY_VIEW_COUNT_LABEL, viewCountLabel)
+        }
 
     companion object {
-        fun from(content: HomeContentUiModel) = PlayerMedia(
-            id = content.id,
-            url = content.videoUrl,
-            title = content.title,
-            thumbnailUrl = content.thumbnailUrl,
-            description = content.description,
-            ageRestriction = content.ageRestriction,
-            isLive = content.isLive,
-            isShort = content.isShort,
-            episodeCount = content.episodeCount,
-            providerName = content.providerName,
-            providerAvatarUrl = content.providerAvatarUrl,
-            subtitle = content.subtitle,
-            durationLabel = content.durationLabel,
-            viewCountLabel = content.viewCountLabel,
-        )
+        fun from(content: HomeContentUiModel) =
+            PlayerMedia(
+                id = content.id,
+                url = content.videoUrl,
+                title = content.title,
+                thumbnailUrl = content.thumbnailUrl,
+                description = content.description,
+                ageRestriction = content.ageRestriction,
+                isLive = content.isLive,
+                isShort = content.isShort,
+                episodeCount = content.episodeCount,
+                providerName = content.providerName,
+                providerAvatarUrl = content.providerAvatarUrl,
+                subtitle = content.subtitle,
+                durationLabel = content.durationLabel,
+                viewCountLabel = content.viewCountLabel,
+            )
 
         fun from(bundle: Bundle): PlayerMedia? {
             val url = bundle.getString(KEY_URL).orEmpty()

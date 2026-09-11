@@ -21,35 +21,44 @@ import kotlinx.coroutines.launch
 import org.koin.android.ext.android.getKoin
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
-    private var _binding: FragmentHomeBinding? = null
-    private val binding get() = requireNotNull(_binding)
+    private var bindingRef: FragmentHomeBinding? = null
+    private val binding get() = requireNotNull(bindingRef)
     private var homeAdapter: HomeSectionAdapter? = null
     private val viewModel: HomeViewModel by viewModels {
         object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T =
-                getKoin().get<HomeViewModel>() as T
+            override fun <T : ViewModel> create(modelClass: Class<T>): T = getKoin().get<HomeViewModel>() as T
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
-        _binding = FragmentHomeBinding.bind(view)
-        val sectionAdapter = HomeSectionAdapter { content ->
-            (activity as? MainActivity)?.openPlayer(content)
-        }
+        bindingRef = FragmentHomeBinding.bind(view)
+        val sectionAdapter =
+            HomeSectionAdapter { content ->
+                (activity as? MainActivity)?.openPlayer(content)
+            }
         homeAdapter = sectionAdapter
 
         binding.rcvHomepage.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = sectionAdapter
             setHasFixedSize(false)
-            addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                    (parentFragment as? HomeTabFragment)
-                        ?.updateToolbarForScroll(recyclerView.computeVerticalScrollOffset())
-                }
-            })
+            addOnScrollListener(
+                object : RecyclerView.OnScrollListener() {
+                    override fun onScrolled(
+                        recyclerView: RecyclerView,
+                        dx: Int,
+                        dy: Int,
+                    ) {
+                        (parentFragment as? HomeTabFragment)
+                            ?.updateToolbarForScroll(recyclerView.computeVerticalScrollOffset())
+                    }
+                },
+            )
         }
         binding.swipeRefresh.apply {
             setColorSchemeResources(R.color.heliotrope)
@@ -68,20 +77,21 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
     }
 
-    private fun render(state: HomeUiState) = with(binding) {
-        val hasContent = state.sections.isNotEmpty()
-        swipeRefresh.isRefreshing = state.isLoading && hasContent
-        loading.isVisible = state.isLoading && !hasContent
-        rcvHomepage.isVisible = hasContent && state.errorMessage == null
-        errorGroup.isVisible = !state.isLoading && state.errorMessage != null
-        errorMessage.text = state.errorMessage
-        homeAdapter?.submitList(state.sections)
-    }
+    private fun render(state: HomeUiState) =
+        with(binding) {
+            val hasContent = state.sections.isNotEmpty()
+            swipeRefresh.isRefreshing = state.isLoading && hasContent
+            loading.isVisible = state.isLoading && !hasContent
+            rcvHomepage.isVisible = hasContent && state.errorMessage == null
+            errorGroup.isVisible = !state.isLoading && state.errorMessage != null
+            errorMessage.text = state.errorMessage
+            homeAdapter?.submitList(state.sections)
+        }
 
     override fun onDestroyView() {
         binding.rcvHomepage.adapter = null
         homeAdapter = null
-        _binding = null
+        bindingRef = null
         super.onDestroyView()
     }
 }

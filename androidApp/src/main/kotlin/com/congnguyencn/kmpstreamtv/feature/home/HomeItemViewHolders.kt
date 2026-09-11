@@ -20,8 +20,8 @@ abstract class LayoutViewHolder(
     layoutId: Int,
     onContentClick: (HomeContentUiModel) -> Unit,
 ) : BindableViewHolder<HomeSectionUiModel>(
-    LayoutInflater.from(parent.context).inflate(layoutId, parent, false),
-) {
+        LayoutInflater.from(parent.context).inflate(layoutId, parent, false),
+    ) {
     init {
         (itemView as? HomeLayoutItemClickable)?.setOnContentClickListener(onContentClick)
     }
@@ -80,7 +80,10 @@ class LayoutHighlightTallViewHolder(
 
     override fun bind(item: HomeSectionUiModel) = binding.root.bindLayout(item)
 
-    override fun bind(item: HomeSectionUiModel, position: Int) {
+    override fun bind(
+        item: HomeSectionUiModel,
+        position: Int,
+    ) {
         binding.root.bindLayout(item, position == 0)
     }
 }

@@ -8,4 +8,5 @@
 - Do not add Compose UI or `FocusRequester` behavior.
 - Android playback must use the sibling `android_stream_player`; iOS playback must use AVPlayer.
 - Update `spec/` and `docs/` with material behavior or architecture changes.
-- Run `:shared:testAndroidHostTest` and `:androidApp:assembleDebug` after relevant changes.
+- Run `ktlintCheck`, `:shared:testAndroidHostTest`, and `:androidApp:assembleDebug` after relevant
+  changes. Use `ktlintFormat` before the check when Kotlin or Gradle Kotlin DSL files change.

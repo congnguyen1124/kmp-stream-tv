@@ -13,14 +13,15 @@ import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.module
 import org.koin.mp.KoinPlatform
 
-internal val sharedModule = module {
-    single { createStreamTvHttpClient() }
-    single { StreamTvApiClient(get()) }
-    single { HomeDummyDataSource() }
-    single<HomeRepository> { DummyHomeRepository(get()) }
-    single { HomeUiMapper() }
-    factory { HomeViewModel(get(), get()) }
-}
+internal val sharedModule =
+    module {
+        single { createStreamTvHttpClient() }
+        single { StreamTvApiClient(get()) }
+        single { HomeDummyDataSource() }
+        single<HomeRepository> { DummyHomeRepository(get()) }
+        single { HomeUiMapper() }
+        factory { HomeViewModel(get(), get()) }
+    }
 
 private var sharedKoinApplication: KoinApplication? = null
 

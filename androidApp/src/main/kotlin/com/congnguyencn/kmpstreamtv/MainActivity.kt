@@ -20,9 +20,9 @@ import androidx.fragment.app.Fragment
 import com.congnguyencn.kmpstreamtv.databinding.ActivityMainBinding
 import com.congnguyencn.kmpstreamtv.feature.home.HomeTabFragment
 import com.congnguyencn.kmpstreamtv.feature.home.presentation.model.HomeContentUiModel
+import com.congnguyencn.kmpstreamtv.feature.placeholder.PlaceholderFragment
 import com.congnguyencn.kmpstreamtv.feature.player.PlayerFragment
 import com.congnguyencn.kmpstreamtv.feature.player.PlayerPresentation
-import com.congnguyencn.kmpstreamtv.feature.placeholder.PlaceholderFragment
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -70,13 +70,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.playerFragmentContainer.isVisible = true
-        supportFragmentManager.beginTransaction()
+        supportFragmentManager
+            .beginTransaction()
             .replace(
                 R.id.playerFragmentContainer,
                 PlayerFragment.newInstance(content),
                 PlayerFragment.TAG,
-            )
-            .commitNow()
+            ).commitNow()
     }
 
     internal fun presentPlayer(presentation: PlayerPresentation) {
@@ -92,11 +92,12 @@ class MainActivity : AppCompatActivity() {
             }
         }
         binding.bottomNavMain.isVisible = !overlaysDestination
-        binding.fragmentContainerMain.importantForAccessibility = if (overlaysDestination) {
-            View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
-        } else {
-            View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
-        }
+        binding.fragmentContainerMain.importantForAccessibility =
+            if (overlaysDestination) {
+                View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+            } else {
+                View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
+            }
         setSystemBarsHidden(fullscreen)
         if (presentation == PlayerPresentation.MINI) disableAutoEnterPictureInPicture()
     }
@@ -106,18 +107,18 @@ class MainActivity : AppCompatActivity() {
         val player = activePlayer() ?: return
         val aspectRatio = player.prepareForSystemPictureInPicture() ?: return
         presentPlayer(PlayerPresentation.FULLSCREEN)
-        val params = PictureInPictureParams.Builder()
-            .setAspectRatio(aspectRatio)
-            .apply {
-                player.pictureInPictureSourceRect()?.let(::setSourceRectHint)
-            }
-            .apply {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    setSeamlessResizeEnabled(true)
-                    setAutoEnterEnabled(true)
-                }
-            }
-            .build()
+        val params =
+            PictureInPictureParams
+                .Builder()
+                .setAspectRatio(aspectRatio)
+                .apply {
+                    player.pictureInPictureSourceRect()?.let(::setSourceRectHint)
+                }.apply {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        setSeamlessResizeEnabled(true)
+                        setAutoEnterEnabled(true)
+                    }
+                }.build()
         if (!enterPictureInPictureMode(params)) {
             player.onSystemPictureInPictureModeChanged(false)
         }
@@ -150,40 +151,61 @@ class MainActivity : AppCompatActivity() {
         disableAutoEnterPictureInPicture()
     }
 
-    private fun showDestination(@IdRes destinationId: Int) {
+    private fun showDestination(
+        @IdRes destinationId: Int,
+    ) {
         val tag = destinationId.toString()
         val existing = supportFragmentManager.findFragmentByTag(tag)
         val target = existing ?: createDestination(destinationId)
 
-        supportFragmentManager.beginTransaction().apply {
-            supportFragmentManager.fragments
-                .filterNot { it.tag == PlayerFragment.TAG }
-                .forEach(::hide)
-            if (existing == null) {
-                add(R.id.fragmentContainerMain, target, tag)
-            } else {
-                show(target)
-            }
-            setPrimaryNavigationFragment(target)
-        }.commitNow()
+        supportFragmentManager
+            .beginTransaction()
+            .apply {
+                supportFragmentManager.fragments
+                    .filterNot { it.tag == PlayerFragment.TAG }
+                    .forEach(::hide)
+                if (existing == null) {
+                    add(R.id.fragmentContainerMain, target, tag)
+                } else {
+                    show(target)
+                }
+                setPrimaryNavigationFragment(target)
+            }.commitNow()
     }
 
-    private fun createDestination(@IdRes destinationId: Int): Fragment = when (destinationId) {
-        R.id.home -> HomeTabFragment()
-        R.id.tvcab -> PlaceholderFragment.newInstance(
-            title = getString(R.string.nav_music),
-            description = getString(R.string.placeholder_music),
-        )
-        R.id.shorts -> PlaceholderFragment.newInstance(
-            title = getString(R.string.nav_shorts),
-            description = getString(R.string.placeholder_shorts),
-        )
-        R.id.playlist -> PlaceholderFragment.newInstance(
-            title = getString(R.string.nav_playlist),
-            description = getString(R.string.placeholder_playlist),
-        )
-        else -> HomeTabFragment()
-    }
+    private fun createDestination(
+        @IdRes destinationId: Int,
+    ): Fragment =
+        when (destinationId) {
+            R.id.home -> {
+                HomeTabFragment()
+            }
+
+            R.id.tvcab -> {
+                PlaceholderFragment.newInstance(
+                    title = getString(R.string.nav_music),
+                    description = getString(R.string.placeholder_music),
+                )
+            }
+
+            R.id.shorts -> {
+                PlaceholderFragment.newInstance(
+                    title = getString(R.string.nav_shorts),
+                    description = getString(R.string.placeholder_shorts),
+                )
+            }
+
+            R.id.playlist -> {
+                PlaceholderFragment.newInstance(
+                    title = getString(R.string.nav_playlist),
+                    description = getString(R.string.placeholder_playlist),
+                )
+            }
+
+            else -> {
+                HomeTabFragment()
+            }
+        }
 
     private fun activePlayer(): PlayerFragment? =
         supportFragmentManager.findFragmentByTag(PlayerFragment.TAG) as? PlayerFragment
@@ -193,8 +215,11 @@ class MainActivity : AppCompatActivity() {
         applyRootInsets()
         WindowInsetsControllerCompat(window, binding.root).apply {
             systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            if (hidden) hide(WindowInsetsCompat.Type.systemBars())
-            else show(WindowInsetsCompat.Type.systemBars())
+            if (hidden) {
+                hide(WindowInsetsCompat.Type.systemBars())
+            } else {
+                show(WindowInsetsCompat.Type.systemBars())
+            }
         }
         binding.root.requestApplyInsets()
     }

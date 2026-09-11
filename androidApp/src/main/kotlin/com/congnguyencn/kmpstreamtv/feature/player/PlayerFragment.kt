@@ -37,8 +37,8 @@ internal enum class PlayerPresentation { DETAIL, FULLSCREEN, MINI }
  * becomes a controller-only fullscreen player, and a downward drag collapses it above bottom nav.
  */
 class PlayerFragment : Fragment(R.layout.fragment_player) {
-    private var _binding: FragmentPlayerBinding? = null
-    private val binding get() = requireNotNull(_binding)
+    private var bindingRef: FragmentPlayerBinding? = null
+    private val binding get() = requireNotNull(bindingRef)
     private var manager: StreamTvPlayerManager? = null
     private var managerUsesFeedConfig: Boolean? = null
     private var currentMedia: PlayerMedia? = null
@@ -60,9 +60,12 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
             ?: PlayerPresentation.DETAIL
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
-        _binding = FragmentPlayerBinding.bind(view)
+        bindingRef = FragmentPlayerBinding.bind(view)
         detailAdapter = PlayerDetailAdapter(::handleDetailAction, ::play)
         binding.detailList.adapter = detailAdapter
         binding.detailClose.setOnClickListener { close() }
@@ -111,7 +114,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
         stateJob = null
         binding.detailList.adapter = null
         binding.playerView.detach()
-        _binding = null
+        bindingRef = null
         super.onDestroyView()
     }
 
@@ -133,7 +136,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
         if (presentation != PlayerPresentation.MINI && !isSystemPictureInPicture) {
             presentation = presentationForCurrentOrientation(PlayerPresentation.DETAIL)
         }
-        _binding?.let {
+        bindingRef?.let {
             applyPresentationLayout()
             it.playerView.setPresentation(presentation)
             (activity as? MainActivity)?.presentPlayer(
@@ -146,23 +149,23 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
         currentMedia ?: return null
         if (presentation == PlayerPresentation.MINI || isSystemPictureInPicture) return null
         isSystemPictureInPicture = true
-        _binding?.playerView?.setSystemPictureInPicture(true)
-        _binding?.let { applyPresentationLayout() }
+        bindingRef?.playerView?.setSystemPictureInPicture(true)
+        bindingRef?.let { applyPresentationLayout() }
         return Rational(16, 9)
     }
 
     internal fun pictureInPictureSourceRect(): android.graphics.Rect? {
-        val playerView = _binding?.playerView ?: return null
+        val playerView = bindingRef?.playerView ?: return null
         return android.graphics.Rect().takeIf(playerView::getGlobalVisibleRect)
     }
 
     internal fun onSystemPictureInPictureModeChanged(enabled: Boolean) {
         isSystemPictureInPicture = enabled
-        _binding?.playerView?.setSystemPictureInPicture(enabled)
+        bindingRef?.playerView?.setSystemPictureInPicture(enabled)
         if (!enabled) {
             presentation = presentationForCurrentOrientation(presentation)
         }
-        _binding?.let {
+        bindingRef?.let {
             applyPresentationLayout()
             (activity as? MainActivity)?.presentPlayer(
                 if (enabled) PlayerPresentation.FULLSCREEN else presentation,
@@ -175,7 +178,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
 
     private fun play(media: PlayerMedia) {
         currentMedia = media
-        if (_binding != null) startMedia(media)
+        if (bindingRef != null) startMedia(media)
         expand()
     }
 
@@ -203,7 +206,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
         }
 
         stateJob?.cancel()
-        if (_binding != null) binding.playerView.detach()
+        if (bindingRef != null) binding.playerView.detach()
         existing?.close()
         loadedMediaKey = null
         val config = if (useFeedConfig) StreamTvPlayerConfig.Feed else StreamTvPlayerConfig.Tv
@@ -215,14 +218,15 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
     }
 
     private fun collectState(player: StreamTvPlayerManager) {
-        stateJob = viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                player.playerState.collect { state ->
-                    latestState = state
-                    _binding?.playerView?.render(state)
+        stateJob =
+            viewLifecycleOwner.lifecycleScope.launch {
+                viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    player.playerState.collect { state ->
+                        latestState = state
+                        bindingRef?.playerView?.render(state)
+                    }
                 }
             }
-        }
     }
 
     private fun retry() {
@@ -237,43 +241,52 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
 
     private fun setPresentation(value: PlayerPresentation) {
         presentation = value
-        if (_binding == null) return
+        if (bindingRef == null) return
         resetDragImmediately()
         binding.playerView.setPresentation(value)
         applyPresentationLayout()
         (activity as? MainActivity)?.presentPlayer(value)
     }
 
-    private fun applyPresentationLayout() = with(binding) {
-        val showDetail = presentation == PlayerPresentation.DETAIL && !isSystemPictureInPicture
-        val fillParent = !showDetail
-        detailTopBar.isVisible = showDetail
-        detailList.isVisible = showDetail
-        detailShadow.isVisible = showDetail
-        playerView.updateLayoutParams<ConstraintLayout.LayoutParams> {
-            dimensionRatio = if (showDetail) "H,16:9" else null
-            topToBottom = if (showDetail) R.id.detailTopBar else ConstraintSet.UNSET
-            topToTop = if (fillParent) ConstraintSet.PARENT_ID else ConstraintSet.UNSET
-            bottomToBottom = if (fillParent) ConstraintSet.PARENT_ID else ConstraintSet.UNSET
+    private fun applyPresentationLayout() =
+        with(binding) {
+            val showDetail = presentation == PlayerPresentation.DETAIL && !isSystemPictureInPicture
+            val fillParent = !showDetail
+            detailTopBar.isVisible = showDetail
+            detailList.isVisible = showDetail
+            detailShadow.isVisible = showDetail
+            playerView.updateLayoutParams<ConstraintLayout.LayoutParams> {
+                dimensionRatio = if (showDetail) "H,16:9" else null
+                topToBottom = if (showDetail) R.id.detailTopBar else ConstraintSet.UNSET
+                topToTop = if (fillParent) ConstraintSet.PARENT_ID else ConstraintSet.UNSET
+                bottomToBottom = if (fillParent) ConstraintSet.PARENT_ID else ConstraintSet.UNSET
+            }
         }
-    }
 
     private fun presentationForCurrentOrientation(fallback: PlayerPresentation): PlayerPresentation =
         when {
-            fallback == PlayerPresentation.MINI -> PlayerPresentation.MINI
-            resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE ->
+            fallback == PlayerPresentation.MINI -> {
+                PlayerPresentation.MINI
+            }
+
+            resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE -> {
                 PlayerPresentation.FULLSCREEN
-            else -> PlayerPresentation.DETAIL
+            }
+
+            else -> {
+                PlayerPresentation.DETAIL
+            }
         }
 
     @SuppressLint("SourceLockedOrientationActivity")
     private fun toggleFullscreen() {
         val landscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-        requireActivity().requestedOrientation = if (landscape) {
-            ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
-        } else {
-            ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
-        }
+        requireActivity().requestedOrientation =
+            if (landscape) {
+                ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
+            } else {
+                ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+            }
     }
 
     private fun renderDrag(distanceY: Float) {
@@ -284,21 +297,26 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
         binding.root.alpha = 1f - progress * DRAG_MAX_FADE
     }
 
-    private fun finishDrag(distanceY: Float, velocityY: Float) {
-        val shouldMinimize = distanceY >= binding.root.height * DRAG_DISMISS_FRACTION ||
-            velocityY >= DRAG_MIN_VELOCITY
+    private fun finishDrag(
+        distanceY: Float,
+        velocityY: Float,
+    ) {
+        val shouldMinimize =
+            distanceY >= binding.root.height * DRAG_DISMISS_FRACTION ||
+                velocityY >= DRAG_MIN_VELOCITY
         if (shouldMinimize) {
-            binding.root.animate()
+            binding.root
+                .animate()
                 .translationY(binding.root.height * DRAG_EXIT_TRANSLATION)
                 .alpha(0.82f)
                 .setDuration(DRAG_ANIMATION_MILLIS)
                 .withEndAction {
                     resetDragImmediately()
                     minimize()
-                }
-                .start()
+                }.start()
         } else {
-            binding.root.animate()
+            binding.root
+                .animate()
                 .translationY(0f)
                 .alpha(1f)
                 .setDuration(DRAG_ANIMATION_MILLIS)
@@ -307,19 +325,20 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
     }
 
     private fun resetDragImmediately() {
-        _binding?.root?.animate()?.cancel()
-        _binding?.root?.translationY = 0f
-        _binding?.root?.alpha = 1f
+        bindingRef?.root?.animate()?.cancel()
+        bindingRef?.root?.translationY = 0f
+        bindingRef?.root?.alpha = 1f
     }
 
     private fun handleDetailAction(action: PlayerDetailAction) {
-        val message = when (action) {
-            PlayerDetailAction.WATCH_LATER -> R.string.player_action_watch_later
-            PlayerDetailAction.PRODUCTS -> R.string.player_action_products
-            PlayerDetailAction.LIKE -> R.string.player_action_like
-            PlayerDetailAction.COMMENT -> R.string.player_action_comment
-            PlayerDetailAction.SHARE -> R.string.player_action_share
-        }
+        val message =
+            when (action) {
+                PlayerDetailAction.WATCH_LATER -> R.string.player_action_watch_later
+                PlayerDetailAction.PRODUCTS -> R.string.player_action_products
+                PlayerDetailAction.LIKE -> R.string.player_action_like
+                PlayerDetailAction.COMMENT -> R.string.player_action_comment
+                PlayerDetailAction.SHARE -> R.string.player_action_share
+            }
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 
@@ -341,13 +360,19 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
             viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
+                    if (binding.playerView.dismissSettings()) return
                     when {
-                        binding.playerView.dismissSettings() -> Unit
                         resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE -> {
                             requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
                         }
-                        presentation == PlayerPresentation.DETAIL -> minimize()
-                        else -> close()
+
+                        presentation == PlayerPresentation.DETAIL -> {
+                            minimize()
+                        }
+
+                        else -> {
+                            close()
+                        }
                     }
                 }
             },
@@ -364,8 +389,9 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
         private const val DRAG_MIN_VELOCITY = 1_250f
         private const val DRAG_ANIMATION_MILLIS = 180L
 
-        fun newInstance(content: HomeContentUiModel) = PlayerFragment().apply {
-            arguments = PlayerMedia.from(content).toBundle()
-        }
+        fun newInstance(content: HomeContentUiModel) =
+            PlayerFragment().apply {
+                arguments = PlayerMedia.from(content).toBundle()
+            }
     }
 }

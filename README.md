@@ -95,9 +95,13 @@ changing ViewModel or UI contracts.
 Requirements: JDK 17+, Android SDK 37, and the sibling `android_stream_player` checkout.
 
 ```bash
+./gradlew ktlintCheck
 ./gradlew :shared:testAndroidHostTest
 ./gradlew :androidApp:assembleDebug
 ```
+
+Use `./gradlew ktlintFormat` to apply the repository's Kotlin style before running the checks. See
+[Kotlin code style](docs/code-style.md) for versioning, scope, and module-specific commands.
 
 Open `iosApp/iosApp.xcodeproj` in Xcode to build iOS. Configure `TEAM_ID` in
 `iosApp/Configuration/Config.xcconfig` for a signed device build.
@@ -108,6 +112,7 @@ Open `iosApp/iosApp.xcodeproj` in Xcode to build iOS. Configure `TEAM_ID` in
 - [Home implementation](docs/home.md)
 - [Navigation shell](docs/navigation.md)
 - [Player integration](docs/player.md)
+- [Kotlin code style](docs/code-style.md)
 - [Home specification](spec/home.md)
 - [Navigation specification](spec/navigation.md)
 - [Player specification](spec/player.md)
