@@ -35,4 +35,5 @@
     <color name="playerInactiveText">#ADADAD</color>
     <color name="player_detail_divider">#2C2C2E</color>
     <color name="player_detail_action">#202020</color>
+    <color name="player_mini_footer">@color/shark</color>
 </resources>

@@ -1,65 +1,96 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?><!--
+  The overlay hierarchy of NewMinimizableView in ottclouds-android:
+
+    minimizableView       Box(fillMaxSize)
+    ├── detailContent     bottomContent, faded out by bottomContentAlpha
+    └── playerCard        the Column: width fraction, edge padding, offset, top-end gravity
+        └── playerCardContent   what graphicsLayer { scale } scales, clips and shadows
+            ├── playerSurface   the 16:9 video Box
+            └── miniPlaybackController   footerContent
+
+  detailContent reserves the player's 16:9 strip with playerStrip instead of laying the player out
+  inside it, because the player is a sibling that floats over this content and travels away from it.
+-->
+<com.congnguyencn.kmpstreamtv.feature.player.miniplayer.MinimizableView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/minimizableView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/appBackground">
+    android:clipChildren="false"
+    android:clipToPadding="false">
 
-    <LinearLayout
-        android:id="@+id/detailTopBar"
-        android:layout_width="0dp"
-        android:layout_height="@dimen/player_detail_top_bar_height"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingHorizontal="@dimen/margin_small"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/detailContent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/appBackground">
 
         <Space
+            android:id="@+id/playerStrip"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintDimensionRatio="H,16:9"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <View
+            android:id="@+id/detailShadow"
             android:layout_width="0dp"
             android:layout_height="1dp"
-            android:layout_weight="1" />
+            android:background="@color/player_detail_divider"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/playerStrip" />
 
-        <ImageButton
-            android:id="@+id/detailClose"
-            style="@style/Widget.StreamTV.TopBarButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:contentDescription="@string/close_player"
-            android:padding="12dp"
-            android:src="@drawable/ic_player_close" />
-    </LinearLayout>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/detailList"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:clipToPadding="false"
+            android:overScrollMode="never"
+            android:paddingBottom="@dimen/margin_4x"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/detailShadow" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <com.congnguyencn.kmpstreamtv.feature.player.widget.PlayerView
-        android:id="@+id/playerView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintDimensionRatio="H,16:9"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/detailTopBar" />
+    <!--
+      clipChildren/clipToPadding are off all the way down to playerCardContent: a pinched-open card
+      paints past the box it measures, and a clipping ancestor would crop exactly that overflow.
+    -->
+    <FrameLayout
+        android:id="@+id/playerCard"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:clipChildren="false"
+        android:clipToPadding="false">
 
-    <View
-        android:id="@+id/detailShadow"
-        android:layout_width="0dp"
-        android:layout_height="1dp"
-        android:background="@color/player_detail_divider"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/playerView" />
+        <LinearLayout
+            android:id="@+id/playerCardContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/detailList"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:clipToPadding="false"
-        android:overScrollMode="never"
-        android:paddingBottom="@dimen/margin_4x"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/detailShadow" />
+            <com.congnguyencn.kmpstreamtv.feature.player.miniplayer.AspectRatioFrameLayout
+                android:id="@+id/playerSurface"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/black">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+                <com.congnguyencn.kmpstreamtv.feature.player.widget.PlayerView
+                    android:id="@+id/playerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </com.congnguyencn.kmpstreamtv.feature.player.miniplayer.AspectRatioFrameLayout>
+
+            <com.congnguyencn.kmpstreamtv.feature.player.widget.MiniPlaybackControllerView
+                android:id="@+id/miniPlaybackController"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/mini_player_footer_height" />
+        </LinearLayout>
+    </FrameLayout>
+</com.congnguyencn.kmpstreamtv.feature.player.miniplayer.MinimizableView>

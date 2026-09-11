@@ -317,49 +317,16 @@
             android:src="@drawable/ic_player_close" />
     </FrameLayout>
 
-    <LinearLayout
-        android:id="@+id/miniController"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginStart="@dimen/player_mini_video_width"
-        android:background="@drawable/bg_player_mini"
-        android:contentDescription="@string/expand_player"
-        android:focusable="true"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingEnd="0dp"
-        android:paddingStart="16dp"
-        android:visibility="gone">
-
-        <TextView
-            android:id="@+id/miniTitle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:ellipsize="end"
-            android:maxLines="2"
-            android:textAppearance="@style/Text.Body3"
-            android:textColor="@color/white"
-            tools:text="The StreamTV premiere" />
-
-        <ImageButton
-            android:id="@+id/miniPlayPauseAction"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?android:attr/actionBarItemBackground"
-            android:contentDescription="@string/play"
-            android:padding="10dp"
-            android:src="@drawable/ic_player_play" />
-
-        <ImageButton
-            android:id="@+id/miniCloseAction"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?android:attr/actionBarItemBackground"
-            android:contentDescription="@string/close_player"
-            android:padding="12dp"
-            android:src="@drawable/ic_player_close" />
-    </LinearLayout>
+    <ImageButton
+        android:id="@+id/miniCloseOverlay"
+        android:layout_width="@dimen/mini_player_close_size"
+        android:layout_height="@dimen/mini_player_close_size"
+        android:layout_gravity="top|end"
+        android:background="?android:attr/actionBarItemBackground"
+        android:contentDescription="@string/close_player"
+        android:padding="@dimen/player_action_padding"
+        android:src="@drawable/ic_player_close"
+        android:visibility="gone" />
 
     <com.congnguyencn.kmpstreamtv.feature.player.widget.PlayerSettingsView
         android:id="@+id/settingsView"

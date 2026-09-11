@@ -14,17 +14,31 @@
 - Android playback uses `android_stream_player`; XML `PlayerView` only renders state and dispatches
   manager commands.
 - `PlayerFragment` overlays `MainActivity`. Playback must not launch a separate Activity.
-- Portrait playback is a VOD detail overlay: top close bar, 16:9 player, metadata/actions, provider
-  and full-width related-content rows. It hides bottom navigation but keeps system bars visible.
+- Portrait playback is a VOD detail overlay: a top-anchored 16:9 player, then metadata/actions,
+  provider and full-width related-content rows. It hides bottom navigation but keeps system bars
+  visible. Close, minimize and PiP live in the player controller, so the detail has no top bar of
+  its own — the player is anchored to the top of the overlay and there is no room for one.
 - Landscape hides detail and system/app chrome, then exposes the full player title and secondary
   controller row.
-- Minimize creates an in-app player row above bottom navigation without stopping playback.
-- A downward drag from the video collapses portrait detail to mini after a distance/velocity
-  threshold and returns to detail when cancelled.
-- Tapping the mini video/title expands it; mini play/pause and close remain directly actionable.
-- Switching main destinations must not hide or recreate the mini-player.
+- Minimize shrinks the player into a floating mini card without stopping playback: 70% of the
+  window wide (capped at 380dp), 16:9 with a transport strip below it, an 8dp border gap, 16dp
+  corners and a close action over the video.
+- A downward drag from the video follows the finger and completes the shrink on release, at
+  whatever depth the drag reached. The detail content behind it fades out three times as fast as
+  the drag travels, so it is gone well before the card lands.
+- A minimized card can be dragged anywhere and settles into the nearest of the four corners,
+  pinched open up to window width and back, and double-tapped to jump between those two sizes.
+  Pinching to full width and back must not move where the card rests.
+- Tapping the minimized card expands it back to detail; the transport strip stays directly
+  actionable at any size.
+- Rotating or otherwise resizing the window while minimized keeps the card minimized and re-derives
+  its resting corner from the new dimensions.
+- Switching main destinations must not hide or recreate the mini-player, and the window-sized
+  overlay must pass touches outside the card through to the destination behind it.
 - Back closes settings, exits landscape, minimizes expanded portrait playback, then closes mini
   playback in that order.
+- Mini-player geometry is cloned from `ottclouds-android`'s `MinimizableViewState`; see
+  `docs/player.md` for the seams that differ because the host is a `ViewGroup` and not a composable.
 - Selecting another Home item while mini reuses the fragment and replaces the active media.
 - Selecting a related card replaces media through the same path and returns the detail list to top.
 - System PiP uses the same Fragment/surface at 16:9, strips all app overlays, keeps playback alive,

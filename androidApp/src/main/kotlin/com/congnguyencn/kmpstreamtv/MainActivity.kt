@@ -7,15 +7,12 @@ import android.os.Bundle
 import android.view.View
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
-import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import com.congnguyencn.kmpstreamtv.databinding.ActivityMainBinding
 import com.congnguyencn.kmpstreamtv.feature.home.HomeTabFragment
@@ -29,6 +26,13 @@ class MainActivity : AppCompatActivity() {
     private var systemBarInsets = Insets.NONE
     private var isPlayerExpanded = false
 
+    /**
+     * Last laid-out height of the bottom navigation, kept because the player hides that bar while
+     * expanded — a `GONE` view measures 0, so the mini player's travel range would lose the very
+     * chrome it has to stay clear of if it read the height at minimize time.
+     */
+    private var bottomBarHeightPx = 0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -41,6 +45,9 @@ class MainActivity : AppCompatActivity() {
         }
         ViewCompat.requestApplyInsets(binding.root)
         binding.bottomNavMain.isItemActiveIndicatorEnabled = false
+        binding.bottomNavMain.addOnLayoutChangeListener { view, _, _, _, _, _, _, _, _ ->
+            if (view.isVisible && view.height > 0) bottomBarHeightPx = view.height
+        }
 
         binding.bottomNavMain.setOnItemSelectedListener { item ->
             showDestination(item.itemId)
@@ -80,27 +87,27 @@ class MainActivity : AppCompatActivity() {
     }
 
     internal fun presentPlayer(presentation: PlayerPresentation) {
-        val overlaysDestination = presentation != PlayerPresentation.MINI
+        val isMini = presentation == PlayerPresentation.MINI
         val fullscreen = presentation == PlayerPresentation.FULLSCREEN
-        binding.playerFragmentContainer.apply {
-            isVisible = true
-            updateLayoutParams<ConstraintLayout.LayoutParams> {
-                height = if (overlaysDestination) 0 else resources.getDimensionPixelSize(R.dimen.player_mini_height)
-                topToTop = if (overlaysDestination) ConstraintSet.PARENT_ID else ConstraintSet.UNSET
-                bottomToBottom = if (overlaysDestination) ConstraintSet.PARENT_ID else ConstraintSet.UNSET
-                bottomToTop = if (overlaysDestination) ConstraintSet.UNSET else R.id.bottomNavMain
-            }
-        }
-        binding.bottomNavMain.isVisible = !overlaysDestination
+        // The overlay stays window-sized at every presentation, including mini: the mini player is
+        // a floating card that travels the whole window, so the container cannot be docked to a
+        // strip above the bottom bar any more. It paints no background of its own and nothing
+        // outside the card is clickable, so touches beside a minimized player fall through to the
+        // destination behind it.
+        binding.playerFragmentContainer.isVisible = true
+        binding.bottomNavMain.isVisible = isMini
         binding.fragmentContainerMain.importantForAccessibility =
-            if (overlaysDestination) {
-                View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
-            } else {
+            if (isMini) {
                 View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
+            } else {
+                View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
             }
         setSystemBarsHidden(fullscreen)
-        if (presentation == PlayerPresentation.MINI) disableAutoEnterPictureInPicture()
+        if (isMini) disableAutoEnterPictureInPicture()
     }
+
+    /** Height the mini player has to stay clear of at the bottom of the window. */
+    internal fun bottomBarHeight(): Int = bottomBarHeightPx
 
     internal fun enterPlayerPictureInPicture() {
         if (isInPictureInPictureMode) return

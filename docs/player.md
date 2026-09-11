@@ -13,6 +13,10 @@ Android combines two sibling reference projects with separate responsibilities:
 - `../android_stream_player` remains the only playback engine. The app consumes
   `com.congnguyencn:stream-player:0.1.0` through the composite build and does not copy the old
   onmediaplayer ExoPlayer implementation.
+- `../ottclouds-android` is the mini-player reference. Its
+  `feature/player-manager/mobile/.../ui/miniplayer/` (`NewMinimizableView`, `MinimizableViewState`,
+  `customDetectTransformGestures`) and the `HorizontalVideoDetailScreen` that hosts them were
+  ported to XML/Views here — see [Floating mini player](#floating-mini-player).
 
 The former standalone `PlayerActivity` has been removed. `MainActivity` now owns a dedicated
 `playerFragmentContainer` above its destination fragments and bottom navigation.
@@ -21,19 +25,27 @@ The former standalone `PlayerActivity` has been removed. `MainActivity` now owns
 
 ```text
 feature/player/
-├── PlayerFragment.kt                 # lifecycle, detail/fullscreen/mini/PiP transitions
+├── PlayerFragment.kt                 # lifecycle, media, detail/fullscreen/mini/PiP presentation
 ├── PlayerMedia.kt                    # primitive Home-to-player/detail argument model
 ├── PlayerDetailAdapter.kt            # VOD metadata, provider and recommendation rows
 ├── PlayerDemoCatalog.kt              # related-content fixture until its API exists
+├── miniplayer/
+│   ├── MinimizableView.kt            # the overlay: sizes, offsets, decorates and drives the card
+│   ├── MinimizableViewState.kt       # all shrink/settle geometry, ported one-to-one
+│   ├── TransformGestureDetector.kt   # pan/pinch/tap/double-tap classification
+│   ├── FloatAnimatable.kt            # the Compose Animatable contract the state needs
+│   └── AspectRatioFrameLayout.kt     # Modifier.aspectRatio for the video box
 └── widget/
     ├── PlayerView.kt                 # surface and top/center/bottom controller UI
+    ├── MiniPlaybackControllerView.kt # transport strip under the minimized player
     └── PlayerSettingsView.kt         # quality, speed, audio and subtitle columns
 
 res/layout/
-├── fragment_player.xml               # top bar, 16:9 player and detail RecyclerView
+├── fragment_player.xml               # the overlay: detail content plus the player card
 ├── item_player_detail.xml
 ├── item_player_provider.xml
 ├── item_player_recommendation*.xml
+├── view_mini_playback_controller.xml # time bar, rewind, play/pause/replay, forward
 └── view_player.xml                    # reusable player surface/controller
 ```
 
@@ -62,12 +74,17 @@ provider, labels, booleans and episode count. The common `HomeContentUiModel` is
 
 The portrait hierarchy follows `on-tv-android`'s `VodDetailFragment` and `DetailAdapter`:
 
-1. a 64 dp top bar with the close action;
-2. a 16:9 native `PlayerView`;
-3. a vertical `RecyclerView` containing the two-line title, view/like summary and horizontally
+1. a 16:9 native `PlayerView` anchored to the top of the overlay;
+2. a vertical `RecyclerView` containing the two-line title, view/like summary and horizontally
    scrollable Watch later, Products, Like, Comment and Share actions;
-4. the StreamTV provider row with follow state;
-5. a “Recommended for you” header and full-width 16:9 related cards.
+3. the StreamTV provider row with follow state;
+4. a “Recommended for you” header and full-width 16:9 related cards.
+
+The former 64 dp top bar is gone. The mini player travels from the top of the overlay, so the
+player card has to start at y = 0 and would cover any bar above it; close, minimize and PiP moved
+into the player controller, which is where `HorizontalVideoDetailScreen` keeps them too. The detail
+`RecyclerView` reserves the player's strip with a `Space` constrained to `H,16:9` rather than being
+laid out below the player, because the player is a sibling that floats over it and travels away.
 
 The compact screen matches the supplied VOD reference by keeping extended metadata collapsed.
 Tapping the “See more” summary reveals/hides the dummy description. Watch later, Like and Follow
@@ -117,7 +134,7 @@ ExoPlayer volume between `0f` and `1f`. No duplicated playback state is created 
 | --- | --- | --- | --- |
 | Portrait detail | Full destination overlay; player remains 16:9 above detail list | Compact transport and progress; title is in detail row | Bottom bar hidden; system bars visible |
 | Landscape fullscreen | Full screen | Full title, wide center spacing and applicable VOD actions | Bottom/system bars hidden |
-| Mini | 96 dp row above bottom navigation, 170 dp video surface | Title, play/pause/replay and close | Bottom/system bars visible |
+| Mini | Floating card, 70% of the window wide (max 380 dp), parked in a corner | Transport strip below the video; close over it | Bottom/system bars visible |
 | System PiP | 16:9 pinned Activity surface | Android-provided PiP chrome; app overlays hidden | App is backgrounded |
 
 `values-land` retains the source player's 64 dp center spacing and 62 dp secondary-action height.
@@ -126,9 +143,9 @@ handles configuration changes so the same fragment, manager and decoder remain a
 `PlayerView.applyOrientation()` reapplies resource-dependent visibility and spacing.
 
 Dragging downward begins only from an unoccupied part of the video surface, so seeking and detail
-list scrolling remain independent. The fragment follows the finger with a small fade. Releasing
-past 22% of the screen height or above 1,250 px/s completes the transition to mini; otherwise it
-animates back into place. Tapping the mini video/title restores the detail screen.
+list scrolling remain independent. The card follows the finger while the detail behind it fades,
+and the shrink completes on release at whatever depth the drag reached — there is no distance or
+velocity threshold, matching the reference. Tapping the minimized card restores the detail screen.
 
 Back behavior is layered:
 
@@ -139,13 +156,75 @@ Back behavior is layered:
 
 Internal mini-player and system Picture-in-Picture are deliberately separate:
 
-- Drag/down action keeps `MainActivity` foregrounded and exposes bottom navigation.
+- Drag/down action keeps `MainActivity` foregrounded and exposes bottom navigation. The overlay
+  container stays window-sized while minimized, because the card travels the whole window; it paints
+  no background and nothing outside the card is clickable, so touches fall through to the
+  destination behind it.
 - The PiP controller action calls `MainActivity.enterPictureInPictureMode()` with a 16:9 ratio,
   source-rect hint and Android 12 seamless/auto-enter parameters.
 - Leaving the app while expanded and playing also enters PiP from `onUserLeaveHint()`.
 - In PiP, the Fragment keeps the same manager/surface alive but hides detail, settings, errors and
   all app controllers. Returning restores portrait detail or landscape fullscreen without reload.
 - Mini/close disables Android 12 auto-enter so an inactive player cannot reopen PiP later.
+
+### Floating mini player
+
+The shrink, the corner snapping and the pinch-zoom are a one-to-one port of
+`ottclouds-android`'s `feature/player-manager/mobile/.../ui/miniplayer/`. `MinimizableViewState`
+carries the same arithmetic and the same reasoning comments; the numbers it produces were checked
+against a running build (a 720 × 1280 window at density 2.0: card 504 px wide, 266 px video, 88 px
+strip, 16 px border gap, resting offset 783 px, and at max pinch scale 1.4286 with an 11 px padding,
+271 px video and 62 px strip, painting 16 px clear of both window edges — the same gap the resting
+card keeps).
+
+| Composable | View |
+| --- | --- |
+| `Box(fillMaxSize)` | `MinimizableView` |
+| `bottomContent` | `R.id.detailContent`, faded by `bottomContentAlpha` |
+| the player `Column` | `R.id.playerCard` — width fraction, edge padding, offset, top-end gravity |
+| `graphicsLayer { scale }` | `R.id.playerCardContent` — scale, rounded clip, border, elevation |
+| `Modifier.aspectRatio(PlayerRatio)` | `AspectRatioFrameLayout` |
+| `footerContent` | `MiniPlaybackControllerView` |
+| `customDetectTransformGestures` | `TransformGestureDetector` |
+| `Animatable<Float>` | `FloatAnimatable` over `ValueAnimator` |
+| `onRegisterMaximize` / `onRegisterMinimize` | `MinimizableView.maximize()` / `.minimize()` |
+
+Five things differ, and only because the host is a `ViewGroup`:
+
+1. **The padded card and the scaled content are two views.** Padding lives inside a view's own
+   bounds, so scaling one view would scale its border gap with it. Compose gets this for free from
+   modifier order (`.padding()` outside `.graphicsLayer{}`), and the `edgePaddingPx` and `settleTo`
+   arithmetic is written against that split.
+2. **No coroutine scope.** The composable queues every update on `AndroidUiDispatcher` and its
+   comments explain the FIFO ordering hazards that follow. `MinimizableView` calls the state
+   directly from the touch handler on the main thread, so there is no queue and no ordering to get
+   wrong.
+3. **`hostHeightPx` is the overlay's height, not the window's.** `MainActivity` already pads its
+   root by both system-bar insets, so the overlay is `window - topSystemBar - bottomSystemBar`;
+   subtracting the insets again, as the composable does, would double-count them. `appBottomBarHeightPx`
+   is the measured bottom-navigation height, cached in `MainActivity` because that bar is `GONE`
+   while the player is expanded and a `GONE` view measures 0.
+4. **Pan is converted before it reaches `onGestureZoom`.** That function multiplies the pan by the
+   scale it is heading to, because the Compose detector sits *inside* the scaled layer and reports
+   travel in the card's own coordinates. `MinimizableView` sits above the scale, so its pan is
+   already in host pixels and is divided back first.
+5. **Touches are hit-tested against the card.** The composable's `pointerInput` sits on the player
+   `Column` alone; this view spans the whole overlay, so without `isGestureOnCard` the detail list
+   could not be scrolled and a tap beside a minimized player would expand it instead of reaching the
+   destination behind. `clipChildren`/`clipToPadding` are off down to `playerCardContent`, because a
+   pinched-open card paints past the box it measures.
+
+One deliberate departure: the drag starts on downward movement only, where
+`detectVerticalDragGestures` starts on vertical slop in either direction and therefore minimizes on
+an upward drag too. An upward drag has nowhere to travel — `onVerticalDragging` clamps the offset at
+0 — so that path only ever discarded the gesture's intent.
+
+Known limitation, shared with the reference: the Media3 surface is a `SurfaceView`, which
+`clipToOutline` does not round. The card's corners are rounded, the video frame inside it is not.
+Setting `app:surface_type="texture_view"` on `mediaSurface` in `view_player.xml` fixes it at the
+cost of DRM-secure playback; it is left at Media3's default here because the reference does, and
+because it could not be verified on the available emulator (its system trust store rejects the
+demo CDN certificates, so no stream plays).
 
 ### Lifecycle
 

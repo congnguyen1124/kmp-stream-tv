@@ -8,11 +8,7 @@ import android.util.Rational
 import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.net.toUri
-import androidx.core.view.isVisible
-import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -27,14 +23,22 @@ import com.congnguyencn.streamplayer.loadAndPlay
 import com.congnguyencn.streamplayer.model.StreamTvPlayerState
 import com.congnguyencn.streamplayer.pause
 import com.congnguyencn.streamplayer.play
+import com.congnguyencn.streamplayer.replay
+import com.congnguyencn.streamplayer.seekBack
+import com.congnguyencn.streamplayer.seekForward
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 internal enum class PlayerPresentation { DETAIL, FULLSCREEN, MINI }
 
 /**
- * VOD detail/player overlay hosted by [MainActivity]. Portrait mirrors VodDetailFragment, landscape
- * becomes a controller-only fullscreen player, and a downward drag collapses it above bottom nav.
+ * VOD detail/player overlay hosted by [MainActivity].
+ *
+ * The overlay itself is `MinimizableView`, ported from `NewMinimizableView` in
+ * `ottclouds-android`: portrait shrinks the player into a floating card that can be dragged,
+ * pinched and parked in any corner, landscape becomes a controller-only fullscreen player, and
+ * system Picture-in-Picture bypasses both. This fragment owns lifecycle, media and the presentation
+ * the overlay is asked for; every dimension of the shrink lives in `MinimizableViewState`.
  */
 class PlayerFragment : Fragment(R.layout.fragment_player) {
     private var bindingRef: FragmentPlayerBinding? = null
@@ -68,19 +72,30 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
         bindingRef = FragmentPlayerBinding.bind(view)
         detailAdapter = PlayerDetailAdapter(::handleDetailAction, ::play)
         binding.detailList.adapter = detailAdapter
-        binding.detailClose.setOnClickListener { close() }
         binding.playerView.apply {
             onClose = ::close
             onMinimize = ::minimize
             onPictureInPicture = { (activity as? MainActivity)?.enterPlayerPictureInPicture() }
-            onExpand = ::expand
             onFullscreenToggle = ::toggleFullscreen
             onRetry = ::retry
             onEpisodes = {
                 Toast.makeText(requireContext(), R.string.player_episodes_coming_soon, Toast.LENGTH_SHORT).show()
             }
-            onDrag = ::renderDrag
-            onDragEnd = ::finishDrag
+        }
+        binding.miniPlaybackController.apply {
+            onToggle = binding.playerView::togglePlayback
+            onReplay = { manager?.replay() }
+            onRewind = { manager?.seekBack() }
+            onForward = { manager?.seekForward() }
+        }
+        binding.minimizableView.apply {
+            // Measured rather than assumed, so the resting mini player keeps its border gap above
+            // the real bottom navigation instead of the token's estimate of it.
+            (activity as? MainActivity)?.bottomBarHeight()?.takeIf { it > 0 }?.let {
+                appBottomBarHeightPx = it.toFloat()
+            }
+            onMinimizedChanged = ::onMinimizedChanged
+            onZoomScaleChanged = binding.miniPlaybackController::applyZoomScale
         }
         currentMedia?.let(::startMedia) ?: close()
         setPresentation(presentationForCurrentOrientation(presentation))
@@ -129,6 +144,13 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
     }
 
     internal fun expand() {
+        val minimizable = bindingRef?.minimizableView
+        if (minimizable != null && minimizable.isMinimized) {
+            // The grow animation reports back through onMinimizedChanged, which is what switches
+            // the presentation — driving both from here would flip it a frame early.
+            minimizable.maximize()
+            return
+        }
         setPresentation(presentationForCurrentOrientation(PlayerPresentation.DETAIL))
     }
 
@@ -137,8 +159,10 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
             presentation = presentationForCurrentOrientation(PlayerPresentation.DETAIL)
         }
         bindingRef?.let {
-            applyPresentationLayout()
             it.playerView.setPresentation(presentation)
+            // The new window size reaches MinimizableView as a size change, which rebuilds the
+            // geometry around it and restores the minimized state on the new dimensions.
+            it.minimizableView.setPresentation(presentation)
             (activity as? MainActivity)?.presentPlayer(
                 if (isSystemPictureInPicture) PlayerPresentation.FULLSCREEN else presentation,
             )
@@ -149,8 +173,10 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
         currentMedia ?: return null
         if (presentation == PlayerPresentation.MINI || isSystemPictureInPicture) return null
         isSystemPictureInPicture = true
-        bindingRef?.playerView?.setSystemPictureInPicture(true)
-        bindingRef?.let { applyPresentationLayout() }
+        bindingRef?.let {
+            it.playerView.setSystemPictureInPicture(true)
+            it.minimizableView.setSystemPictureInPicture(true)
+        }
         return Rational(16, 9)
     }
 
@@ -161,12 +187,15 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
 
     internal fun onSystemPictureInPictureModeChanged(enabled: Boolean) {
         isSystemPictureInPicture = enabled
-        bindingRef?.playerView?.setSystemPictureInPicture(enabled)
         if (!enabled) {
             presentation = presentationForCurrentOrientation(presentation)
         }
         bindingRef?.let {
-            applyPresentationLayout()
+            it.playerView.setSystemPictureInPicture(enabled)
+            it.minimizableView.setSystemPictureInPicture(enabled)
+            if (!enabled) {
+                it.minimizableView.setPresentation(presentation)
+            }
             (activity as? MainActivity)?.presentPlayer(
                 if (enabled) PlayerPresentation.FULLSCREEN else presentation,
             )
@@ -193,9 +222,8 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
             loadedMediaKey = mediaKey
             latestState = StreamTvPlayerState.Initial
             player.loadAndPlay(media.url.toUri())
-        } else {
-            binding.playerView.render(latestState)
         }
+        render(latestState)
     }
 
     private fun ensureManager(useFeedConfig: Boolean): StreamTvPlayerManager {
@@ -223,45 +251,52 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
                 viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                     player.playerState.collect { state ->
                         latestState = state
-                        bindingRef?.playerView?.render(state)
+                        render(state)
                     }
                 }
             }
+    }
+
+    private fun render(state: StreamTvPlayerState) {
+        bindingRef?.let {
+            it.playerView.render(state)
+            it.miniPlaybackController.render(state)
+            it.miniPlaybackController.setActionsEnabled(state.playbackError == null)
+        }
     }
 
     private fun retry() {
         currentMedia?.let { manager?.loadAndPlay(it.url.toUri()) }
     }
 
-    @SuppressLint("SourceLockedOrientationActivity")
     private fun minimize() {
         requestPortrait()
+        val minimizable = bindingRef?.minimizableView
+        if (minimizable != null && !minimizable.isMinimized) {
+            minimizable.minimize()
+            return
+        }
         setPresentation(PlayerPresentation.MINI)
+    }
+
+    /** The single seam the overlay reports its own shrink/grow through. */
+    private fun onMinimizedChanged(isMinimized: Boolean) {
+        setPresentation(
+            if (isMinimized) {
+                PlayerPresentation.MINI
+            } else {
+                presentationForCurrentOrientation(PlayerPresentation.DETAIL)
+            },
+        )
     }
 
     private fun setPresentation(value: PlayerPresentation) {
         presentation = value
         if (bindingRef == null) return
-        resetDragImmediately()
         binding.playerView.setPresentation(value)
-        applyPresentationLayout()
+        binding.minimizableView.setPresentation(value)
         (activity as? MainActivity)?.presentPlayer(value)
     }
-
-    private fun applyPresentationLayout() =
-        with(binding) {
-            val showDetail = presentation == PlayerPresentation.DETAIL && !isSystemPictureInPicture
-            val fillParent = !showDetail
-            detailTopBar.isVisible = showDetail
-            detailList.isVisible = showDetail
-            detailShadow.isVisible = showDetail
-            playerView.updateLayoutParams<ConstraintLayout.LayoutParams> {
-                dimensionRatio = if (showDetail) "H,16:9" else null
-                topToBottom = if (showDetail) R.id.detailTopBar else ConstraintSet.UNSET
-                topToTop = if (fillParent) ConstraintSet.PARENT_ID else ConstraintSet.UNSET
-                bottomToBottom = if (fillParent) ConstraintSet.PARENT_ID else ConstraintSet.UNSET
-            }
-        }
 
     private fun presentationForCurrentOrientation(fallback: PlayerPresentation): PlayerPresentation =
         when {
@@ -287,47 +322,6 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
             } else {
                 ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
             }
-    }
-
-    private fun renderDrag(distanceY: Float) {
-        if (presentation != PlayerPresentation.DETAIL) return
-        binding.root.animate().cancel()
-        binding.root.translationY = distanceY
-        val progress = (distanceY / (binding.root.height * DRAG_DISMISS_FRACTION)).coerceIn(0f, 1f)
-        binding.root.alpha = 1f - progress * DRAG_MAX_FADE
-    }
-
-    private fun finishDrag(
-        distanceY: Float,
-        velocityY: Float,
-    ) {
-        val shouldMinimize =
-            distanceY >= binding.root.height * DRAG_DISMISS_FRACTION ||
-                velocityY >= DRAG_MIN_VELOCITY
-        if (shouldMinimize) {
-            binding.root
-                .animate()
-                .translationY(binding.root.height * DRAG_EXIT_TRANSLATION)
-                .alpha(0.82f)
-                .setDuration(DRAG_ANIMATION_MILLIS)
-                .withEndAction {
-                    resetDragImmediately()
-                    minimize()
-                }.start()
-        } else {
-            binding.root
-                .animate()
-                .translationY(0f)
-                .alpha(1f)
-                .setDuration(DRAG_ANIMATION_MILLIS)
-                .start()
-        }
-    }
-
-    private fun resetDragImmediately() {
-        bindingRef?.root?.animate()?.cancel()
-        bindingRef?.root?.translationY = 0f
-        bindingRef?.root?.alpha = 1f
     }
 
     private fun handleDetailAction(action: PlayerDetailAction) {
@@ -383,11 +377,6 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
         internal const val TAG = "player_fragment"
         private const val STATE_MEDIA = "player_media"
         private const val STATE_PRESENTATION = "player_presentation"
-        private const val DRAG_DISMISS_FRACTION = 0.22f
-        private const val DRAG_EXIT_TRANSLATION = 0.35f
-        private const val DRAG_MAX_FADE = 0.18f
-        private const val DRAG_MIN_VELOCITY = 1_250f
-        private const val DRAG_ANIMATION_MILLIS = 180L
 
         fun newInstance(content: HomeContentUiModel) =
             PlayerFragment().apply {

@@ -4,11 +4,7 @@ import android.content.Context
 import android.content.res.Configuration
 import android.util.AttributeSet
 import android.view.LayoutInflater
-import android.view.MotionEvent
-import android.view.VelocityTracker
 import android.view.View
-import android.view.ViewConfiguration
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.SeekBar
@@ -40,7 +36,6 @@ import com.congnguyencn.streamplayer.selectVideoTrack
 import com.congnguyencn.streamplayer.setSpeed
 import com.congnguyencn.streamplayer.togglePlayPause
 import com.congnguyencn.streamplayer.togglePlayPauseAtDefaultPosition
-import kotlin.math.abs
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
@@ -67,11 +62,6 @@ class PlayerView
         private var presentation = PlayerPresentation.DETAIL
         private var controlsVisible = true
         private var isSystemPictureInPicture = false
-        private var touchDownX = 0f
-        private var touchDownY = 0f
-        private var isDragging = false
-        private var velocityTracker: VelocityTracker? = null
-        private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
         private var playbackSpeed = DEFAULT_SPEED
         private var resumeAfterSettings = false
         private var isMuted = false
@@ -80,23 +70,16 @@ class PlayerView
         var onClose: (() -> Unit)? = null
         var onMinimize: (() -> Unit)? = null
         var onPictureInPicture: (() -> Unit)? = null
-        var onExpand: (() -> Unit)? = null
         var onFullscreenToggle: (() -> Unit)? = null
         var onRetry: (() -> Unit)? = null
         var onEpisodes: (() -> Unit)? = null
-        var onDrag: ((distanceY: Float) -> Unit)? = null
-        var onDragEnd: ((distanceY: Float, velocityY: Float) -> Unit)? = null
 
         init {
             setBackgroundColor(context.getColor(R.color.black))
-            binding.viewMask.setOnClickListener {
-                if (presentation == PlayerPresentation.MINI) onExpand?.invoke() else toggleController()
-            }
-            binding.viewMask.setOnTouchListener(::handleSurfaceTouch)
-            binding.miniController.setOnClickListener { onExpand?.invoke() }
+            binding.viewMask.setOnClickListener { toggleController() }
             binding.closeAction.setOnClickListener { onClose?.invoke() }
             binding.closeErrorAction.setOnClickListener { onClose?.invoke() }
-            binding.miniCloseAction.setOnClickListener { onClose?.invoke() }
+            binding.miniCloseOverlay.setOnClickListener { onClose?.invoke() }
             binding.minimizeAction.setOnClickListener { onMinimize?.invoke() }
             binding.pipAction.setOnClickListener { onPictureInPicture?.invoke() }
             binding.fullscreenAction.setOnClickListener { onFullscreenToggle?.invoke() }
@@ -112,7 +95,6 @@ class PlayerView
                 revealController()
             }
             binding.playPauseAction.setOnClickListener { togglePlayback() }
-            binding.miniPlayPauseAction.setOnClickListener { togglePlayback() }
             binding.volumeAction.setOnClickListener { toggleMute() }
             binding.qualityAction.setOnClickListener { showSettings(listOf(PlayerSettingType.VIDEO)) }
             binding.speedAction.setOnClickListener { showSettings(listOf(PlayerSettingType.SPEED)) }
@@ -200,7 +182,6 @@ class PlayerView
         internal fun bindMedia(media: PlayerMedia) {
             this.media = media
             binding.playerTitle.text = media.title
-            binding.miniTitle.text = media.title
             binding.mediaArtwork.load(media.thumbnailUrl) { crossfade(true) }
             binding.episodesAction.isVisible = media.episodeCount > 1
             applyOrientation()
@@ -233,10 +214,8 @@ class PlayerView
                     else -> R.drawable.ic_player_play
                 }
             binding.playPauseAction.setImageResource(actionIcon)
-            binding.miniPlayPauseAction.setImageResource(actionIcon)
             val actionDescription = if (state.isPlaying) R.string.pause else R.string.play
             binding.playPauseAction.setContentDescription(context.getString(actionDescription))
-            binding.miniPlayPauseAction.setContentDescription(context.getString(actionDescription))
 
             val isLive = media?.isLive == true
             binding.rewindAction.isVisible = !isLive && !isEnded
@@ -270,12 +249,12 @@ class PlayerView
         internal fun setPresentation(presentation: PlayerPresentation) {
             this.presentation = presentation
             val isMini = presentation == PlayerPresentation.MINI
-            binding.surfaceContainer.updateLayoutParams<LayoutParams> {
-                width = if (isMini) resources.getDimensionPixelSize(R.dimen.player_mini_video_width) else MATCH_PARENT
-                height = MATCH_PARENT
-            }
             controllerViews.forEach { it.isVisible = !isMini && !isSystemPictureInPicture }
-            binding.miniController.isVisible = isMini && !isSystemPictureInPicture
+            binding.miniCloseOverlay.isVisible = isMini && !isSystemPictureInPicture
+            // Tap, double tap, pan and pinch on a minimized card belong to MinimizableView, which
+            // only sees them once nothing here consumes the stream first.
+            binding.viewMask.isClickable = !isMini
+            binding.viewMask.isFocusable = !isMini
             binding.errorView.isVisible = !isMini && !isSystemPictureInPicture && latestState.playbackError != null
             binding.settingsView.isVisible = false
             controlsVisible = !isMini
@@ -292,7 +271,7 @@ class PlayerView
             removeCallbacks(hideControls)
             if (enabled) {
                 controllerViews.forEach { it.isVisible = false }
-                binding.miniController.isVisible = false
+                binding.miniCloseOverlay.isVisible = false
                 binding.errorView.isVisible = false
                 binding.settingsView.isVisible = false
             } else {
@@ -305,11 +284,13 @@ class PlayerView
             val bottomActionHeight = resources.getDimensionPixelSize(R.dimen.player_bottom_action_menu_height)
             if (isSystemPictureInPicture) {
                 controllerViews.forEach { it.isVisible = false }
-                binding.miniController.isVisible = false
+                binding.miniCloseOverlay.isVisible = false
                 return
             }
             binding.playerTitle.isInvisible = !isLandscape
-            binding.closeAction.isVisible = presentation == PlayerPresentation.FULLSCREEN
+            // The detail presentation has no top bar of its own any more — the player card is
+            // anchored to the top of the overlay, so close lives in the controller at every size.
+            binding.closeAction.isVisible = presentation != PlayerPresentation.MINI
             binding.minimizeAction.isVisible = presentation == PlayerPresentation.DETAIL
             binding.pipAction.isVisible = presentation != PlayerPresentation.MINI
             binding.bottomActions.visibility =
@@ -345,7 +326,7 @@ class PlayerView
             binding.settingsView.show(types, latestState, playbackSpeed)
         }
 
-        private fun togglePlayback() {
+        internal fun togglePlayback() {
             val player = manager ?: return
             when {
                 latestState.playbackState == StreamTvPlaybackState.Ended -> player.replay()
@@ -430,57 +411,6 @@ class PlayerView
             if (latestState.isPlaying && binding.settingsView.isVisible.not()) {
                 postDelayed(hideControls, CONTROLLER_DISPLAY_MILLIS)
             }
-        }
-
-        private fun handleSurfaceTouch(
-            view: View,
-            event: MotionEvent,
-        ): Boolean {
-            velocityTracker?.addMovement(event)
-            when (event.actionMasked) {
-                MotionEvent.ACTION_DOWN -> {
-                    touchDownX = event.x
-                    touchDownY = event.y
-                    isDragging = false
-                    velocityTracker?.recycle()
-                    velocityTracker = VelocityTracker.obtain().also { it.addMovement(event) }
-                    return true
-                }
-
-                MotionEvent.ACTION_MOVE -> {
-                    val distanceX = event.x - touchDownX
-                    val distanceY = event.y - touchDownY
-                    if (
-                        presentation == PlayerPresentation.DETAIL &&
-                        !isSystemPictureInPicture &&
-                        distanceY > touchSlop &&
-                        distanceY > abs(distanceX)
-                    ) {
-                        isDragging = true
-                    }
-                    if (isDragging) {
-                        onDrag?.invoke(distanceY.coerceAtLeast(0f))
-                        return true
-                    }
-                }
-
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    if (isDragging) {
-                        velocityTracker?.computeCurrentVelocity(1_000)
-                        onDragEnd?.invoke(
-                            (event.y - touchDownY).coerceAtLeast(0f),
-                            velocityTracker?.yVelocity ?: 0f,
-                        )
-                    } else if (event.actionMasked == MotionEvent.ACTION_UP) {
-                        view.performClick()
-                    }
-                    velocityTracker?.recycle()
-                    velocityTracker = null
-                    isDragging = false
-                    return true
-                }
-            }
-            return true
         }
 
         private fun StreamTvPlaybackError.messageRes(): Int =

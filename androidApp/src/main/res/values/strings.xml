@@ -39,6 +39,7 @@
     <string name="forward_short">+10</string>
     <string name="play">Play</string>
     <string name="pause">Pause</string>
+    <string name="replay">Replay</string>
     <string name="elapsed_time">%1$s / %2$s</string>
     <string name="minimize_player">Minimize player</string>
     <string name="close_player">Close player</string>

@@ -88,9 +88,25 @@
     <dimen name="player_bottom_action_menu_height">20dp</dimen>
     <dimen name="player_setting_layout_padding">32dp</dimen>
     <dimen name="player_setting_content_padding">24dp</dimen>
-    <dimen name="player_mini_height">96dp</dimen>
-    <dimen name="player_mini_video_width">170dp</dimen>
-    <dimen name="player_detail_top_bar_height">64dp</dimen>
     <integer name="player_transition_duration">200</integer>
+
+    <!-- Floating mini player, ported from NewMinimizableViewDefault in ottclouds-android. -->
+    <dimen name="mini_player_border_padding">8dp</dimen>
+    <dimen name="mini_player_bottom_margin">80dp</dimen>
+    <dimen name="mini_player_footer_height">44dp</dimen>
+    <dimen name="mini_player_corner_radius">16dp</dimen>
+    <dimen name="mini_player_elevation">2dp</dimen>
+    <dimen name="mini_player_border_width">1dp</dimen>
+    <dimen name="mini_player_time_bar_height">2dp</dimen>
+    <dimen name="mini_player_action_padding">8dp</dimen>
+    <dimen name="mini_player_close_size">40dp</dimen>
+    <!--
+      Upper bound on the mini player width, so it stays a *mini* player on a large window.
+      This cap and the 0.7 width ratio cross at 380 / 0.7 = 542.9dp, where both yield the same
+      width; below that the ratio is the smaller of the two and wins, which is why a phone needs
+      no window-size branch anywhere.
+    -->
+    <dimen name="mini_player_max_width">380dp</dimen>
+    <integer name="mini_player_time_bar_max">10000</integer>
 
 </resources>
