@@ -9,7 +9,7 @@ import com.congnguyencn.kmpstreamtv.feature.home.presentation.model.HomeSectionU
 
 /** Mirrors HomePageAdapter: every section id receives a unique view type and its exact outer holder. */
 internal class HomeSectionAdapter(
-    private val onContentClick: (HomeContentUiModel) -> Unit,
+    private val onContentClick: (HomeSectionUiModel, HomeContentUiModel) -> Unit,
 ) : BaseListAdapter<HomeSectionUiModel>(HomeSectionDiffCallback) {
     private val sectionTypeIds = mutableListOf<String>()
 
@@ -25,14 +25,17 @@ internal class HomeSectionAdapter(
         viewType: Int,
     ): BindableViewHolder<HomeSectionUiModel> {
         val section = sectionTypeIds.getOrNull(viewType)?.let { id -> currentList.firstOrNull { it.id == id } }
+        val sectionClick: (HomeContentUiModel) -> Unit = { content ->
+            section?.let { onContentClick(it, content) }
+        }
         return when (section?.presentation) {
-            HomeSectionPresentation.TopTen -> LayoutBackgroundViewHolder(parent, onContentClick)
-            HomeSectionPresentation.HighlightTall -> LayoutHighlightTallViewHolder(parent, onContentClick)
-            HomeSectionPresentation.HighlightWide -> LayoutHighlightWideViewHolder(parent, onContentClick)
-            HomeSectionPresentation.Story -> LayoutStoryViewHolder(parent, onContentClick)
-            HomeSectionPresentation.ContinueWatching -> LayoutWatchingViewHolder(parent, onContentClick)
-            HomeSectionPresentation.MiniApps -> LayoutMiniAppViewHolder(parent, onContentClick)
-            else -> LayoutGeneralViewHolder(parent, onContentClick)
+            HomeSectionPresentation.TopTen -> LayoutBackgroundViewHolder(parent, sectionClick)
+            HomeSectionPresentation.HighlightTall -> LayoutHighlightTallViewHolder(parent, sectionClick)
+            HomeSectionPresentation.HighlightWide -> LayoutHighlightWideViewHolder(parent, sectionClick)
+            HomeSectionPresentation.Story -> LayoutStoryViewHolder(parent, sectionClick)
+            HomeSectionPresentation.ContinueWatching -> LayoutWatchingViewHolder(parent, sectionClick)
+            HomeSectionPresentation.MiniApps -> LayoutMiniAppViewHolder(parent, sectionClick)
+            else -> LayoutGeneralViewHolder(parent, sectionClick)
         }
     }
 }

@@ -55,14 +55,14 @@ final class PlayerOverlayStore: ObservableObject {
         guard loadedMediaKey != media.mediaKey else { return }
         loadedMediaKey = media.mediaKey
         guard let url = URL(string: media.url) else { return }
-        player.loadAndPlay(url: url)
+        player.load(url: url)
     }
 
     func close() {
         settingTypes = []
         pictureInPicture.stop()
         pictureInPicture.setAutomaticStart(false)
-        player.close()
+        player.stop()
         media = nil
         recommendations = []
         loadedMediaKey = nil

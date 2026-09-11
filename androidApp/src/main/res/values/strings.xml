@@ -83,6 +83,12 @@
     <string name="player_action_like">Like updated</string>
     <string name="player_action_comment">Comments will open in their own fragment.</string>
     <string name="player_action_share">Sharing will be connected when the content API is available.</string>
+    <string name="more_options">More options</string>
+    <string name="short_profile_message">Opening %1$s profile will be connected with the profile feature.</string>
+    <string name="short_comment_message">Comments will open in their own sheet.</string>
+    <string name="short_share_message">Sharing will be connected when the content API is available.</string>
+    <string name="short_more_message">More short-video actions will be available here.</string>
+    <string name="story_reaction_message">Reaction sent</string>
     <plurals name="player_episode_count">
         <item quantity="one">%d episode</item>
         <item quantity="other">%d episodes</item>

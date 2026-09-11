@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black">
+
+    <ImageView
+        android:id="@+id/artwork"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:contentDescription="@null"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.media3.ui.PlayerView
+        android:id="@+id/mediaSurface"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:contentDescription="@string/video"
+        android:keepScreenOn="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:resize_mode="zoom"
+        app:show_buffering="never"
+        app:shutter_background_color="@android:color/transparent"
+        app:use_controller="false" />
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="180dp"
+        android:background="@drawable/bg_player_controller_top"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="160dp"
+        android:background="@drawable/bg_player_controller_bottom"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <com.congnguyencn.kmpstreamtv.feature.story.HoldEventView
+        android:id="@+id/leftTouchTarget"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/touchGuide"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/touchGuide"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
+
+    <com.congnguyencn.kmpstreamtv.feature.story.HoldEventView
+        android:id="@+id/rightTouchTarget"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/touchGuide"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/storyChrome"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.congnguyencn.kmpstreamtv.feature.story.StoryGroupProgressView
+            android:id="@+id/progress"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/margin_small"
+            android:layout_marginTop="@dimen/margin_small"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/profileAvatar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="@dimen/margin"
+            android:layout_marginTop="@dimen/margin_small_xx"
+            android:background="@drawable/image_placeholder_provider"
+            android:scaleType="centerCrop"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/progress"
+            app:shapeAppearance="@style/CircularImage" />
+
+        <TextView
+            android:id="@+id/providerName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/margin_small"
+            android:layout_marginEnd="@dimen/margin_small"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textAppearance="@style/Text.Heading2"
+            android:textColor="@color/white"
+            app:layout_constraintBottom_toTopOf="@id/publishedTime"
+            app:layout_constraintEnd_toStartOf="@id/close"
+            app:layout_constraintStart_toEndOf="@id/profileAvatar"
+            app:layout_constraintTop_toTopOf="@id/profileAvatar"
+            app:layout_constraintVertical_chainStyle="packed" />
+
+        <TextView
+            android:id="@+id/publishedTime"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/Text.Caption1"
+            android:textColor="@color/silverChalice"
+            app:layout_constraintBottom_toBottomOf="@id/profileAvatar"
+            app:layout_constraintEnd_toEndOf="@id/providerName"
+            app:layout_constraintStart_toStartOf="@id/providerName"
+            app:layout_constraintTop_toBottomOf="@id/providerName" />
+
+        <ImageButton
+            android:id="@+id/close"
+            style="@style/Widget.StreamTV.TopBarButton"
+            android:layout_marginEnd="@dimen/margin_small"
+            android:contentDescription="@string/close_player"
+            android:src="@drawable/ic_player_close"
+            app:layout_constraintBottom_toBottomOf="@id/profileAvatar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/profileAvatar" />
+
+        <LinearLayout
+            android:id="@+id/reactions"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginBottom="@dimen/margin_small"
+            android:gravity="center"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/share"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <TextView style="@style/StoryReaction" android:text="👍" />
+            <TextView style="@style/StoryReaction" android:text="❤️" />
+            <TextView style="@style/StoryReaction" android:text="😂" />
+            <TextView style="@style/StoryReaction" android:text="😮" />
+            <TextView style="@style/StoryReaction" android:text="😢" />
+            <TextView style="@style/StoryReaction" android:text="😡" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/share"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="@dimen/margin"
+            android:layout_marginBottom="@dimen/margin_small_xx"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/share"
+            android:padding="12dp"
+            android:src="@drawable/ic_player_share"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ProgressBar
+        android:id="@+id/loading"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:indeterminateTint="@color/flushOrange"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ProgressBar
+        android:id="@+id/loadingPlayer"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:indeterminateTint="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/errorGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="@dimen/margin_xx"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/errorMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textAppearance="@style/Text.Body2"
+            android:textColor="@color/white" />
+
+        <Button
+            android:id="@+id/retry"
+            style="@style/Button.Primary"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginTop="@dimen/margin"
+            android:text="@string/retry" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/playerErrorGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="@dimen/margin"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/player_error_message"
+            android:textAppearance="@style/Text.Body2"
+            android:textColor="@color/white" />
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -6,13 +6,24 @@ struct HomeView: View {
     let contentTopInset: CGFloat
     let onScrollOffsetChanged: (CGFloat) -> Void
 
+    /// VOD plays in the overlay `MainTabView` hosts, so it outlives this screen and can shrink
+    /// into the floating mini player. Shorts and Stories stay full-screen covers: neither has a
+    /// minimized presentation.
     @EnvironmentObject private var playerStore: PlayerOverlayStore
+    @State private var shortSelection: ShortSelection?
+    @State private var storySelection: StorySelection?
     @State private var positionedInitialFeed = false
 
     var body: some View {
         ZStack {
             Color.streamBackground.ignoresSafeArea()
             content
+        }
+        .fullScreenCover(item: $shortSelection) { selection in
+            ShortMediaView(initialId: selection.id, showsCloseButton: true)
+        }
+        .fullScreenCover(item: $storySelection) { selection in
+            StoryGroupView(initialId: selection.id)
         }
     }
 
@@ -55,7 +66,13 @@ struct HomeView: View {
                 LazyVStack(alignment: .leading, spacing: 0) {
                     ForEach(Array(store.state.sections.enumerated()), id: \.element.id) { index, section in
                         HomeSectionView(section: section, index: index) { content in
-                            playerStore.open(content: content)
+                            if section.presentation.name == "Story" {
+                                storySelection = StorySelection(id: content.id)
+                            } else if content.isShort {
+                                shortSelection = ShortSelection(id: content.id)
+                            } else {
+                                playerStore.open(content: content)
+                            }
                         }
                     }
                 }
@@ -76,6 +93,14 @@ struct HomeView: View {
     }
 
     private static let feedTopID = "home-feed-top"
+}
+
+private struct ShortSelection: Identifiable {
+    let id: String
+}
+
+private struct StorySelection: Identifiable {
+    let id: String
 }
 
 private struct HomeFeedOffsetPreferenceKey: PreferenceKey {

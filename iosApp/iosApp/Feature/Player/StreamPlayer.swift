@@ -110,6 +110,18 @@ final class StreamPlayer: ObservableObject {
     @Published private(set) var isMuted = false
     @Published private(set) var speed: Float = 1
 
+    /// Bumped once per play-to-end. The Short feed advances to the next item on a change here, and
+    /// the Story group advances to the next story, so it has to count rather than latch: replaying
+    /// the same item must be distinguishable from never having finished.
+    @Published private(set) var completionCount = 0
+
+    /// Flat readings over `state`, kept because the Short and Story feeds only need the three
+    /// values and never the full snapshot. Computed rather than stored so there is one source of
+    /// truth; `state` is `@Published`, so a view observing this object still redraws on a change.
+    var isPlaying: Bool { state.isPlaying }
+    var currentTime: TimeInterval { state.position }
+    var duration: TimeInterval { state.duration }
+
     private var timeObserver: Any?
     private var cancellables = Set<AnyCancellable>()
     private var itemCancellables = Set<AnyCancellable>()
@@ -132,7 +144,8 @@ final class StreamPlayer: ObservableObject {
 
     // MARK: - Commands
 
-    func loadAndPlay(url: URL) {
+    /// Loads and starts playback. Port of `StreamTvPlayerManager.loadAndPlay`.
+    func load(url: URL) {
         trackLoadTask?.cancel()
         itemCancellables.removeAll()
         loadedURL = url
@@ -140,6 +153,7 @@ final class StreamPlayer: ObservableObject {
 
         let item = AVPlayerItem(url: url)
         state = StreamPlayerState(playbackState: .buffering)
+        completionCount = 0
         player.replaceCurrentItem(with: item)
         observeItem(item)
         player.rate = speed
@@ -149,7 +163,7 @@ final class StreamPlayer: ObservableObject {
     /// Re-runs the last load. Port of `PlayerFragment.retry`.
     func retry() {
         guard let loadedURL else { return }
-        loadAndPlay(url: loadedURL)
+        load(url: loadedURL)
     }
 
     func play() {
@@ -165,13 +179,13 @@ final class StreamPlayer: ObservableObject {
         publish()
     }
 
-    func togglePlayPause() {
+    func togglePlayback() {
         if state.isPlaying { pause() } else { play() }
     }
 
     /// Live streams resume at the edge rather than where they were paused.
     /// Port of `togglePlayPauseAtDefaultPosition`.
-    func togglePlayPauseAtDefaultPosition() {
+    func togglePlaybackAtDefaultPosition() {
         if state.isPlaying {
             pause()
         } else {
@@ -217,7 +231,7 @@ final class StreamPlayer: ObservableObject {
         player.isMuted = isMuted
     }
 
-    func close() {
+    func stop() {
         trackLoadTask?.cancel()
         player.pause()
         player.replaceCurrentItem(with: nil)
@@ -225,6 +239,7 @@ final class StreamPlayer: ObservableObject {
         loadedURL = nil
         wantsPlayback = false
         state = .initial
+        completionCount = 0
     }
 
     // MARK: - Track selection
@@ -328,6 +343,7 @@ final class StreamPlayer: ObservableObject {
                 wantsPlayback = false
                 state.playbackState = .ended
                 state.isPlaying = false
+                completionCount += 1
             }
             .store(in: &itemCancellables)
 

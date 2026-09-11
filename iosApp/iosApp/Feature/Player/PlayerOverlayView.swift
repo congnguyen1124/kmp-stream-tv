@@ -48,7 +48,7 @@ struct PlayerOverlayView: View {
                         state: store.player.state,
                         zoomScale: store.minimizable.zoomScale,
                         isEnabled: store.player.state.playbackError == nil,
-                        onToggle: { store.player.togglePlayPause() },
+                        onToggle: { store.player.togglePlayback() },
                         onReplay: { store.player.replay() },
                         onRewind: { store.player.seekBack() },
                         onForward: { store.player.seekForward() }

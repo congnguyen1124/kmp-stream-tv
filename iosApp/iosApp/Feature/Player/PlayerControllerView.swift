@@ -432,9 +432,9 @@ struct PlayerControllerView: View {
         if isEnded {
             player.replay()
         } else if media.isLive {
-            player.togglePlayPauseAtDefaultPosition()
+            player.togglePlaybackAtDefaultPosition()
         } else {
-            player.togglePlayPause()
+            player.togglePlayback()
         }
         revealController()
     }
