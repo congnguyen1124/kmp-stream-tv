@@ -6,16 +6,13 @@ struct HomeView: View {
     let contentTopInset: CGFloat
     let onScrollOffsetChanged: (CGFloat) -> Void
 
-    @State private var playerSelection: PlayerSelection?
+    @EnvironmentObject private var playerStore: PlayerOverlayStore
     @State private var positionedInitialFeed = false
 
     var body: some View {
         ZStack {
             Color.streamBackground.ignoresSafeArea()
             content
-        }
-        .fullScreenCover(item: $playerSelection) { selection in
-            PlayerView(content: selection.content)
         }
     }
 
@@ -58,7 +55,7 @@ struct HomeView: View {
                 LazyVStack(alignment: .leading, spacing: 0) {
                     ForEach(Array(store.state.sections.enumerated()), id: \.element.id) { index, section in
                         HomeSectionView(section: section, index: index) { content in
-                            playerSelection = PlayerSelection(content: content)
+                            playerStore.open(content: content)
                         }
                     }
                 }
@@ -79,11 +76,6 @@ struct HomeView: View {
     }
 
     private static let feedTopID = "home-feed-top"
-}
-
-private struct PlayerSelection: Identifiable {
-    let content: HomeContentUiModel
-    var id: String { content.id }
 }
 
 private struct HomeFeedOffsetPreferenceKey: PreferenceKey {

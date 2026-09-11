@@ -61,7 +61,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             )
         }
         binding.swipeRefresh.apply {
-            setColorSchemeResources(R.color.heliotrope)
+            setColorSchemeResources(R.color.flushOrange)
             setProgressBackgroundColorSchemeResource(R.color.shark)
             val topOffset = resources.getDimensionPixelSize(R.dimen.home_content_padding_top)
             val endOffset = topOffset + resources.getDimensionPixelSize(R.dimen.margin_4x)

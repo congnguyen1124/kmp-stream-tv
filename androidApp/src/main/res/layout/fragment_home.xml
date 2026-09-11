@@ -19,7 +19,7 @@
             android:layout_height="44dp"
             android:layout_gravity="center"
             android:contentDescription="@string/loading_home"
-            android:indeterminateTint="@color/heliotrope" />
+            android:indeterminateTint="@color/flushOrange" />
 
         <LinearLayout
             android:id="@+id/errorGroup"

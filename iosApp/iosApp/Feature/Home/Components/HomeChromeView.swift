@@ -118,6 +118,11 @@ struct HomeChromeView: View {
     }
 
     /// `ivTopBarBehind` fades in with the feed, then `bg_topbar` and the unscaled blur artwork.
+    ///
+    /// `fragment_home_tab.xml` pins all three to the top of the window, so the stack has to bleed
+    /// through the top safe area here as well. Clipping it to the bar height instead leaves the
+    /// status bar / Dynamic Island strip as a flat uncoloured band above the header, and lets the
+    /// feed scroll past it unscrimmed.
     private var topbarBackground: some View {
         ZStack(alignment: .topLeading) {
             LinearGradient.streamTopbarBehind
@@ -132,8 +137,9 @@ struct HomeChromeView: View {
                     height: StreamCardSize.topbarBlur.height
                 )
         }
-        .frame(height: HomeChromeMetrics.totalHeight)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .clipped()
+        .ignoresSafeArea(edges: .top)
     }
 
     private func actionButton(_ action: HomeChromeAction, image: String) -> some View {
