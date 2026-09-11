@@ -38,6 +38,9 @@ enum AppDestination: String, CaseIterable, Identifiable {
 
 struct MainTabView: View {
     @State private var selection = AppDestination.home
+    /// `MainActivity` hosts the player fragment above the destinations so a minimized player keeps
+    /// playing while the user moves between tabs; the overlay lives at the same level here.
+    @StateObject private var playerStore = PlayerOverlayStore()
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -62,10 +65,25 @@ struct MainTabView: View {
                 }
             }
             .safeAreaPadding(.bottom, BottomNavigationMetrics.totalHeight)
+            // `fragmentContainerMain.importantForAccessibility`: an expanded player takes the
+            // destinations behind it out of the accessibility tree.
+            .accessibilityHidden(playerStore.isPresented && playerStore.presentation != .mini)
 
-            BottomNavigationBar(selection: $selection)
+            if playerStore.showsBottomNavigation {
+                BottomNavigationBar(selection: $selection)
+                    .transition(.opacity)
+            }
+
+            PlayerOverlayView(store: playerStore)
         }
+        .animation(
+            .easeInOut(duration: PlayerMetrics.transitionDuration),
+            value: playerStore.showsBottomNavigation
+        )
+        .environmentObject(playerStore)
         .preferredColorScheme(.dark)
+        // `setSystemBarsHidden(fullscreen)`.
+        .statusBarHidden(playerStore.presentation == .fullscreen)
     }
 
     private func destination<Content: View>(

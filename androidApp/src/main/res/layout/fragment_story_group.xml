@@ -178,7 +178,7 @@
         android:id="@+id/loading"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:indeterminateTint="@color/heliotrope"
+        android:indeterminateTint="@color/flushOrange"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

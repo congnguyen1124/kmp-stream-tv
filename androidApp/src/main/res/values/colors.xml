@@ -10,13 +10,13 @@
     <color name="shark">#2C2C2E</color>
     <color name="silverChalice">#ADADAD</color>
     <color name="gray">#8D8D8D</color>
-    <color name="persianIndigo">#2D0A69</color>
-    <color name="honeyFlower">#4A146D</color>
+    <color name="cherrywood">#5F140B</color>
+    <color name="cinnamon">#7B3F0A</color>
     <color name="bombay">#AEAEB2</color>
     <color name="red">#FB0000</color>
     <color name="alizarinCrimson">#DC1F26</color>
-    <color name="heliotrope">#B446F0</color>
-    <color name="purpleHeart">#6419DA</color>
+    <color name="flushOrange">#FF7A18</color>
+    <color name="pomegranate">#E8301C</color>
     <color name="transparent">#00000000</color>
     <color name="appBackground">@color/codGray3</color>
     <color name="colorControlHighlight">@color/gray</color>
@@ -24,8 +24,8 @@
     <color name="stream_surface">@color/shark</color>
     <color name="stream_text">@color/white</color>
     <color name="stream_text_secondary">@color/silverChalice</color>
-    <color name="stream_accent">@color/purpleHeart</color>
-    <color name="stream_accent_soft">#336419DA</color>
+    <color name="stream_accent">@color/pomegranate</color>
+    <color name="stream_accent_soft">#33E8301C</color>
     <color name="stream_live">@color/alizarinCrimson</color>
 
     <!-- Player palette ported from onmediaplayer-android. -->

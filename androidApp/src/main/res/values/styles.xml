@@ -5,16 +5,16 @@
         <item name="fontFamily">@font/svn_gilroy</item>
         <item name="android:windowActionModeOverlay">true</item>
         <item name="android:windowBackground">@color/appBackground</item>
-        <item name="android:colorAccent">@color/purpleHeart</item>
+        <item name="android:colorAccent">@color/pomegranate</item>
         <item name="android:textAppearance">@style/Text.Body2</item>
         <item name="android:textColor">@color/white</item>
         <item name="android:navigationBarColor">@color/black</item>
         <item name="android:statusBarColor">@color/appBackground</item>
         <item name="android:windowLightStatusBar">false</item>
-        <item name="colorPrimary">@color/purpleHeart</item>
-        <item name="colorPrimaryVariant">@color/purpleHeart</item>
+        <item name="colorPrimary">@color/pomegranate</item>
+        <item name="colorPrimaryVariant">@color/pomegranate</item>
         <item name="colorOnPrimary">@color/white</item>
-        <item name="colorSecondary">@color/heliotrope</item>
+        <item name="colorSecondary">@color/flushOrange</item>
         <item name="colorOnSurface">@color/white</item>
     </style>
 
@@ -34,7 +34,7 @@
     <style name="Button.Primary" parent="Button"><item name="android:background">@drawable/bg_button_primary_state</item><item name="backgroundTint">@null</item><item name="android:textColor">@color/white</item></style>
     <style name="Button.Icon" parent="Button"><item name="iconTint">@color/white</item></style>
     <style name="Button.Icon.Large" parent="Button.Icon"><item name="iconSize">@dimen/icon_button_size_x</item><item name="iconGravity">textTop</item><item name="rippleColor">@color/colorControlHighlight</item><item name="android:textAppearance">@style/Text.Caption2</item><item name="android:textColor">@color/silverChalice</item><item name="android:minWidth">@dimen/size_3_5x</item><item name="android:minHeight">@dimen/size_3_5x</item></style>
-    <style name="ContentLoading"><item name="android:layout_width">wrap_content</item><item name="android:layout_height">wrap_content</item><item name="android:layout_marginTop">@dimen/margin</item><item name="android:indeterminateTint">@color/heliotrope</item></style>
+    <style name="ContentLoading"><item name="android:layout_width">wrap_content</item><item name="android:layout_height">wrap_content</item><item name="android:layout_marginTop">@dimen/margin</item><item name="android:indeterminateTint">@color/flushOrange</item></style>
     <style name="SaymeeLabel"><item name="android:textAllCaps">true</item><item name="android:textSize">8sp</item><item name="android:letterSpacing">-0.01</item><item name="android:gravity">center</item><item name="android:fontFamily">@font/svn_gilroy_bold</item><item name="android:paddingHorizontal">@dimen/margin_tiny</item><item name="android:paddingVertical">@dimen/margin_super_tiny</item><item name="android:textColor">@color/white</item></style>
 
     <style name="GenericThumbnail"><item name="cornerFamily">rounded</item><item name="cornerSize">@dimen/thumbnail_corner</item></style>
@@ -99,7 +99,7 @@
     </style>
 
     <style name="PlayerUserGraphButton.Highlight" parent="PlayerUserGraphButton">
-        <item name="strokeColor">@color/heliotrope</item>
+        <item name="strokeColor">@color/flushOrange</item>
         <item name="strokeWidth">1dp</item>
     </style>
 

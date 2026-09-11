@@ -111,7 +111,7 @@ struct StoryGroupView: View {
                     Text(item.providerName).font(.streamSemiBold(16))
                     Text(item.publishedLabel)
                         .font(.streamRegular(12))
-                        .foregroundStyle(.streamSecondaryText)
+                        .foregroundStyle(Color.streamSecondaryText)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 

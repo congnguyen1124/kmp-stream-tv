@@ -50,8 +50,8 @@ extension Color {
     static let streamSurface = Color(hex: 0x2C2C2E)
     static let streamSecondaryText = Color(hex: 0xADADAD)
     static let streamBottomNavText = Color(hex: 0xAEAEB2)
-    static let streamAccent = Color(hex: 0x6419DA)
-    static let streamAccentBright = Color(hex: 0xB446F0)
+    static let streamAccent = Color(hex: 0xE8301C)
+    static let streamAccentBright = Color(hex: 0xFF7A18)
     static let streamLive = Color(hex: 0xDC1F26)
     static let streamTrack = Color(hex: 0xFFFFFF, alpha: 0.4)
     static let streamMiniAppFill = Color(hex: 0x282828)
@@ -114,9 +114,9 @@ extension LinearGradient {
     /// `divider_story_top`
     static let streamStoryDividerTop = LinearGradient(
         stops: [
-            .init(color: Color(hex: 0x6419DA, alpha: 0.1), location: 0),
+            .init(color: Color(hex: 0xE8301C, alpha: 0.1), location: 0),
             .init(color: .streamAccent, location: 0.8),
-            .init(color: Color(hex: 0x6419DA, alpha: 0), location: 1),
+            .init(color: Color(hex: 0xE8301C, alpha: 0), location: 1),
         ],
         startPoint: .leading,
         endPoint: .trailing

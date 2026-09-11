@@ -6,7 +6,10 @@ struct HomeView: View {
     let contentTopInset: CGFloat
     let onScrollOffsetChanged: (CGFloat) -> Void
 
-    @State private var playerSelection: PlayerSelection?
+    /// VOD plays in the overlay `MainTabView` hosts, so it outlives this screen and can shrink
+    /// into the floating mini player. Shorts and Stories stay full-screen covers: neither has a
+    /// minimized presentation.
+    @EnvironmentObject private var playerStore: PlayerOverlayStore
     @State private var shortSelection: ShortSelection?
     @State private var storySelection: StorySelection?
     @State private var positionedInitialFeed = false
@@ -15,9 +18,6 @@ struct HomeView: View {
         ZStack {
             Color.streamBackground.ignoresSafeArea()
             content
-        }
-        .fullScreenCover(item: $playerSelection) { selection in
-            PlayerView(content: selection.content)
         }
         .fullScreenCover(item: $shortSelection) { selection in
             ShortMediaView(initialId: selection.id, showsCloseButton: true)
@@ -71,7 +71,7 @@ struct HomeView: View {
                             } else if content.isShort {
                                 shortSelection = ShortSelection(id: content.id)
                             } else {
-                                playerSelection = PlayerSelection(content: content)
+                                playerStore.open(content: content)
                             }
                         }
                     }
@@ -93,11 +93,6 @@ struct HomeView: View {
     }
 
     private static let feedTopID = "home-feed-top"
-}
-
-private struct PlayerSelection: Identifiable {
-    let content: HomeContentUiModel
-    var id: String { content.id }
 }
 
 private struct ShortSelection: Identifiable {

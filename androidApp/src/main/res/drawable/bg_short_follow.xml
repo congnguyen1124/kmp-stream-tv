@@ -12,8 +12,8 @@
             <corners android:radius="16dp" />
             <gradient
                 android:angle="0"
-                android:endColor="@color/purpleHeart"
-                android:startColor="@color/heliotrope" />
+                android:endColor="@color/pomegranate"
+                android:startColor="@color/flushOrange" />
         </shape>
     </item>
 </selector>
