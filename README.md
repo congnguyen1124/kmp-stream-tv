@@ -30,7 +30,7 @@ kmp-stream-tv/
 │       ├── kotlin/.../core/ui/recyclerview/  # RecyclerView support primitives
 │       ├── kotlin/.../feature/home/          # Home tab/fragment, category bar, adapters and holders
 │       ├── kotlin/.../feature/placeholder/   # Ready-to-replace destination fragments
-│       ├── kotlin/.../feature/player/        # android_stream_player screen
+│       ├── kotlin/.../feature/player/        # PlayerFragment, PlayerView and stream-player bridge
 │       └── res/layout/                       # XML layouts
 ├── iosApp/iosApp/
 │   ├── Home/                 # SwiftUI Home and shared-state bridge
@@ -59,8 +59,12 @@ Android resolves the sibling player project through a Gradle composite build:
 kmp-stream-tv/../android_stream_player
 ```
 
-`PlayerActivity` owns `StreamTvPlayerManager`, attaches its Media3 player to an XML `PlayerView`,
-collects the library's immutable player state, pauses on stop and closes the manager on destroy.
+`PlayerFragment` overlays `MainActivity` and owns `StreamTvPlayerManager`. Its app-owned XML
+`PlayerView` ports the phone controller UI from `onmediaplayer-android`. Portrait reproduces the
+`on-tv-android` VOD detail hierarchy with metadata, provider actions and recommendations; landscape
+is fullscreen; downward drag creates an internal mini-player above bottom navigation; Android
+system PiP remains available separately. All playback commands and state continue to come from
+`android_stream_player`.
 
 iOS does not wrap the Android library. `StreamPlayer.swift` owns an `AVPlayer`, its periodic time
 observer and cleanup. `PlayerView.swift` provides native controls and live/VOD differences.

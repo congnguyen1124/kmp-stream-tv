@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="black">#FF000000</color>
-    <color name="black_60">#99000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="white_10">#1AFFFFFF</color>
     <color name="white_30">#4DFFFFFF</color>
@@ -28,5 +27,12 @@
     <color name="stream_accent">@color/purpleHeart</color>
     <color name="stream_accent_soft">#336419DA</color>
     <color name="stream_live">@color/alizarinCrimson</color>
-    <color name="stream_scrim">@color/black_60</color>
+
+    <!-- Player palette ported from onmediaplayer-android. -->
+    <color name="playerPrimary">#FFFFFF</color>
+    <color name="playerSecondary">#A3A3A3</color>
+    <color name="playerProgressBackground">#525252</color>
+    <color name="playerInactiveText">#ADADAD</color>
+    <color name="player_detail_divider">#2C2C2E</color>
+    <color name="player_detail_action">#202020</color>
 </resources>

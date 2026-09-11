@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingHorizontal="@dimen/margin"
+    android:paddingTop="@dimen/margin_x"
+    android:paddingBottom="@dimen/margin_small_xx"
+    android:text="@string/recommended_for_you"
+    android:textAppearance="@style/Text.Title2"
+    android:textColor="@color/white" />

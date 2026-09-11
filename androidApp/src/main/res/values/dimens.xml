@@ -70,4 +70,27 @@
     <dimen name="radius_normal_extra">16dp</dimen>
     <dimen name="logo_app_corner">12dp</dimen>
 
+    <!-- Player controller dimensions mirror onmediaplayer-android/phone. -->
+    <dimen name="player_controller_padding">16dp</dimen>
+    <dimen name="player_controller_padding_medium">12dp</dimen>
+    <dimen name="player_controller_padding_vertical">4dp</dimen>
+    <dimen name="player_action_padding">4dp</dimen>
+    <dimen name="player_center_action_spacing">24dp</dimen>
+    <dimen name="player_center_button_size">40dp</dimen>
+    <dimen name="player_progress_height">2dp</dimen>
+    <dimen name="player_live_corner">16dp</dimen>
+    <dimen name="player_live_padding_horizontal">8dp</dimen>
+    <dimen name="player_duration_text_size">14sp</dimen>
+    <dimen name="player_bottom_controller_padding">16dp</dimen>
+    <dimen name="player_title_min_height">24dp</dimen>
+    <dimen name="player_button_radius">6dp</dimen>
+    <dimen name="player_button_icon_size">24dp</dimen>
+    <dimen name="player_bottom_action_menu_height">20dp</dimen>
+    <dimen name="player_setting_layout_padding">32dp</dimen>
+    <dimen name="player_setting_content_padding">24dp</dimen>
+    <dimen name="player_mini_height">96dp</dimen>
+    <dimen name="player_mini_video_width">170dp</dimen>
+    <dimen name="player_detail_top_bar_height">64dp</dimen>
+    <integer name="player_transition_duration">200</integer>
+
 </resources>

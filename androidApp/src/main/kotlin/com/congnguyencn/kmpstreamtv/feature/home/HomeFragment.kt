@@ -12,11 +12,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.congnguyencn.kmpstreamtv.MainActivity
 import com.congnguyencn.kmpstreamtv.R
 import com.congnguyencn.kmpstreamtv.databinding.FragmentHomeBinding
 import com.congnguyencn.kmpstreamtv.feature.home.presentation.HomeUiState
 import com.congnguyencn.kmpstreamtv.feature.home.presentation.HomeViewModel
-import com.congnguyencn.kmpstreamtv.feature.player.PlayerActivity
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.getKoin
 
@@ -36,7 +36,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentHomeBinding.bind(view)
         val sectionAdapter = HomeSectionAdapter { content ->
-            startActivity(PlayerActivity.intent(requireContext(), content))
+            (activity as? MainActivity)?.openPlayer(content)
         }
         homeAdapter = sectionAdapter
 

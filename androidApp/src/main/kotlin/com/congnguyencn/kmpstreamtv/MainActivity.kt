@@ -1,20 +1,45 @@
 package com.congnguyencn.kmpstreamtv
 
+import android.app.PictureInPictureParams
+import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
+import android.view.View
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.graphics.Insets
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import com.congnguyencn.kmpstreamtv.databinding.ActivityMainBinding
 import com.congnguyencn.kmpstreamtv.feature.home.HomeTabFragment
+import com.congnguyencn.kmpstreamtv.feature.home.presentation.model.HomeContentUiModel
+import com.congnguyencn.kmpstreamtv.feature.player.PlayerFragment
+import com.congnguyencn.kmpstreamtv.feature.player.PlayerPresentation
 import com.congnguyencn.kmpstreamtv.feature.placeholder.PlaceholderFragment
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+    private var systemBarInsets = Insets.NONE
+    private var isPlayerExpanded = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
+            systemBarInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            applyRootInsets()
+            insets
+        }
+        ViewCompat.requestApplyInsets(binding.root)
         binding.bottomNavMain.isItemActiveIndicatorEnabled = false
 
         binding.bottomNavMain.setOnItemSelectedListener { item ->
@@ -31,13 +56,109 @@ class MainActivity : AppCompatActivity() {
         super.onSaveInstanceState(outState)
     }
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        activePlayer()?.onHostConfigurationChanged()
+    }
+
+    fun openPlayer(content: HomeContentUiModel) {
+        val existing = activePlayer()
+        if (existing != null) {
+            existing.play(content)
+            existing.expand()
+            return
+        }
+
+        binding.playerFragmentContainer.isVisible = true
+        supportFragmentManager.beginTransaction()
+            .replace(
+                R.id.playerFragmentContainer,
+                PlayerFragment.newInstance(content),
+                PlayerFragment.TAG,
+            )
+            .commitNow()
+    }
+
+    internal fun presentPlayer(presentation: PlayerPresentation) {
+        val overlaysDestination = presentation != PlayerPresentation.MINI
+        val fullscreen = presentation == PlayerPresentation.FULLSCREEN
+        binding.playerFragmentContainer.apply {
+            isVisible = true
+            updateLayoutParams<ConstraintLayout.LayoutParams> {
+                height = if (overlaysDestination) 0 else resources.getDimensionPixelSize(R.dimen.player_mini_height)
+                topToTop = if (overlaysDestination) ConstraintSet.PARENT_ID else ConstraintSet.UNSET
+                bottomToBottom = if (overlaysDestination) ConstraintSet.PARENT_ID else ConstraintSet.UNSET
+                bottomToTop = if (overlaysDestination) ConstraintSet.UNSET else R.id.bottomNavMain
+            }
+        }
+        binding.bottomNavMain.isVisible = !overlaysDestination
+        binding.fragmentContainerMain.importantForAccessibility = if (overlaysDestination) {
+            View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+        } else {
+            View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
+        }
+        setSystemBarsHidden(fullscreen)
+        if (presentation == PlayerPresentation.MINI) disableAutoEnterPictureInPicture()
+    }
+
+    internal fun enterPlayerPictureInPicture() {
+        if (isInPictureInPictureMode) return
+        val player = activePlayer() ?: return
+        val aspectRatio = player.prepareForSystemPictureInPicture() ?: return
+        presentPlayer(PlayerPresentation.FULLSCREEN)
+        val params = PictureInPictureParams.Builder()
+            .setAspectRatio(aspectRatio)
+            .apply {
+                player.pictureInPictureSourceRect()?.let(::setSourceRectHint)
+            }
+            .apply {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    setSeamlessResizeEnabled(true)
+                    setAutoEnterEnabled(true)
+                }
+            }
+            .build()
+        if (!enterPictureInPictureMode(params)) {
+            player.onSystemPictureInPictureModeChanged(false)
+        }
+    }
+
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        if (activePlayer()?.shouldAutoEnterPictureInPicture() == true) {
+            enterPlayerPictureInPicture()
+        }
+    }
+
+    override fun onPictureInPictureModeChanged(
+        isInPictureInPictureMode: Boolean,
+        newConfig: Configuration,
+    ) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+        if (!isInPictureInPictureMode) disableAutoEnterPictureInPicture()
+        activePlayer()?.onSystemPictureInPictureModeChanged(isInPictureInPictureMode)
+    }
+
+    internal fun closePlayer(fragment: PlayerFragment) {
+        if (fragment.isAdded) {
+            supportFragmentManager.beginTransaction().remove(fragment).commitNowAllowingStateLoss()
+        }
+        binding.playerFragmentContainer.isVisible = false
+        binding.bottomNavMain.isVisible = true
+        binding.fragmentContainerMain.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
+        setSystemBarsHidden(false)
+        disableAutoEnterPictureInPicture()
+    }
+
     private fun showDestination(@IdRes destinationId: Int) {
         val tag = destinationId.toString()
         val existing = supportFragmentManager.findFragmentByTag(tag)
         val target = existing ?: createDestination(destinationId)
 
         supportFragmentManager.beginTransaction().apply {
-            supportFragmentManager.fragments.forEach(::hide)
+            supportFragmentManager.fragments
+                .filterNot { it.tag == PlayerFragment.TAG }
+                .forEach(::hide)
             if (existing == null) {
                 add(R.id.fragmentContainerMain, target, tag)
             } else {
@@ -62,6 +183,37 @@ class MainActivity : AppCompatActivity() {
             description = getString(R.string.placeholder_playlist),
         )
         else -> HomeTabFragment()
+    }
+
+    private fun activePlayer(): PlayerFragment? =
+        supportFragmentManager.findFragmentByTag(PlayerFragment.TAG) as? PlayerFragment
+
+    private fun setSystemBarsHidden(hidden: Boolean) {
+        isPlayerExpanded = hidden
+        applyRootInsets()
+        WindowInsetsControllerCompat(window, binding.root).apply {
+            systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            if (hidden) hide(WindowInsetsCompat.Type.systemBars())
+            else show(WindowInsetsCompat.Type.systemBars())
+        }
+        binding.root.requestApplyInsets()
+    }
+
+    private fun applyRootInsets() {
+        binding.root.setPadding(
+            0,
+            if (isPlayerExpanded) 0 else systemBarInsets.top,
+            0,
+            if (isPlayerExpanded) 0 else systemBarInsets.bottom,
+        )
+    }
+
+    private fun disableAutoEnterPictureInPicture() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            setPictureInPictureParams(
+                PictureInPictureParams.Builder().setAutoEnterEnabled(false).build(),
+            )
+        }
     }
 
     private companion object {

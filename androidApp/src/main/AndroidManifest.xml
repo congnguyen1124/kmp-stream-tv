@@ -12,12 +12,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.KmpStreamTv">
         <activity
-            android:name=".feature.player.PlayerActivity"
-            android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenSize"
-            android:exported="false" />
-        <activity
+            android:name=".MainActivity"
+            android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
             android:exported="true"
-            android:name=".MainActivity">
+            android:supportsPictureInPicture="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

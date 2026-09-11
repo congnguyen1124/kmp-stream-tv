@@ -1,0 +1,370 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <FrameLayout
+        android:id="@+id/surfaceContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/mediaArtwork"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@null"
+            android:scaleType="centerCrop" />
+
+        <androidx.media3.ui.PlayerView
+            android:id="@+id/mediaSurface"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/video"
+            android:keepScreenOn="true"
+            app:resize_mode="fit"
+            app:shutter_background_color="@android:color/transparent"
+            app:show_buffering="never"
+            app:use_controller="false" />
+
+        <View
+            android:id="@+id/viewMask"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <ProgressBar
+            android:id="@+id/loading"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center"
+            android:indeterminateTint="@color/heliotrope" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/topController"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:background="@drawable/bg_player_controller_top"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="@dimen/player_controller_padding_medium">
+
+        <TextView
+            android:id="@+id/playerTitle"
+            style="@style/PlayerTitleText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/margin_small"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:minHeight="@dimen/player_title_min_height"
+            android:textAppearance="@style/Text.Body3"
+            android:textColor="@color/white"
+            tools:text="The StreamTV premiere" />
+
+        <ImageButton
+            android:id="@+id/minimizeAction"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?android:attr/actionBarItemBackground"
+            android:contentDescription="@string/minimize_player"
+            android:padding="12dp"
+            android:src="@drawable/ic_player_collapse" />
+
+        <ImageButton
+            android:id="@+id/pipAction"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?android:attr/actionBarItemBackground"
+            android:contentDescription="@string/picture_in_picture"
+            android:padding="12dp"
+            android:src="@drawable/ic_player_minimize" />
+
+        <ImageButton
+            android:id="@+id/closeAction"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="@dimen/margin_x"
+            android:background="?android:attr/actionBarItemBackground"
+            android:contentDescription="@string/close_player"
+            android:padding="12dp"
+            android:src="@drawable/ic_player_close" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/centerController"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/rewindAction"
+            android:layout_width="@dimen/player_center_button_size"
+            android:layout_height="@dimen/player_center_button_size"
+            android:background="@drawable/ic_player_rewind"
+            android:contentDescription="@string/rewind"
+            android:gravity="center"
+            android:paddingTop="4dp"
+            android:text="@string/rewind_short"
+            android:textColor="@color/white"
+            android:textSize="12sp" />
+
+        <ImageButton
+            android:id="@+id/playPauseAction"
+            android:layout_width="@dimen/player_center_button_size"
+            android:layout_height="@dimen/player_center_button_size"
+            android:layout_marginStart="@dimen/player_center_action_spacing"
+            android:background="?android:attr/actionBarItemBackground"
+            android:contentDescription="@string/play"
+            android:src="@drawable/ic_player_play" />
+
+        <TextView
+            android:id="@+id/forwardAction"
+            android:layout_width="@dimen/player_center_button_size"
+            android:layout_height="@dimen/player_center_button_size"
+            android:layout_marginStart="@dimen/player_center_action_spacing"
+            android:background="@drawable/ic_player_forward"
+            android:contentDescription="@string/forward"
+            android:gravity="center"
+            android:paddingTop="4dp"
+            android:text="@string/forward_short"
+            android:textColor="@color/white"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/bottomController"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@drawable/bg_player_controller_bottom">
+
+        <LinearLayout
+            android:id="@+id/progressRow"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="@dimen/player_controller_padding"
+            android:paddingVertical="@dimen/player_controller_padding_vertical"
+            app:layout_constraintBottom_toTopOf="@id/seekProgress"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <TextView
+                android:id="@+id/progressText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:textSize="@dimen/player_duration_text_size"
+                tools:text="00:02 / 03:13" />
+
+            <TextView
+                android:id="@+id/liveBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_player_live"
+                android:paddingHorizontal="@dimen/player_live_padding_horizontal"
+                android:paddingVertical="3dp"
+                android:text="@string/live"
+                android:textColor="@color/black"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:ignore="SmallSp" />
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <ImageButton
+                android:id="@+id/qualityAction"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?android:attr/actionBarItemBackground"
+                android:contentDescription="@string/video_quality"
+                android:padding="@dimen/player_action_padding"
+                android:src="@drawable/ic_player_video_settings" />
+
+            <ImageButton
+                android:id="@+id/volumeAction"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?android:attr/actionBarItemBackground"
+                android:contentDescription="@string/mute"
+                android:padding="@dimen/player_action_padding"
+                android:src="@drawable/ic_player_audio_on" />
+
+            <ImageButton
+                android:id="@+id/fullscreenAction"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?android:attr/actionBarItemBackground"
+                android:contentDescription="@string/fullscreen"
+                android:padding="@dimen/player_action_padding"
+                android:src="@drawable/ic_player_fullscreen" />
+        </LinearLayout>
+
+        <SeekBar
+            android:id="@+id/seekProgress"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/player_bottom_controller_padding"
+            android:progressDrawable="@drawable/player_progress"
+            android:thumbTint="@color/playerPrimary"
+            app:layout_constraintBottom_toTopOf="@id/bottomActions"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <LinearLayout
+            android:id="@+id/bottomActions"
+            style="@style/PlayerBottomActionsMenu"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/player_bottom_action_menu_height"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="@dimen/player_controller_padding"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/speedAction"
+                style="@style/PlayerActionTextButton"
+                android:layout_marginHorizontal="@dimen/margin_small"
+                android:text="@string/player_speed"
+                app:icon="@drawable/ic_speed"
+                app:iconGravity="textStart"
+                app:iconSize="@dimen/player_button_icon_size" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/soundSubtitleAction"
+                style="@style/PlayerActionTextButton"
+                android:layout_marginHorizontal="@dimen/margin_small"
+                android:text="@string/player_sound_subtitle"
+                app:icon="@drawable/ic_sound_and_subtitle"
+                app:iconGravity="textStart"
+                app:iconSize="@dimen/player_button_icon_size" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/episodesAction"
+                style="@style/PlayerActionTextButton"
+                android:layout_marginHorizontal="@dimen/margin_small"
+                android:text="@string/episodes"
+                app:icon="@drawable/ic_playlist_outline"
+                app:iconGravity="textStart"
+                app:iconSize="@dimen/player_button_icon_size" />
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <FrameLayout
+        android:id="@+id/errorView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/black"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="32dp">
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_player_error" />
+
+            <TextView
+                android:id="@+id/errorMessage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center"
+                android:textAppearance="@style/Text.Body2"
+                android:textColor="@color/white"
+                tools:text="Unable to play this content." />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/retryAction"
+                style="@style/Button.Primary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/player_error_retry" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/closeErrorAction"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="top|end"
+            android:layout_margin="8dp"
+            android:background="?android:attr/actionBarItemBackground"
+            android:contentDescription="@string/close_player"
+            android:padding="12dp"
+            android:src="@drawable/ic_player_close" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/miniController"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginStart="@dimen/player_mini_video_width"
+        android:background="@drawable/bg_player_mini"
+        android:contentDescription="@string/expand_player"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingEnd="0dp"
+        android:paddingStart="16dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/miniTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:textAppearance="@style/Text.Body3"
+            android:textColor="@color/white"
+            tools:text="The StreamTV premiere" />
+
+        <ImageButton
+            android:id="@+id/miniPlayPauseAction"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?android:attr/actionBarItemBackground"
+            android:contentDescription="@string/play"
+            android:padding="10dp"
+            android:src="@drawable/ic_player_play" />
+
+        <ImageButton
+            android:id="@+id/miniCloseAction"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?android:attr/actionBarItemBackground"
+            android:contentDescription="@string/close_player"
+            android:padding="12dp"
+            android:src="@drawable/ic_player_close" />
+    </LinearLayout>
+
+    <com.congnguyencn.kmpstreamtv.feature.player.widget.PlayerSettingsView
+        android:id="@+id/settingsView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
+</FrameLayout>

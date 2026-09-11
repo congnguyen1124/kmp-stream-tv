@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:paddingHorizontal="@dimen/margin"
+        android:textAppearance="@style/Text.Title2"
+        android:textColor="@color/white"
+        tools:text="Round 1 – The performance that changed the night" />
+
+    <LinearLayout
+        android:id="@+id/metadataRow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_small"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="@dimen/margin"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/age"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/margin_small"
+            android:background="@drawable/bg_player_age_badge"
+            android:gravity="center"
+            android:minWidth="28dp"
+            android:paddingHorizontal="6dp"
+            android:paddingVertical="2dp"
+            android:textAppearance="@style/Text.Caption2"
+            android:textColor="@color/white"
+            tools:text="P" />
+
+        <TextView
+            android:id="@+id/subInfo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/Text.Caption1"
+            android:textColor="@color/silverChalice"
+            tools:text="24:10" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/userGraph"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:paddingHorizontal="@dimen/margin"
+        android:paddingTop="@dimen/margin_small"
+        android:paddingBottom="@dimen/margin_tiny"
+        android:textAppearance="@style/Text.Caption1"
+        android:textColor="@color/silverChalice"
+        tools:text="12K views | 12K likes ... See more" />
+
+    <TextView
+        android:id="@+id/description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:paddingHorizontal="@dimen/margin"
+        android:paddingTop="@dimen/margin_small"
+        android:textAppearance="@style/Text.Body2"
+        android:textColor="@color/bombay"
+        tools:text="A polished dummy description for this video." />
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clipToPadding="false"
+        android:paddingHorizontal="@dimen/margin"
+        android:paddingVertical="@dimen/margin_small"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/watchLater"
+                style="@style/PlayerUserGraphButton"
+                android:text="@string/watch_later"
+                app:icon="@drawable/ic_playlist_plus" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/products"
+                style="@style/PlayerUserGraphButton.Highlight"
+                android:text="@string/products"
+                app:icon="@drawable/ic_player_shopping_bag" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/like"
+                style="@style/PlayerUserGraphButton"
+                android:text="@string/like"
+                app:icon="@drawable/ic_player_heart" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/comment"
+                style="@style/PlayerUserGraphButton"
+                android:text="@string/comment"
+                app:icon="@drawable/ic_player_comment" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/share"
+                style="@style/PlayerUserGraphButton"
+                android:text="@string/share"
+                app:icon="@drawable/ic_player_share" />
+        </LinearLayout>
+    </HorizontalScrollView>
+</LinearLayout>
