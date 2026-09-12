@@ -25,3 +25,5 @@ output-metadata.json
 *.jks
 *.keystore
 google-services.json
+__pycache__/
+*.pyc
