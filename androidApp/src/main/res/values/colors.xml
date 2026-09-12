@@ -35,5 +35,7 @@
     <color name="playerInactiveText">#ADADAD</color>
     <color name="player_detail_divider">#2C2C2E</color>
     <color name="player_detail_action">#202020</color>
-    <color name="player_mini_footer">@color/shark</color>
+    <color name="player_mini_footer">@color/appBackground</color>
+    <color name="selection_highlight">#1AFFFFFF</color>
+    <color name="profile_divider">#33FFFFFF</color>
 </resources>

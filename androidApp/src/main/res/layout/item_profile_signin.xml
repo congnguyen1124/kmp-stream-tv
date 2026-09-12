@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="@dimen/profile_horizontal_padding"
+    android:background="@drawable/bg_profile_sign_in"
+    android:paddingHorizontal="@dimen/margin_xx"
+    android:paddingVertical="@dimen/margin_x">
+
+    <ImageView
+        android:id="@+id/profileIcon"
+        android:layout_width="@dimen/profile_avatar_size"
+        android:layout_height="@dimen/profile_avatar_size"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_profile_placeholder"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/hello"
+        style="@style/Text.Title1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margin"
+        android:text="@string/hello"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/profileIcon"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/prompt"
+        style="@style/Text.Body3"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margin"
+        android:layout_marginTop="@dimen/margin_small_x"
+        android:text="@string/login_prompt"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/profileIcon"
+        app:layout_constraintTop_toBottomOf="@id/hello" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/signInAction"
+        style="@style/Button.Primary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_xx"
+        android:paddingHorizontal="@dimen/margin_xx"
+        android:text="@string/log_in"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/prompt" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -72,6 +72,16 @@
         app:layout_constraintStart_toEndOf="@id/touchGuide"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <FrameLayout
+        android:id="@+id/reactionAnimationLayer"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:importantForAccessibility="no"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/storyChrome"
         android:layout_width="0dp"

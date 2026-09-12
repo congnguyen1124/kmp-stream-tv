@@ -50,6 +50,13 @@ weights, `#111111` surface palette, top-bar gradients/blur assets, Story backgro
 numbered Top 10 artwork, card ratios and the four bottom-navigation state icons. StreamTV's own
 wordmark and launcher assets remain sourced from `android_stream_tv`.
 
+Home category overflow and the compact submenu now open the same full-screen wheel picker as the
+mobile reference. `SliderLayoutManager` scales and fades rows by their distance from the viewport
+centre, `CustomLinearSnapHelper` settles the nearest row, and the selected category is initially
+centred. A row outside the centre scrolls there on its first tap; tapping the centred row or the
+Continue action commits it. The synthetic More entry only opens this picker and is never treated as
+a content category.
+
 Wide and tall highlights use the source `CarouseView` algorithm around `ViewPager2`: 1,000-page
 looping, three offscreen pages, unclipped side cards, the same translation formula and 85%–100%
 page scale. They preserve the reference card sizes on roomy displays and shrink proportionally to

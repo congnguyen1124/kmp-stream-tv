@@ -23,7 +23,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="?android:attr/actionBarItemBackground"
+            android:background="@drawable/bg_mini_player_action"
             android:contentDescription="@string/rewind"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_player_rewind" />
@@ -37,7 +37,7 @@
                 android:id="@+id/miniPlayPauseAction"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="?android:attr/actionBarItemBackground"
+                android:background="@drawable/bg_mini_player_action"
                 android:contentDescription="@string/play"
                 android:scaleType="fitCenter"
                 android:src="@drawable/ic_player_play" />
@@ -55,7 +55,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="?android:attr/actionBarItemBackground"
+            android:background="@drawable/bg_mini_player_action"
             android:contentDescription="@string/forward"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_player_forward" />

@@ -17,6 +17,7 @@ class HomeCategoriesBar
     ) : LinearLayout(context, attrs) {
         private var categories: List<HomeCategory> = emptyList()
         private var onSelected: (HomeCategory) -> Unit = {}
+        private var onMoreSelected: () -> Unit = {}
 
         init {
             orientation = HORIZONTAL
@@ -26,9 +27,11 @@ class HomeCategoriesBar
             items: List<HomeCategory>,
             selected: String = "home",
             onSelected: (HomeCategory) -> Unit,
+            onMoreSelected: () -> Unit,
         ) {
             categories = items
             this.onSelected = onSelected
+            this.onMoreSelected = onMoreSelected
             post { render(selected) }
         }
 
@@ -53,7 +56,7 @@ class HomeCategoriesBar
             probe.root.setText(R.string.category_more)
             probe.root.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.ic_arrow_down, 0)
             probe.root.measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED)
-            probe.root.setOnClickListener { onSelected(categories.last()) }
+            probe.root.setOnClickListener { onMoreSelected() }
 
             var usedWidth = probe.root.measuredWidth
             for ((index, category) in categories.dropLast(1).withIndex()) {
@@ -72,8 +75,17 @@ class HomeCategoriesBar
             ViewMenuItemBinding.inflate(LayoutInflater.from(context), this, true).root.apply {
                 text = category.title
                 isSelected = category.id == selected
-                setOnClickListener { onSelected(category) }
+                if (category.id == MORE_CATEGORY_ID) {
+                    setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.ic_arrow_down, 0)
+                    setOnClickListener { onMoreSelected() }
+                } else {
+                    setOnClickListener { onSelected(category) }
+                }
             }
+        }
+
+        private companion object {
+            const val MORE_CATEGORY_ID = "more"
         }
     }
 

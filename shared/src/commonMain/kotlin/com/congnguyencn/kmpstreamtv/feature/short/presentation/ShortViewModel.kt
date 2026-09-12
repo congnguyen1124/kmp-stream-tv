@@ -27,6 +27,7 @@ class ShortViewModel internal constructor(
     private var pendingInitialId: String? = null
     private val likedIds = mutableSetOf<String>()
     private val followedProviderIds = mutableSetOf<String>()
+    private val localComments = mutableMapOf<String, MutableList<String>>()
 
     init {
         reload()
@@ -103,6 +104,33 @@ class ShortViewModel internal constructor(
         }
     }
 
+    fun addComment(
+        id: String,
+        comment: String,
+    ) {
+        val normalized = comment.trim()
+        if (normalized.isEmpty()) return
+        localComments.getOrPut(id, ::mutableListOf).add(normalized)
+        mutableUiState.update { state ->
+            state.copy(
+                items =
+                    state.items.map { item ->
+                        if (item.id == id) {
+                            val count = item.commentCount + 1
+                            item.copy(
+                                commentCount = count,
+                                commentCountLabel = count.compactCount(),
+                            )
+                        } else {
+                            item
+                        }
+                    },
+            )
+        }
+    }
+
+    fun commentsFor(id: String): List<String> = localComments[id].orEmpty()
+
     fun observe(onState: (ShortUiState) -> Unit): Observation =
         Observation(viewModelScope.launch { uiState.collect(onState) })
 
@@ -124,9 +152,12 @@ class ShortViewModel internal constructor(
                     val page = repository.getShorts(page = nextPage, pageSize = PAGE_SIZE)
                     val mapped =
                         page.items.map(mapper::map).map { item ->
+                            val commentCount = item.commentCount + localComments[item.id].orEmpty().size
                             item.copy(
                                 isLiked = item.id in likedIds,
                                 isFollowingProvider = item.providerId in followedProviderIds,
+                                commentCount = commentCount,
+                                commentCountLabel = commentCount.compactCount(),
                             )
                         }
                     val existing = if (reset) emptyList() else currentState.items

@@ -113,7 +113,7 @@
 
         <LinearLayout
             android:id="@+id/actions"
-            android:layout_width="64dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/margin_small"
             android:layout_marginBottom="@dimen/margin"
@@ -122,79 +122,61 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
-            <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/profileAvatar"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="@drawable/image_placeholder_provider"
-                android:contentDescription="@string/profile"
-                android:scaleType="centerCrop"
-                app:shapeAppearance="@style/CircularImage"
-                app:strokeColor="@color/white"
-                app:strokeWidth="1dp" />
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="@dimen/margin_tiny">
 
-            <TextView
-                android:id="@+id/follow"
-                android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:layout_marginTop="@dimen/margin_tiny"
-                android:background="@drawable/bg_short_follow"
-                android:gravity="center"
-                android:minWidth="56dp"
-                android:paddingHorizontal="@dimen/margin_small"
-                android:text="@string/follow"
-                android:textAppearance="@style/Text.Caption2"
-                android:textColor="@color/white" />
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/profileAvatar"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="@drawable/image_placeholder_provider"
+                    android:contentDescription="@string/profile"
+                    android:scaleType="centerCrop"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:shapeAppearance="@style/CircularImage" />
 
-            <LinearLayout
+                <ImageView
+                    android:id="@+id/follow"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/follow"
+                    android:padding="@dimen/margin_tiny"
+                    android:src="@drawable/ic_short_follow_state"
+                    app:layout_constraintBottom_toBottomOf="@id/profileAvatar"
+                    app:layout_constraintEnd_toEndOf="@id/profileAvatar"
+                    app:layout_constraintStart_toStartOf="@id/profileAvatar"
+                    app:layout_constraintTop_toBottomOf="@id/profileAvatar" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/likeAction"
-                style="@style/ShortMediaAction">
+                style="@style/ShortMediaAction"
+                android:text="@string/zero"
+                app:icon="@drawable/ic_short_like" />
 
-                <ImageView
-                    android:id="@+id/likeIcon"
-                    style="@style/ShortMediaActionIcon"
-                    android:contentDescription="@string/like"
-                    android:src="@drawable/ic_player_heart" />
-
-                <TextView
-                    android:id="@+id/likeCount"
-                    style="@style/ShortMediaActionLabel" />
-            </LinearLayout>
-
-            <LinearLayout
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/commentAction"
-                style="@style/ShortMediaAction">
+                style="@style/ShortMediaAction"
+                android:text="@string/zero"
+                app:icon="@drawable/ic_player_comment" />
 
-                <ImageView
-                    style="@style/ShortMediaActionIcon"
-                    android:contentDescription="@string/comment"
-                    android:src="@drawable/ic_player_comment" />
-
-                <TextView
-                    android:id="@+id/commentCount"
-                    style="@style/ShortMediaActionLabel" />
-            </LinearLayout>
-
-            <LinearLayout
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/shareAction"
-                style="@style/ShortMediaAction">
+                style="@style/ShortMediaAction"
+                android:text="@string/share"
+                app:icon="@drawable/ic_player_share" />
 
-                <ImageView
-                    style="@style/ShortMediaActionIcon"
-                    android:contentDescription="@string/share"
-                    android:src="@drawable/ic_player_share" />
-
-                <TextView
-                    android:id="@+id/shareCount"
-                    style="@style/ShortMediaActionLabel" />
-            </LinearLayout>
-
-            <ImageView
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/moreAction"
-                style="@style/ShortMediaActionIcon"
-                android:layout_marginTop="@dimen/margin_small"
+                style="@style/ShortMediaAction"
                 android:contentDescription="@string/more_options"
-                android:src="@drawable/ic_dots_vertical" />
+                app:icon="@drawable/ic_dots_vertical"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp" />
         </LinearLayout>
 
         <TextView

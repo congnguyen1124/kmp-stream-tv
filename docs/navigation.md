@@ -12,8 +12,9 @@ colors and Gilroy semibold 12 sp labels. The Material active pill is disabled to
 reference appearance.
 
 Home is implemented by `HomeTabFragment` and Short by `ShortMediaFragment`. Music and Playlist use
-`PlaceholderFragment`. Destination fragments keep their stable menu id/tag and are hidden/shown so
-the Short selection and the Home scroll position survive tab changes.
+`PlaceholderFragment`. The Home profile affordance launches `UserProfileActivity`. Destination
+fragments keep their stable menu id/tag and are hidden/shown so the Short selection and the Home
+scroll position survive tab changes.
 
 Selecting a normal short card routes to the Short destination and positions its feed at that item.
 Selecting a card in the `Story` section opens `StoryGroupFragment` in a full-window overlay. The
@@ -27,11 +28,12 @@ scrollable category row over its child container. Home, Movies, Series, Live and
 Only Home has product content today; other entries deliberately render reusable placeholders.
 
 Like the reference shell, choosing a non-Home category swaps the category row for a compact submenu
-row. Tapping its title opens the category picker, and tapping the StreamTV wordmark returns Home.
+row. Tapping its title or More opens the full-screen centred category wheel, and tapping the
+StreamTV wordmark returns Home.
 
 The toolbar scrim becomes opaque as the Home feed scrolls. Child Fragment state and the selected
-category tag survive view recreation. Search, notification and profile buttons currently provide
-explicit “coming later” feedback instead of dead click targets.
+category tag survive view recreation. Search and notification provide explicit “coming later”
+feedback; profile opens the native personal-profile screen.
 
 ## iOS
 

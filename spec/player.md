@@ -30,7 +30,8 @@
   pinched open up to window width and back, and double-tapped to jump between those two sizes.
   Pinching to full width and back must not move where the card rests.
 - Tapping the minimized card expands it back to detail; the transport strip stays directly
-  actionable at any size.
+  actionable at any size. Transport actions must not bubble into the card tap-to-expand gesture,
+  and their surfaces use the app background color.
 - Rotating or otherwise resizing the window while minimized keeps the card minimized and re-derives
   its resting corner from the new dimensions.
 - Switching main destinations must not hide or recreate the mini-player, and the window-sized

@@ -12,6 +12,7 @@ data class ShortItemUiModel(
     val publishedLabel: String,
     val likeCount: Int,
     val likeCountLabel: String,
+    val commentCount: Int,
     val commentCountLabel: String,
     val shareCountLabel: String,
     val isLiked: Boolean = false,

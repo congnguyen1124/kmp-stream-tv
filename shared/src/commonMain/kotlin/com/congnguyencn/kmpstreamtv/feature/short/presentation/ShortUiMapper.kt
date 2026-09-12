@@ -16,6 +16,7 @@ internal class ShortUiMapper {
             publishedLabel = item.publishedLabel,
             likeCount = item.likeCount,
             likeCountLabel = item.likeCount.compactCount(),
+            commentCount = item.commentCount,
             commentCountLabel = item.commentCount.compactCount(),
             shareCountLabel = item.shareCount.compactCount(),
         )

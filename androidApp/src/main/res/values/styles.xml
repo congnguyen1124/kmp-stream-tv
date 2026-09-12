@@ -18,6 +18,17 @@
         <item name="colorOnSurface">@color/white</item>
     </style>
 
+    <style name="Theme.KmpStreamTv.SelectionDialog" parent="Theme.KmpStreamTv">
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">@color/appBackground</item>
+    </style>
+
+    <style name="DialogAnimationFade">
+        <item name="android:windowEnterAnimation">@anim/fade_in</item>
+        <item name="android:windowExitAnimation">@anim/fade_out</item>
+    </style>
+
     <style name="Text"><item name="android:textStyle">normal</item></style>
     <style name="Text.Title1"><item name="android:textSize">@dimen/sp_20</item><item name="fontFamily">@font/svn_gilroy_bold</item><item name="android:fontFamily">@font/svn_gilroy_bold</item></style>
     <style name="Text.Title2"><item name="android:textSize">@dimen/sp_18</item><item name="fontFamily">@font/svn_gilroy_bold</item><item name="android:fontFamily">@font/svn_gilroy_bold</item><item name="android:lineSpacingMultiplier">1.22</item></style>
@@ -123,24 +134,48 @@
         <item name="cornerRadius">4dp</item>
     </style>
 
-    <style name="ShortMediaAction">
+    <style name="ShortMediaAction" parent="Widget.MaterialComponents.Button.TextButton">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginTop">8dp</item>
-        <item name="android:gravity">center_horizontal</item>
-        <item name="android:orientation">vertical</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:paddingTop">@dimen/margin_tiny</item>
+        <item name="android:paddingBottom">@dimen/margin_small</item>
+        <item name="android:paddingStart">@dimen/margin_small</item>
+        <item name="android:paddingEnd">@dimen/margin_small</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:backgroundTint">@color/transparent</item>
+        <item name="android:textAppearance">@style/Text.Caption2</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0.0</item>
+        <item name="iconGravity">textTop</item>
+        <item name="iconSize">32dp</item>
+        <item name="iconPadding">@dimen/margin_tiny</item>
+        <item name="iconTint">@null</item>
+        <item name="rippleColor">@color/white_30</item>
     </style>
 
-    <style name="ShortMediaActionIcon">
-        <item name="android:layout_width">48dp</item>
-        <item name="android:layout_height">48dp</item>
-        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
-        <item name="android:padding">12dp</item>
+    <style name="ShortBottomSheetAction">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:paddingHorizontal">@dimen/margin_xx</item>
+        <item name="android:paddingVertical">@dimen/margin</item>
     </style>
 
-    <style name="ShortMediaActionLabel" parent="Text.Caption2">
+    <style name="ShortBottomSheetActionIcon">
+        <item name="android:layout_width">@dimen/size_1_5x</item>
+        <item name="android:layout_height">@dimen/size_1_5x</item>
+    </style>
+
+    <style name="ShortBottomSheetActionLabel" parent="Text.Heading2">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">@dimen/margin</item>
         <item name="android:textColor">@color/white</item>
     </style>
 

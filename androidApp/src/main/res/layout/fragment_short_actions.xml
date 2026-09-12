@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_short_bottom_sheet"
+    android:orientation="vertical"
+    android:paddingTop="@dimen/margin_small"
+    android:paddingBottom="@dimen/margin_xx">
+
+    <LinearLayout
+        android:id="@+id/copyLink"
+        style="@style/ShortBottomSheetAction">
+
+        <ImageView
+            style="@style/ShortBottomSheetActionIcon"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_link" />
+
+        <TextView
+            style="@style/ShortBottomSheetActionLabel"
+            android:text="@string/copy_link" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/notInterested"
+        style="@style/ShortBottomSheetAction">
+
+        <ImageView
+            style="@style/ShortBottomSheetActionIcon"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_heart_broken" />
+
+        <TextView
+            style="@style/ShortBottomSheetActionLabel"
+            android:text="@string/not_interested" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/report"
+        style="@style/ShortBottomSheetAction">
+
+        <ImageView
+            style="@style/ShortBottomSheetActionIcon"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_annotation_info" />
+
+        <TextView
+            style="@style/ShortBottomSheetActionLabel"
+            android:text="@string/report" />
+    </LinearLayout>
+</LinearLayout>

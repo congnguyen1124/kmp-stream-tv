@@ -1,8 +1,10 @@
 package com.congnguyencn.kmpstreamtv.feature.player.miniplayer
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.graphics.Outline
+import android.graphics.Rect
 import android.graphics.drawable.GradientDrawable
 import android.util.AttributeSet
 import android.view.MotionEvent
@@ -99,7 +101,7 @@ class MinimizableView
                 view = this,
                 onGesture = ::onTransformGesture,
                 onGestureEnd = { state?.snapToCorner() },
-                onTap = { toggleMinimized() },
+                onTap = { performClick() },
                 onDoubleTap = { state?.onDoubleTap() },
             )
         }
@@ -201,7 +203,11 @@ class MinimizableView
 
         override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
             if (event.actionMasked == MotionEvent.ACTION_DOWN) {
-                isGestureOnCard = !isFillingHost() && state != null && isInsideCard(event)
+                isGestureOnCard =
+                    !isFillingHost() &&
+                    state != null &&
+                    isInsideCard(event) &&
+                    !isInsideMiniPlaybackController(event)
             }
             if (!isGestureOnCard) return false
 
@@ -214,6 +220,8 @@ class MinimizableView
             return shouldSteal
         }
 
+        // TransformGestureDetector calls performClick after its double-tap window expires.
+        @SuppressLint("ClickableViewAccessibility")
         override fun onTouchEvent(event: MotionEvent): Boolean {
             if (!isGestureOnCard) return false
             if (isEventHandledFromIntercept) {
@@ -221,6 +229,12 @@ class MinimizableView
                 return true
             }
             handleGesture(event)
+            return true
+        }
+
+        override fun performClick(): Boolean {
+            super.performClick()
+            toggleMinimized()
             return true
         }
 
@@ -238,6 +252,14 @@ class MinimizableView
                 event.x <= left + playerCard.width &&
                 event.y >= top &&
                 event.y <= top + playerCard.height
+        }
+
+        /** Transport controls own their tap, so the card-level tap must not maximize underneath it. */
+        private fun isInsideMiniPlaybackController(event: MotionEvent): Boolean {
+            if (!footer.isVisible) return false
+            val visibleBounds = Rect()
+            return footer.getGlobalVisibleRect(visibleBounds) &&
+                visibleBounds.contains(event.rawX.roundToInt(), event.rawY.roundToInt())
         }
 
         private fun handleGesture(event: MotionEvent) {

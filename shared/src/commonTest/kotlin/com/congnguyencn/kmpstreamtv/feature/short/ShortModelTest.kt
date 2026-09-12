@@ -47,6 +47,7 @@ class ShortModelTest {
                 val providerId = firstItem.providerId
                 viewModel.toggleFollow(providerId)
                 viewModel.toggleLike(firstItem.id)
+                viewModel.addComment(firstItem.id, "Great short")
                 assertTrue(
                     viewModel.currentState.items
                         .first()
@@ -57,6 +58,22 @@ class ShortModelTest {
                     viewModel.currentState.items
                         .first()
                         .likeCount,
+                )
+                assertEquals(
+                    firstItem.commentCount + 1,
+                    viewModel.currentState.items
+                        .first()
+                        .commentCount,
+                )
+                assertEquals(listOf("Great short"), viewModel.commentsFor(firstItem.id))
+
+                viewModel.reload()
+                advanceUntilIdle()
+                assertEquals(
+                    firstItem.commentCount + 1,
+                    viewModel.currentState.items
+                        .first()
+                        .commentCount,
                 )
 
                 viewModel.loadMore()

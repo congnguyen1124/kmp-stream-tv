@@ -109,4 +109,12 @@
     <dimen name="mini_player_max_width">380dp</dimen>
     <integer name="mini_player_time_bar_max">10000</integer>
 
+    <dimen name="selected_category_size">50dp</dimen>
+    <dimen name="selection_top_bar_height">56dp</dimen>
+    <dimen name="selection_bottom_bar_height">96dp</dimen>
+    <dimen name="profile_top_bar_height">56dp</dimen>
+    <dimen name="profile_horizontal_padding">20dp</dimen>
+    <dimen name="profile_avatar_size">64dp</dimen>
+    <dimen name="profile_gap_size">12dp</dimen>
+
 </resources>

@@ -57,3 +57,6 @@ icon set, selected/unselected artwork and tints stay shared.
   loading overlay and error overlay.
 - Loading/error views remain part of every source layout family even when dummy content resolves
   synchronously. Do not add display-only scrims or gradients that are absent from the reference XML.
+- More and the compact submenu title open a full-screen vertical category wheel. The wheel centres,
+  scales and fades its nearest row, restores the active category, and commits from either a second
+  tap on the centred row or Continue.

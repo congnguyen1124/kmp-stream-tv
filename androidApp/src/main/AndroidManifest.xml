@@ -12,6 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.KmpStreamTv">
         <activity
+            android:name=".feature.profile.UserProfileActivity"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
             android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
             android:exported="true"

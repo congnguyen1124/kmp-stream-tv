@@ -1,5 +1,6 @@
 package com.congnguyencn.kmpstreamtv.feature.home
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -8,7 +9,9 @@ import androidx.fragment.app.Fragment
 import com.congnguyencn.kmpstreamtv.R
 import com.congnguyencn.kmpstreamtv.databinding.FragmentHomeTabBinding
 import com.congnguyencn.kmpstreamtv.feature.placeholder.PlaceholderFragment
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.congnguyencn.kmpstreamtv.feature.profile.UserProfileActivity
+import com.congnguyencn.kmpstreamtv.feature.selection.ItemSelectionDialogFragment
+import com.congnguyencn.kmpstreamtv.feature.selection.SelectionItem
 
 class HomeTabFragment : Fragment(R.layout.fragment_home_tab) {
     private var bindingRef: FragmentHomeTabBinding? = null
@@ -40,12 +43,15 @@ class HomeTabFragment : Fragment(R.layout.fragment_home_tab) {
             items = categories,
             selected = restoredCategory,
             onSelected = ::showCategory,
+            onMoreSelected = ::showCategoryPicker,
         )
         binding.btnSearch.setOnClickListener { showUnavailable(R.string.search_coming_soon) }
         binding.btnNotification.setOnClickListener { showUnavailable(R.string.notifications_coming_soon) }
-        binding.btnProfile.setOnClickListener { showUnavailable(R.string.profile_coming_soon) }
+        binding.btnProfile.setOnClickListener {
+            startActivity(Intent(requireContext(), UserProfileActivity::class.java))
+        }
         binding.ivLogo.setOnClickListener { showCategory(categories.first()) }
-        binding.tvMainMenu.setOnClickListener(::showCategoryPicker)
+        binding.tvMainMenu.setOnClickListener { showCategoryPicker() }
 
         updateMenuBar(restoredCategory)
 
@@ -61,6 +67,10 @@ class HomeTabFragment : Fragment(R.layout.fragment_home_tab) {
     }
 
     private fun showCategory(category: HomeCategory) {
+        if (category.id == MORE_CATEGORY_ID) {
+            showCategoryPicker()
+            return
+        }
         val tag = "$CATEGORY_TAG_PREFIX${category.id}"
         if (childFragmentManager.findFragmentById(R.id.fragmentContainerHomeTab)?.tag == tag) return
         val fragment =
@@ -86,15 +96,30 @@ class HomeTabFragment : Fragment(R.layout.fragment_home_tab) {
         binding.tvMainMenu.text = categories.firstOrNull { it.id == categoryId }?.title.orEmpty()
     }
 
-    private fun showCategoryPicker(
-        @Suppress("UNUSED_PARAMETER") view: View,
-    ) {
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle(R.string.browse_categories)
-            .setItems(categories.map(HomeCategory::title).toTypedArray()) { dialog, index ->
-                showCategory(categories[index])
-                dialog.dismiss()
-            }.show()
+    private fun showCategoryPicker() {
+        val selectedId =
+            childFragmentManager
+                .findFragmentById(R.id.fragmentContainerHomeTab)
+                ?.tag
+                ?.removePrefix(CATEGORY_TAG_PREFIX)
+        val selectableCategories = categories.filterNot { it.id == MORE_CATEGORY_ID }
+        val selectionItems =
+            selectableCategories.map { category ->
+                SelectionItem(
+                    id = category.id,
+                    title = category.title,
+                    isSelected = category.id == selectedId,
+                )
+            }
+        ItemSelectionDialogFragment
+            .show(childFragmentManager, selectionItems)
+            .apply {
+                callback = { selectedItem ->
+                    selectableCategories
+                        .firstOrNull { it.id == selectedItem.id }
+                        ?.let(::showCategory)
+                }
+            }
     }
 
     private fun showUnavailable(message: Int) {
@@ -108,5 +133,6 @@ class HomeTabFragment : Fragment(R.layout.fragment_home_tab) {
 
     private companion object {
         const val CATEGORY_TAG_PREFIX = "home-category-"
+        const val MORE_CATEGORY_ID = "more"
     }
 }

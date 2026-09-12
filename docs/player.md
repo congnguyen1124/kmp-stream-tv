@@ -150,6 +150,9 @@ Dragging downward begins only from an unoccupied part of the video surface, so s
 list scrolling remain independent. The card follows the finger while the detail behind it fades,
 and the shrink completes on release at whatever depth the drag reached — there is no distance or
 velocity threshold, matching the reference. Tapping the minimized card restores the detail screen.
+The mini transport footer is excluded from the card-level tap detector, so rewind, play/pause/replay
+and forward remain in mini presentation rather than also expanding the card. Its footer and button
+surfaces use the app background token.
 
 Back behavior is layered:
 

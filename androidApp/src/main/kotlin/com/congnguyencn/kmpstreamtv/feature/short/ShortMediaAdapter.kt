@@ -2,8 +2,13 @@ package com.congnguyencn.kmpstreamtv.feature.short
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
+import androidx.annotation.OptIn
 import androidx.core.net.toUri
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -63,7 +68,10 @@ internal class ShortMediaAdapter(
         ShortMediaViewHolder(
             binding = ItemShortMediaBinding.inflate(LayoutInflater.from(parent.context), parent, false),
             onAction = onAction,
-            onTogglePlayback = { holder -> holder.manager?.togglePlayPause() },
+            onTogglePlayback = { holder ->
+                holder.animatePlaybackToggle(holder.manager?.exoPlayer()?.isPlaying == true)
+                holder.manager?.togglePlayPause()
+            },
             onRetry = { holder -> play(holder, forceReload = true) },
             onPlaybackEnded = { holder ->
                 if (holder.bindingAdapterPosition == activePosition && hostStarted) {
@@ -153,6 +161,7 @@ internal class ShortMediaAdapter(
         managerOwners[manager]?.takeIf { it !== holder }?.detachPlayer()
         managerOwners[manager] = holder
         holder.attachPlayer(manager)
+        holder.hidePlayIndicator()
         holder.fadeChrome(1f)
         playerPool.pauseAllExcept(key)
     }
@@ -163,6 +172,7 @@ internal class ShortMediaAdapter(
     }
 }
 
+@OptIn(UnstableApi::class)
 internal class ShortMediaViewHolder(
     private val binding: ItemShortMediaBinding,
     private val onAction: (ShortItemUiModel, ShortAction) -> Unit,
@@ -176,6 +186,15 @@ internal class ShortMediaViewHolder(
         private set
     var manager: StreamTvPlayerManager? = null
         private set
+    private var pendingFollowProviderId: String? = null
+    private val hideFollowAction =
+        Runnable {
+            val item = boundItem
+            if (item?.providerId == pendingFollowProviderId && item?.isFollowingProvider == true) {
+                binding.follow.isInvisible = true
+            }
+            pendingFollowProviderId = null
+        }
 
     init {
         binding.mediaSurface.apply {
@@ -187,7 +206,7 @@ internal class ShortMediaViewHolder(
         binding.retry.setOnClickListener { onRetry(this) }
         binding.profileAvatar.setOnClickListener { dispatch(ShortAction.PROFILE) }
         binding.providerName.setOnClickListener { dispatch(ShortAction.PROFILE) }
-        binding.follow.setOnClickListener { dispatch(ShortAction.FOLLOW) }
+        binding.follow.setOnClickListener { toggleFollow() }
         binding.likeAction.setOnClickListener { dispatch(ShortAction.LIKE) }
         binding.commentAction.setOnClickListener { dispatch(ShortAction.COMMENT) }
         binding.shareAction.setOnClickListener { dispatch(ShortAction.SHARE) }
@@ -196,23 +215,40 @@ internal class ShortMediaViewHolder(
 
     fun bind(item: ShortItemUiModel) {
         val changedItem = boundItem?.id != item.id
+        if (changedItem) {
+            binding.follow.removeCallbacks(hideFollowAction)
+            pendingFollowProviderId = null
+        }
         boundItem = item
         if (changedItem) binding.artwork.isVisible = true
         binding.artwork.load(item.thumbnailUrl) { crossfade(true) }
         binding.profileAvatar.load(item.providerAvatarUrl) { crossfade(true) }
         binding.providerName.text = item.providerName
-        binding.description.text = "${item.title}\n${item.description}"
-        binding.follow.text =
+        binding.description.text =
             binding.root.context.getString(
-                if (item.isFollowingProvider) R.string.following else R.string.follow,
+                R.string.short_description_format,
+                item.title,
+                item.description,
             )
-        binding.follow.isSelected = item.isFollowingProvider
-        binding.likeIcon.setImageResource(
-            if (item.isLiked) R.drawable.ic_player_heart_fill else R.drawable.ic_player_heart,
-        )
-        binding.likeCount.text = item.likeCountLabel
-        binding.commentCount.text = item.commentCountLabel
-        binding.shareCount.text = item.shareCountLabel
+        binding.follow.isActivated = item.isFollowingProvider
+        binding.follow.isInvisible =
+            item.isFollowingProvider && pendingFollowProviderId != item.providerId
+        binding.likeAction.isActivated = item.isLiked
+        binding.likeAction.text = item.likeCountLabel
+        binding.likeAction.contentDescription =
+            binding.root.context.getString(
+                R.string.short_action_with_count,
+                binding.root.context.getString(if (item.isLiked) R.string.unlike else R.string.like),
+                item.likeCountLabel,
+            )
+        binding.commentAction.text = item.commentCountLabel
+        binding.commentAction.contentDescription =
+            binding.root.context.getString(
+                R.string.short_action_with_count,
+                binding.root.context.getString(R.string.comment),
+                item.commentCountLabel,
+            )
+        binding.shareAction.setText(R.string.share)
         binding.root.contentDescription = item.title
     }
 
@@ -226,11 +262,8 @@ internal class ShortMediaViewHolder(
             scope.launch {
                 player.playerState.collect { state ->
                     binding.loading.isVisible = state.playbackState is StreamTvPlaybackState.Buffering
-                    binding.playIndicator.isVisible =
-                        !state.isPlaying &&
-                        state.playbackState !is StreamTvPlaybackState.Buffering &&
-                        state.error == null
                     binding.errorGroup.isVisible = state.error != null
+                    if (state.error != null) hidePlayIndicator()
                     if (state.playbackState is StreamTvPlaybackState.Ready) binding.artwork.isVisible = false
                     if (state.playbackState is StreamTvPlaybackState.Ended) onPlaybackEnded(this@ShortMediaViewHolder)
                 }
@@ -248,13 +281,59 @@ internal class ShortMediaViewHolder(
         binding.chrome.alpha = alpha
     }
 
+    fun animatePlaybackToggle(wasPlaying: Boolean) {
+        binding.playIndicator.clearAnimation()
+        binding.playIndicator.isVisible = true
+        binding.playIndicator.alpha = 1f
+        val animation =
+            AnimationUtils.loadAnimation(
+                binding.root.context,
+                if (wasPlaying) R.anim.scale_down_in else R.anim.fade_out_short,
+            )
+        if (!wasPlaying) {
+            animation.setAnimationListener(
+                object : Animation.AnimationListener {
+                    override fun onAnimationStart(animation: Animation?) = Unit
+
+                    override fun onAnimationRepeat(animation: Animation?) = Unit
+
+                    override fun onAnimationEnd(animation: Animation?) = hidePlayIndicator()
+                },
+            )
+        }
+        binding.playIndicator.startAnimation(animation)
+    }
+
+    fun hidePlayIndicator() {
+        binding.playIndicator.clearAnimation()
+        binding.playIndicator.isVisible = false
+        binding.playIndicator.alpha = 0f
+    }
+
     private fun dispatch(action: ShortAction) {
         boundItem?.let { onAction(it, action) }
     }
 
+    private fun toggleFollow() {
+        val item = boundItem ?: return
+        binding.follow.removeCallbacks(hideFollowAction)
+        binding.follow.isActivated = !item.isFollowingProvider
+        binding.follow.isInvisible = false
+        pendingFollowProviderId = item.providerId.takeIf { binding.follow.isActivated }
+        if (pendingFollowProviderId != null) {
+            binding.follow.postDelayed(hideFollowAction, FOLLOW_INVISIBLE_DELAY_MILLIS)
+        }
+        dispatch(ShortAction.FOLLOW)
+    }
+
     fun release() {
+        binding.follow.removeCallbacks(hideFollowAction)
         detachPlayer()
         scope.cancel()
+    }
+
+    private companion object {
+        const val FOLLOW_INVISIBLE_DELAY_MILLIS = 1_000L
     }
 }
 

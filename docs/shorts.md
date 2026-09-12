@@ -3,8 +3,9 @@
 ## Shared state
 
 `ShortDummyDataSource` supplies deterministic short-form fixtures through `ShortRepository`.
-`ShortViewModel` exposes four-item paging, selected index, retry, optimistic like state and
-provider-wide follow state. `selectById` continues paging until a Home-selected item is available.
+`ShortViewModel` exposes four-item paging, selected index, retry, optimistic like state,
+provider-wide follow state and local comments/counts until the interaction API is connected.
+`selectById` continues paging until a Home-selected item is available.
 `StoryGroupViewModel` resolves the selected item to every story from the same provider and owns only
 the previous/next index.
 
@@ -20,12 +21,21 @@ slot, while re-entering a warm item reuses its buffer. Hiding the persistent des
 active player and showing it resumes playback.
 
 Each page mirrors the reference short UI: full-bleed 9:16 video, provider and description chrome,
-follow, like, comment, share and more actions, loading/error states, tap-to-pause and looping at end.
-API-dependent comment/share/profile destinations currently give explicit feedback.
+the over-avatar follow control, vertically stacked like/comment/share/more `MaterialButton`s,
+loading/error states, animated tap-to-pause feedback and looping at end. Like and follow update
+optimistically; a followed provider hides the plus affordance like the reference. Comment opens a
+bottom sheet and adds local comments; the follow check remains visible for one second before hiding.
+Share invokes Android's native share sheet, and More provides
+Copy link, Not interested (advance) and Report. Provider opens the currently loaded videos for that
+profile, toolbar Search selects a title/provider match, and toolbar Profile opens the personal
+profile Activity. Remote comment, report and recommendation writes remain API integration points.
 
 `StoryGroupFragment` is a full-window overlay opened from the Home story rail. It has segmented
 progress, provider metadata, reactions and share, tap-left/tap-right navigation, hold-to-pause and
-automatic advance on playback end. It closes after the last story.
+automatic advance on playback end. A reaction launches a pooled copy of that emoji from its button,
+then translates it upward by five button heights while fading over 800 ms. The initial story also
+plays the reference 3–6 second randomized reaction burst; pooled views and its coroutine are cleared
+when the Fragment pauses or its view is destroyed. It closes after the last story.
 
 ## iOS
 

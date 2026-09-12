@@ -16,3 +16,6 @@
   opens the category picker, while the wordmark returns directly to Home.
 - The selected category and loaded Home state survive navigation to another category or app destination.
 - Scrolling the feed increases the reference top-bar background opacity over the content.
+- More and the compact category title open the full-screen centred category picker.
+- The Home profile affordance opens the native personal-profile screen, whose Back action returns
+  to the retained Home destination.
