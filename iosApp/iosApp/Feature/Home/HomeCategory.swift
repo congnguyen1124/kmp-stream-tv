@@ -15,7 +15,7 @@ enum HomeCategory: String, CaseIterable, Identifiable {
         case .movies: "Movies"
         case .series: "Series"
         case .live: "Live"
-        case .more: "More ▾"
+        case .more: "More"
         }
     }
 
@@ -23,4 +23,8 @@ enum HomeCategory: String, CaseIterable, Identifiable {
         "The \(title) category is wired into Home navigation and ready for its screen."
     }
 
+    /// `HomeTabFragment.MORE_CATEGORY_ID` opens the picker and is never committed as content.
+    static var selectable: [HomeCategory] {
+        allCases.filter { $0 != .more }
+    }
 }

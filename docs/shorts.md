@@ -40,10 +40,31 @@ when the Fragment pauses or its view is destroyed. It closes after the last stor
 ## iOS
 
 `ShortMediaView` renders the same state in a paging vertical SwiftUI scroll view. Only the active
-page loads and plays its AVPlayer item; inactive pages unload theirs. `StoryGroupView` owns one
-AVPlayer and mirrors segmented progress, navigation, hold behavior, reactions and automatic advance.
-Home short cards can open a positioned full-screen feed, while the persistent Short tab retains its
-own store.
+page loads and plays its AVPlayer item; inactive pages unload theirs. Home short cards can open a
+positioned full-screen feed, while the persistent Short tab retains its own store.
+
+Its action rail carries the reference order and geometry: a 48-point provider avatar with the
+plus/check follow control overlaid on its bottom edge, then Like, Comment, Share and More as
+32-point icon-over-caption buttons. Like shows the activated heart and the optimistic compact
+count, Share carries the **Share** label and opens `ShareLink` with the title and URL, and the
+follow check hides one second after following while the follow itself applies provider-wide. Every
+control keeps a VoiceOver label and a 44-point hit target; the follow badge paints at 32 points
+inside that larger target. Tapping the video scales the centre indicator in over 100 ms when pausing
+and fades it out over 150 ms when resuming.
+
+`ShortActionSheets` supplies the comment, More, provider and search presentations. Comments list
+`ShortViewModel.commentsFor` and submit through `addComment`, which rejects blank text and raises
+the shared count. More writes the URL with `UIPasteboard`, advances to the next loaded item for Not
+interested, and confirms Report before its local completion message. The provider sheet lists that
+provider's loaded titles and toggles follow; search selects the first loaded title or provider
+match; the toolbar profile affordance presents the personal-profile screen.
+
+`StoryGroupView` owns one AVPlayer and mirrors segmented progress, navigation, hold behavior and
+automatic advance. `StoryReactionStore` replaces the pooled `TextView`s with in-flight reaction
+models, bounded at the same 50, and the animation layer is an overlay on the reaction row so each
+clone starts in its source column and is not clipped as it travels. A reaction rises five button
+heights while fading over 800 ms; the initial story plays the 3–6 second randomized burst once, and
+both the burst and everything in flight are cancelled when the viewer backgrounds or disappears.
 
 ## Deferred integrations
 

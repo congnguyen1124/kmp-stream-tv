@@ -92,9 +92,6 @@ struct TopTenSectionView: View {
 
     var body: some View {
         ZStack(alignment: .leading) {
-            if let backgroundUrl = section.backgroundUrl, !backgroundUrl.isEmpty {
-                RemoteArtwork(url: backgroundUrl)
-            }
 
             titleBlock
                 .scaleEffect(titleProgress)

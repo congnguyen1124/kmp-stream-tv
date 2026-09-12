@@ -69,7 +69,15 @@ gradient layer is introduced.
 
 `HomeStore` observes the same expanded state and remains owned by `HomeTabView` while categories
 change. `HomeView` handles loading, retry, pull-to-refresh, scroll reporting and full-screen native
-AVPlayer presentation. `HomeSectionView` exhaustively maps the ten shared semantic presentations to
+AVPlayer presentation.
+
+`CategoryPickerView` is the SwiftUI wheel. `.scrollTargetBehavior(.viewAligned)` over content
+margins that leave exactly one row's height inside the target region gives the same centre snapping
+as `CustomLinearSnapHelper`, and each row applies `SliderLayoutManager`'s own transform — the scale
+and opacity falloff of `sqrt(distance / width)`, with its 1.2/0.55 scale and 0.2 alpha bounds. It
+presents as a `fullScreenCover`, so the feed underneath keeps its scroll offset while the picker is
+open and after Back dismisses it unchanged. `HomeCategory.selectable` is what the wheel lists, which
+is how More stays a launcher and is never committed as a content category. `HomeSectionView` exhaustively maps the ten shared semantic presentations to
 SwiftUI section families; `HomeContentCard` owns the reusable landscape, portrait, circle, story,
 short, continue-watching and ranked card families.
 

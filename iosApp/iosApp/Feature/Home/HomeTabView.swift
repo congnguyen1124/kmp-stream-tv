@@ -5,6 +5,7 @@ struct HomeTabView: View {
     @State private var selectedCategory = HomeCategory.home
     @State private var toastMessage: String?
     @State private var isCategoryPickerPresented = false
+    @State private var isProfilePresented = false
     @State private var feedOffset: CGFloat = 0
 
     var body: some View {
@@ -31,13 +32,9 @@ struct HomeTabView: View {
             HomeChromeView(
                 selectedCategory: $selectedCategory,
                 scrimOpacity: toolbarScrimOpacity,
-                onAction: { showToast($0.message) },
+                onAction: handle,
                 onCategoryPicker: { isCategoryPickerPresented = true }
             )
-
-            if isCategoryPickerPresented {
-                categoryPicker
-            }
 
             if let toastMessage {
                 Text(toastMessage)
@@ -54,6 +51,22 @@ struct HomeTabView: View {
             }
         }
         .environment(\.homeToast, showToast)
+        // Both covers keep this view — and so the feed, its scroll offset and the selected
+        // category — alive underneath, the way the Android destinations stay retained behind the
+        // dialog and the profile Activity.
+        .fullScreenCover(isPresented: $isCategoryPickerPresented) {
+            CategoryPickerView(
+                items: HomeCategory.selectable.map { SelectionItem(id: $0.id, title: $0.title) },
+                selectedId: selectedCategory.id,
+                onSelect: { item in
+                    guard let category = HomeCategory(rawValue: item.id) else { return }
+                    selectedCategory = category
+                }
+            )
+        }
+        .fullScreenCover(isPresented: $isProfilePresented) {
+            UserProfileView()
+        }
     }
 
     /// `ivTopBarBehind.alpha` tracks the feed offset over `highlight_topbar_offset`.
@@ -61,40 +74,15 @@ struct HomeTabView: View {
         min(max(Double(feedOffset / StreamMetrics.highlightTopbarOffset), 0), 1)
     }
 
-    private var categoryPicker: some View {
-        ZStack {
-            Color.black.opacity(0.55)
-                .ignoresSafeArea()
-                .onTapGesture { isCategoryPickerPresented = false }
-
-            VStack(alignment: .leading, spacing: 0) {
-                Text("Browse categories")
-                    .font(.streamBold(20))
-                    .foregroundStyle(.white)
-                    .padding(24)
-
-                ForEach(HomeCategory.allCases) { category in
-                    Button {
-                        selectedCategory = category
-                        isCategoryPickerPresented = false
-                    } label: {
-                        Text(category.title)
-                            .font(.streamRegular(16))
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .frame(height: 48)
-                            .padding(.horizontal, 24)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding(.bottom, 8)
-            .frame(maxWidth: 320)
-            .background(Color.streamSurface)
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .padding(32)
+    /// `btnProfile` opens the personal-profile screen; search and notifications have no destination
+    /// in the shared contract yet.
+    private func handle(_ action: HomeChromeAction) {
+        switch action {
+        case .profile:
+            isProfilePresented = true
+        case .search, .notifications:
+            showToast(action.message)
         }
-        .transition(.opacity)
     }
 
     private func showToast(_ message: String) {

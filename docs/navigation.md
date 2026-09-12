@@ -46,8 +46,12 @@ its feed remain alive while a placeholder category is shown, preserving shared s
 identity in the same ownership layer used by Android's `HomeTabFragment`.
 
 The iOS brand row and category row use the Android 48/36-point heights, source logo and converted
-toolbar SVGs. Non-Home categories use the compact submenu and app-owned category dialog; unavailable
-toolbar actions use transient feedback rather than iOS alert chrome.
+toolbar SVGs. Non-Home categories use the compact submenu, and both it and the More chip present
+`CategoryPickerView` — the full-screen wheel described in [Home implementation](home.md). Search and
+notifications use transient feedback rather than iOS alert chrome, while profile presents
+`UserProfileView`. Both are `fullScreenCover` presentations, so `HomeTabView` and its loaded
+`HomeStore`, feed offset and selected category stay alive underneath exactly as the Android
+destinations stay retained behind the dialog and the profile Activity.
 
 The SwiftUI hierarchy follows the Android feature split without sharing native rendering code:
 
@@ -58,5 +62,7 @@ MainActivity / MainTabView
   │     └── Home chrome and categories
   ├── ShortMediaFragment / ShortMediaView
   ├── StoryGroupFragment / StoryGroupView (full-screen overlay)
+  ├── ItemSelectionDialogFragment / CategoryPickerView (full-screen cover)
+  ├── UserProfileActivity / UserProfileView (full-screen cover)
   └── PlaceholderFragment / PlaceholderView
 ```

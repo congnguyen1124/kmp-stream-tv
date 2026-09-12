@@ -2,13 +2,27 @@ import Shared
 import Foundation
 import SwiftUI
 
+/// `fragment_story_group.xml` reaction geometry.
+private enum StoryMetrics {
+    /// `reactions` LinearLayout height, which is also each button's height.
+    static let reactionRowHeight: CGFloat = 56
+    /// `StoryReaction.textSize`
+    static let reactionTextSize: CGFloat = 26
+    static let shareButtonSize: CGFloat = 48
+}
+
+/// Every emoji the reaction row offers. The burst pool drops the last one, exactly as
+/// `playInitialReactionBurst` drops the last child of `reactions`.
+private let storyReactions = ["👍", "❤️", "😂", "😮", "😢", "😡"]
+private var storyBurstPool: [String] { Array(storyReactions.dropLast()) }
+
 struct StoryGroupView: View {
     let initialId: String
 
     @StateObject private var store: StoryGroupStore
     @StateObject private var streamPlayer = StreamPlayer()
+    @StateObject private var reactions = StoryReactionStore()
     @State private var loadedId: String?
-    @State private var toast: String?
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
 
@@ -34,18 +48,6 @@ struct StoryGroupView: View {
             } else {
                 errorView
             }
-
-            if let toast {
-                Text(toast)
-                    .font(.streamSemiBold(14))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 16)
-                    .frame(height: 40)
-                    .background(.black.opacity(0.75), in: Capsule())
-                    .frame(maxHeight: .infinity, alignment: .bottom)
-                    .padding(.bottom, 86)
-                    .transition(.opacity)
-            }
         }
         .onChange(of: activeItem?.id) { _, _ in loadActiveStory() }
         .onChange(of: streamPlayer.completionCount) { _, _ in moveNext() }
@@ -53,11 +55,16 @@ struct StoryGroupView: View {
             if phase == .active {
                 if loadedId != nil { streamPlayer.play() }
             } else {
+                // `onPause` cancels the burst and force-hides every animation still running.
+                reactions.cancelAll()
                 streamPlayer.pause()
             }
         }
         .onAppear { loadActiveStory() }
-        .onDisappear { streamPlayer.stop() }
+        .onDisappear {
+            reactions.cancelAll()
+            streamPlayer.stop()
+        }
         .preferredColorScheme(.dark)
     }
 
@@ -125,25 +132,69 @@ struct StoryGroupView: View {
 
             Spacer()
 
-            HStack(spacing: 12) {
-                ForEach(["👍", "❤️", "😂", "😮", "😢", "😡"], id: \.self) { reaction in
-                    Button(reaction) { showToast("Reaction sent") }
-                        .font(.system(size: 24))
-                        .buttonStyle(.plain)
-                        .frame(maxWidth: .infinity)
-                }
+            HStack(spacing: 0) {
+                reactionRow
 
                 ShareLink(item: "\(item.title) \(item.videoUrl)") {
-                    Image(systemName: "square.and.arrow.up")
-                        .font(.system(size: 22, weight: .semibold))
-                        .frame(width: 44, height: 44)
+                    Image("ic_player_share")
+                        .renderingMode(.template)
+                        .resizable()
+                        .scaledToFit()
+                        .padding(12)
+                        .frame(width: StoryMetrics.shareButtonSize, height: StoryMetrics.shareButtonSize)
                 }
+                .accessibilityLabel("Share")
             }
             .foregroundStyle(.white)
         }
         .padding(.horizontal, 12)
         .padding(.top, 8)
         .padding(.bottom, 12)
+    }
+
+    /// `reactions`: equal-weight emoji buttons, each of which clones itself into the animation
+    /// layer rather than only scaling in place.
+    private var reactionRow: some View {
+        HStack(spacing: 0) {
+            ForEach(Array(storyReactions.enumerated()), id: \.element) { column, emoji in
+                Button {
+                    reactions.emit(emoji: emoji, column: column)
+                } label: {
+                    Text(emoji)
+                        .font(.system(size: StoryMetrics.reactionTextSize))
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("React with \(emoji)")
+            }
+        }
+        .frame(height: StoryMetrics.reactionRowHeight)
+        .overlay { reactionAnimationLayer }
+    }
+
+    /// `reactionAnimationLayer`: the non-interactive layer the cloned emoji travel through.
+    ///
+    /// Anchored to the reaction row rather than to the whole story, because each clone starts
+    /// exactly where its source button sits. An overlay does not clip, so the emoji stay visible
+    /// all the way up their five-button travel.
+    private var reactionAnimationLayer: some View {
+        GeometryReader { proxy in
+            let columnWidth = proxy.size.width / CGFloat(storyReactions.count)
+
+            ZStack(alignment: .topLeading) {
+                ForEach(reactions.reactions) { reaction in
+                    FloatingReactionView(
+                        reaction: reaction,
+                        size: CGSize(width: columnWidth, height: proxy.size.height)
+                    )
+                    .offset(x: columnWidth * CGFloat(reaction.column))
+                }
+            }
+            .frame(width: proxy.size.width, height: proxy.size.height, alignment: .topLeading)
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 
     private var playbackProgress: CGFloat {
@@ -169,6 +220,7 @@ struct StoryGroupView: View {
         guard let item = activeItem, item.id != loadedId, let url = URL(string: item.videoUrl) else { return }
         loadedId = item.id
         streamPlayer.load(url: url)
+        reactions.playInitialBurst(storyId: item.id, initialId: initialId, pool: storyBurstPool)
     }
 
     private func movePrevious() {
@@ -183,12 +235,26 @@ struct StoryGroupView: View {
         }
     }
 
-    private func showToast(_ value: String) {
-        withAnimation { toast = value }
-        Task { @MainActor in
-            try? await Task.sleep(for: .seconds(1.2))
-            withAnimation { toast = nil }
-        }
+}
+
+/// `emotion_animation`: translate up five button heights while fading to zero, over 800 ms.
+private struct FloatingReactionView: View {
+    let reaction: FloatingReaction
+    let size: CGSize
+
+    @State private var isTravelling = false
+
+    var body: some View {
+        Text(reaction.emoji)
+            .font(.system(size: StoryMetrics.reactionTextSize))
+            .frame(width: size.width, height: size.height)
+            .offset(y: isTravelling ? -size.height * StoryReactionStore.travelHeightMultiple : 0)
+            .opacity(isTravelling ? 0 : 1)
+            .onAppear {
+                withAnimation(.linear(duration: StoryReactionStore.travelDuration)) {
+                    isTravelling = true
+                }
+            }
     }
 }
 

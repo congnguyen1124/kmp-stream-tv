@@ -99,17 +99,21 @@ struct MinimizablePlayerContainer<Player: View, Footer: View, Detail: View>: Vie
 
     // MARK: - Card
 
+    /// The card's own gestures cover the video box only, never the footer.
+    ///
+    /// `onInterceptTouchEvent` clears `isGestureOnCard` when the down lands inside
+    /// `isInsideMiniPlaybackController`, so a transport press runs without the card panning,
+    /// pinching or maximizing underneath it. Scoping the gesture modifiers to the player here is
+    /// the same exclusion: the footer is a sibling outside them.
     private func card(host: CGSize) -> some View {
-        withCardGestures(cardBody(host: host))
-    }
-
-    private func cardBody(host: CGSize) -> some View {
         let cornerRadius = PlayerMetrics.miniCornerRadius / state.zoomScale
 
         return VStack(spacing: 0) {
-            player()
-                .aspectRatio(PlayerMetrics.playerRatio, contentMode: .fit)
-                .background(Color.black)
+            withCardGestures(
+                player()
+                    .aspectRatio(PlayerMetrics.playerRatio, contentMode: .fit)
+                    .background(Color.black)
+            )
 
             if showsFooter {
                 footer()

@@ -247,9 +247,15 @@ demo CDN certificates, so no stream plays).
 
 ## iOS: AVPlayer
 
-The iOS side is unchanged by this Android UI port. `StreamPlayer` owns `AVPlayer`, item replacement,
-time sampling, seek and teardown. SwiftUI `PlayerView` and `NativePlayerView` own the controls and
-UIKit surface respectively. There is no shared `expect`/`actual` player abstraction.
+`StreamPlayer` owns `AVPlayer`, item replacement, time sampling, seek and teardown. SwiftUI
+`PlayerView` and `NativePlayerView` own the controls and UIKit surface respectively. There is no
+shared `expect`/`actual` player abstraction.
+
+`MinimizablePlayerContainer` scopes the card's tap, pan and pinch gestures to the video box, so the
+`MiniPlaybackControllerView` footer beside it never triggers the card underneath — the same
+exclusion `onInterceptTouchEvent` makes with `isInsideMiniPlaybackController`. Rewind, play, pause,
+replay and forward therefore run while the presentation stays minimized, and the footer and its
+button surfaces paint `StreamTheme`'s app background rather than the surface token.
 
 ## Verification
 

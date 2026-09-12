@@ -76,19 +76,36 @@ struct HomeChromeView: View {
     }
 
     /// `HomeCategoriesBar` keeps every category left aligned while the row fits the bar width.
+    ///
+    /// `addMenu` gives the More chip the picker and the chevron instead of a category selection, so
+    /// it stays a launcher and never becomes the selected content category.
     private var categoryBar: some View {
         HStack(spacing: 0) {
             ForEach(HomeCategory.allCases) { category in
                 Button {
-                    selectedCategory = category
+                    if category == .more {
+                        onCategoryPicker()
+                    } else {
+                        selectedCategory = category
+                    }
                 } label: {
-                    Text(category.title)
-                        .font(.streamSemiBold(16))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 12)
-                        .frame(height: HomeChromeMetrics.categoryHeight)
+                    HStack(spacing: 2) {
+                        Text(category.title)
+                            .font(.streamSemiBold(16))
+                        if category == .more {
+                            Image("ic_arrow_down")
+                                .renderingMode(.template)
+                                .resizable()
+                                .frame(width: 16, height: 16)
+                        }
+                    }
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 12)
+                    .frame(height: HomeChromeMetrics.categoryHeight)
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .accessibilityAddTraits(category == selectedCategory ? .isSelected : [])
             }
 
             Spacer(minLength: 0)

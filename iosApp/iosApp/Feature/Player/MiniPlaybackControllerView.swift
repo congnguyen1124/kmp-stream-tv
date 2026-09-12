@@ -63,7 +63,8 @@ struct MiniPlaybackControllerView: View {
             .frame(maxHeight: .infinity)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.streamSurface)
+        // `player_mini_footer` resolves to `appBackground`, same as `bg_mini_player_action`.
+        .background(Color.streamBackground)
         .opacity(isEnabled ? Self.enabledAlpha : Self.disabledAlpha)
     }
 
@@ -96,6 +97,9 @@ struct MiniPlaybackControllerView: View {
                 .padding(actionPadding)
                 .frame(width: 32, height: 32)
                 .foregroundStyle(.white)
+                // `bg_mini_player_action`: an opaque app-background hit surface, which is also
+                // what keeps the tap on the transport instead of the card underneath it.
+                .background(Color.streamBackground)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

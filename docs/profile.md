@@ -11,3 +11,12 @@ policy, Terms and conditions and Feedback. Authentication, settings, policy docu
 destinations do not yet exist in the shared application contract, so selecting them produces an
 explicit unavailable message. They can be replaced by real navigation without changing the row
 model or Activity layout.
+
+## iOS
+
+`UserProfileView` renders the same signed-out hierarchy from `ProfileCatalog.signedOut`: top bar,
+sign-in card with the gradient background, avatar, greeting and Log in button, then the spaced
+outlined sections in the same order and with the same converted icon family. Both entry points —
+Home's profile affordance and the Short toolbar's — present it as a `fullScreenCover`, so the
+destination behind it keeps its state and Back returns to it without a rebuild. Log in and every
+action row answer with the same explicit unavailable message until their shared contracts exist.
