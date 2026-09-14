@@ -36,6 +36,28 @@ một bảng hai cột:
 cử chỉ: cùng fps, cùng chiều rộng, cùng bảng màu, cùng tên file như cột Android — để hai ô của một
 hàng thực sự so sánh được với nhau.
 
+### Ảnh iOS được lồng trong khung máy
+
+`simctl` trả về đúng framebuffer: một hình chữ nhật 1170 × 2532 góc vuông. Cạnh một ảnh Android thì
+nó trông như ảnh của **một cái màn hình**, không phải ảnh của **một cái máy**. Vì vậy mọi capture iOS
+được [`tools/device_frame.py`](tools/device_frame.py) lồng vào thân máy trước khi ghi ra file.
+
+Hình dáng màn hình **không phải vẽ tay**. Mỗi bundle `.simdevicetype` có sẵn một PDF `framebufferMask`
+đúng bằng kích thước framebuffer, phần đục của nó chính là vùng màn hình nhìn thấy được — bo góc, và
+với máy có tai thỏ thì khoét luôn phần tai. Thân máy suy ra từ mask đó bằng phép giãn nở, nên viền dày
+đều nhau ở mọi chỗ kể cả bốn góc, bất kể Apple dùng đường cong nào.
+
+Đổi simulator thì sửa đúng một hằng số `IOS_DEVICE` trong `capture_media.py`. Xem thử khung máy:
+
+```bash
+python3 tools/device_frame.py "iPhone 16e" /tmp/frame.png
+```
+
+Nền quanh thân máy là **màu đặc**, không trong suốt. GIF lưu mỗi khung hình bằng những điểm ảnh khác
+khung trước và đánh dấu phần còn lại là trong suốt; giữ một ô bảng màu cho nền trong suốt là lấy mất
+cơ chế đó và mọi khung hình bị ghi nguyên vẹn. Trên một cảnh cuộn chín giây, khác biệt đo được là
+**4 MB so với 1 MB**.
+
 ```bash
 python3 tools/capture_media.py ios player-mini
 ```
@@ -102,7 +124,18 @@ python3 tools/capture_media.py shot <tên>        # chụp một ảnh tĩnh And
 python3 tools/capture_media.py gif <tên>         # quay một GIF Android
 python3 tools/capture_media.py all               # chụp lại toàn bộ Android (~15 phút)
 python3 tools/capture_media.py ios <tên>         # quay cột iOS, người thao tác bằng tay
+python3 tools/capture_media.py ios <tên> --from <file.mov> --trim 5.2:2.6,10.5:2.3
 ```
+
+Hai cờ cuối dành riêng cho cột iOS, và tồn tại vì người thao tác là **người**:
+
+- **`--from <file.mov>`** mã hoá lại một bản quay đã có thay vì bắt diễn lại cử chỉ. Khi GIF vượt
+  ngân sách kích thước, công cụ **giữ lại** file `.mov` và in sẵn câu lệnh này — hạ `ios_gif_*` rồi
+  chạy lại, không phải quay lại. (`docs/images/*.mov` đã nằm trong `.gitignore`.)
+- **`--trim START:GIÂY[,START:GIÂY…]`** giữ lại vài lát cắt của bản quay rồi nối chúng. Bản quay
+  còn chứa cả lúc với tay lấy chuột, cú vuốt hụt, và khoảng chờ giữa hai bước. Giữ bốn khoảnh khắc
+  đáng giá và bỏ phần ở giữa **không hề làm sai lệch** — mỗi lát là footage nguyên vẹn — nhưng là
+  khác biệt giữa một GIF sáu giây về hành vi và một GIF hai mươi giây về việc ai đó đang bấm máy.
 
 **Không chạy `all` khi chỉ sửa một màn.** Nó mất ~15 phút và tạo diff rác trên những ảnh không liên
 quan (video đang phát ở frame khác nhau). Chỉ chạy `all` khi đổi token/theme dùng chung.
@@ -316,8 +349,8 @@ nằm ngoài cả hàng nút trên lẫn hàng nút giữa. Và phải là `drag
 | `player-fullscreen` | shot | Fullscreen ngang với controller đầy đủ | ↑ rồi xoay ngang |
 | `player-settings` | shot | Cột quality / speed / audio / subtitle | ↑ rồi `SHOW_CONTROLLER`, chạm settings |
 
-Định nghĩa đầy đủ (kể cả `setup`, `settle`, `duration`, `ios_steps`) nằm trong dict `CAPTURES` của
-[`tools/capture_media.py`](tools/capture_media.py).
+Định nghĩa đầy đủ (kể cả `setup`, `settle`, `duration`, `ios_steps`, `ios_gif_*`) nằm trong dict
+`CAPTURES` của [`tools/capture_media.py`](tools/capture_media.py).
 
 ---
 
@@ -402,10 +435,14 @@ Song song đó, [`AGENTS.md`](AGENTS.md) vẫn yêu cầu mỗi màn mới có m
 - [ ] Không có ảnh nào bị bắt **giữa animation** — panel phải đứng yên hẳn.
 - [ ] Không có ảnh nào còn **buffering** hoặc đang ở frame đen đầu stream.
 - [ ] Không có thẻ *"Viewing full screen"* của hệ thống trong ảnh story/fullscreen.
-- [ ] GIF **dưới ~900 KB**. Quá thì giảm `gif_width`, `gif_fps` hoặc `duration` của capture đó.
-      GIF iOS nặng hơn GIF Android cùng cảnh: simulator quay ở 60 fps toàn màn hình nên hầu như
-      không frame nào giống frame nào, palette chia sẻ được rất ít. Cảnh nào nền là video chạy full
-      khung (story, short) thì hạ thẳng xuống `fps 5 / width 200 / colors 32`.
+- [ ] GIF **dưới ~900 KB** — công cụ tự kiểm tra và báo khi vượt, đồng thời giữ lại `.mov` để mã
+      hoá lại bằng `--from`. Quá thì hạ `ios_gif_fps` / `ios_gif_width` / `ios_gif_colors` của
+      capture đó, **không** đụng vào `gif_*` (đó là cột Android).
+      GIF iOS nặng hơn GIF Android cùng cảnh: emulator Android rớt frame nên nhiều frame trùng nhau
+      và nén gần như miễn phí, còn simulator quay đủ 60 fps toàn màn hình nên hầu như không frame
+      nào giống frame nào. Đo được: **một frame có chuyển động tốn ~30 KB ở bề ngang 200 px**, nên
+      ngân sách thực tế là khoảng **30 frame có chuyển động**. Vì vậy cảnh cuộn dài nên dùng **ít
+      cú vuốt nhưng vuốt xa hơn** thay vì nhiều cú vuốt ngắn — cùng đi qua chừng ấy section.
 - [ ] `python3 tools/capture_media.py list` khớp với bảng ở mục 8.
 - [ ] Mọi đường dẫn ảnh trong README đều tồn tại, và mọi file trong `docs/images/` đều được dùng:
 
@@ -437,3 +474,6 @@ PY
 | ANR ngay khi mở app | Máy đang build iOS/Kotlin Native song song, emulator bị đói CPU | Đừng chụp trong lúc build; chạy tuần tự |
 | GIF quá nặng (>1 MB) | `duration` dài, hoặc nền là video đang chạy nên mọi frame đều khác nhau | Giảm `gif_width` / `gif_fps`, rút ngắn `steps` |
 | Emulator không tải được ảnh dù ping được | Còn kẹt throttle từ lần thử `adb emu network speed` | `adb emu network speed full` |
+| GIF iOS ra **4 MB** dù cảnh chẳng có gì | Nền trong suốt chiếm mất ô bảng màu mà GIF dùng để chỉ ghi phần thay đổi | Đã sửa: nền thân máy là màu đặc — xem mục 1 |
+| Short iOS **thừa một dải hình lạ ở đáy** | `ScrollView` phân trang luôn tràn qua safe area rồi bù bằng content inset, nên cửa sổ nhìn thấy cao hơn `geometry.size`; trang cao bằng `geometry.size` để lộ đúng phần chênh đó của **trang kế tiếp** | Đã sửa: trang cao bằng cửa sổ (`+ safeAreaInsets`), `ScrollView` `.ignoresSafeArea()`, chrome tự gánh lại inset |
+| Short đầu tiên chỉ hiện thumbnail, không phát | `ScrollView` tràn safe area chốt vị trí chậm hơn một nhịp nên `scrollPosition` chưa báo trang đầu, không trang nào `isActive` | Đã sửa: `onAppear` tự nhận selection đang chia sẻ |

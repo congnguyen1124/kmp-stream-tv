@@ -27,3 +27,6 @@ output-metadata.json
 google-services.json
 __pycache__/
 *.pyc
+
+# Raw simulator recordings kept next to a GIF that came out over budget, for re-encoding.
+docs/images/*.mov
