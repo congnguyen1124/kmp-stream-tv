@@ -41,11 +41,25 @@ import sys
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
+from tempfile import TemporaryDirectory
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import device_frame  # noqa: E402  (same directory, not an installed package)
 
 PACKAGE = "com.congnguyencn.kmpstreamtv"
 ACTIVITY = f"{PACKAGE}/.MainActivity"
 IOS_BUNDLE = "com.congnguyencn.kmpstreamtv.StreamTV"
 OUTPUT_DIR = Path(__file__).resolve().parent.parent / "docs" / "images"
+
+# The iOS column is framed in the device it was recorded on, so a reader can tell at a glance which
+# half of a README row is which. `device_frame` derives the body from this device type's own
+# framebuffer mask, so changing simulator here is the only edit needed.
+IOS_DEVICE = "iPhone 16e"
+
+# What fills the corners the rounded body leaves over. It is the body's own colour, so the result
+# reads as a phone on a dark card rather than a phone with a halo.
+BACKDROP = (*device_frame.GLASS[:3], 255)
+BACKDROP_HEX = "0x%02x%02x%02x" % device_frame.GLASS[:3]
 
 # Every file carries a platform suffix so the two columns of a README table can be written once and
 # filled in independently. Renaming one column's file would silently break the other's link.
@@ -64,6 +78,13 @@ STILL_QUALITY = 82
 # gesture sent into that window is swallowed. Everything waits on a real UI node instead of a clock.
 LAUNCH_TIMEOUT = 150.0
 WAIT_POLL = 1.0
+
+# How long `simctl io recordVideo` needs before frames actually reach the file.
+RECORDER_WARMUP = 1.5
+
+# A GIF past this is too heavy for a README that holds a dozen of them. Going over is not an error
+# — the recording is kept so the fix is a re-encode with lower `ios_gif_*`, not another take.
+GIF_BUDGET_KB = 900
 
 
 @dataclass(frozen=True)
@@ -89,6 +110,21 @@ class Capture:
     gif_fps: int = GIF_FPS
     gif_colors: int = GIF_COLORS
     gif_width: int = GIF_WIDTH
+    # The simulator records the whole screen at 60 fps and full resolution, so a scene whose
+    # background is moving video shares almost nothing between frames and the palette buys
+    # nothing. Where that pushes a GIF over the size budget, the iOS column gets its own numbers
+    # rather than dragging the Android column down with it.
+    ios_gif_fps: int | None = None
+    ios_gif_colors: int | None = None
+    ios_gif_width: int | None = None
+
+    def ios_gif(self) -> tuple[int, int, int]:
+        """`(fps, colors, width)` for the iOS half, falling back to the shared values."""
+        return (
+            self.ios_gif_fps or self.gif_fps,
+            self.ios_gif_colors or self.gif_colors,
+            self.ios_gif_width or self.gif_width,
+        )
 
 
 # --------------------------------------------------------------------------------------------
@@ -344,6 +380,12 @@ CAPTURES: dict[str, Capture] = {
                   "to pass the ranked rail, the series rail and the live channels.",
         settle=6.0,
         duration=9,
+        # Photo rails sliding past share almost nothing between frames, and a moving frame costs
+        # roughly thirty times a still one. Three long flicks cover the same sections as Android's
+        # four short ones inside a frame budget a README can carry.
+        ios_gif_fps=5,
+        ios_gif_width=200,
+        ios_gif_colors=64,
     ),
     "home-categories": Capture(
         name="home-categories",
@@ -356,6 +398,9 @@ CAPTURES: dict[str, Capture] = {
                   "to the top and wait for it to reappear.",
         settle=6.0,
         duration=7,
+        ios_gif_fps=5,
+        ios_gif_width=200,
+        ios_gif_colors=64,
     ),
     "story-viewer": Capture(
         name="story-viewer",
@@ -374,6 +419,11 @@ CAPTURES: dict[str, Capture] = {
         settle=2.0,
         duration=7,
         gif_fps=10,
+        # Full-frame video behind the reaction bar: nothing is ever still, so the iOS half pays
+        # for every frame and has to buy fewer of them.
+        ios_gif_fps=6,
+        ios_gif_width=190,
+        ios_gif_colors=48,
     ),
     "story-hold": Capture(
         name="story-hold",
@@ -384,6 +434,9 @@ CAPTURES: dict[str, Capture] = {
                   "hold the middle of the frame for about four seconds and release.",
         settle=2.0,
         duration=7,
+        ios_gif_fps=6,
+        ios_gif_width=190,
+        ios_gif_colors=48,
     ),
     "short-feed": Capture(
         name="short-feed",
@@ -397,6 +450,9 @@ CAPTURES: dict[str, Capture] = {
                   "seconds on each page.",
         settle=2.0,
         duration=10,
+        ios_gif_fps=6,
+        ios_gif_width=200,
+        ios_gif_colors=48,
     ),
     "short-actions": Capture(
         name="short-actions",
@@ -419,6 +475,9 @@ CAPTURES: dict[str, Capture] = {
                   "video twice to pause and resume.",
         settle=2.0,
         duration=8,
+        ios_gif_fps=6,
+        ios_gif_width=200,
+        ios_gif_colors=48,
     ),
     "player-detail": Capture(
         name="player-detail",
@@ -668,15 +727,113 @@ def prompt(message: str) -> None:
         time.sleep(3.0)
 
 
-def capture_ios(capture: Capture) -> Path:
+def ios_frame() -> device_frame.DeviceFrame:
+    """The device art, built once per run and reused by every capture in it."""
+    global _IOS_FRAME
+    if _IOS_FRAME is None:
+        _IOS_FRAME = device_frame.build(IOS_DEVICE)
+    return _IOS_FRAME
+
+
+_IOS_FRAME: device_frame.DeviceFrame | None = None
+
+
+def frame_still(raw: Path, output: Path) -> None:
+    """Seat a `simctl` screenshot in the device and write the README-sized WebP.
+
+    The corners the rounded body leaves over are filled with the body's own colour rather than left
+    transparent, so a still and a GIF of the same screen look like the same photograph — and so the
+    iOS cell of a README row is a solid rectangle like the Android one beside it.
+    """
+    from PIL import Image
+
+    frame = ios_frame()
+    shot = Image.open(raw).convert("RGBA")
+    if shot.size != frame.screen_size:
+        shot = shot.resize(frame.screen_size, Image.LANCZOS)
+
+    canvas = Image.new("RGBA", frame.size, BACKDROP)
+    canvas.paste(shot, frame.screen_origin, frame.mask)
+    canvas.alpha_composite(frame.image)
+
+    height = round(frame.size[1] * STILL_WIDTH / frame.size[0])
+    canvas.convert("RGB").resize((STILL_WIDTH, height), Image.LANCZOS).save(
+        output, format="WEBP", quality=STILL_QUALITY, method=6
+    )
+
+
+def frame_gif(source: Path, output: Path, capture: Capture, trim: str | None = None) -> None:
+    """Same for a recording, done in ffmpeg so the frame is composited once per frame, not in Python.
+
+    The device art is opaque everywhere except the screen, so laying the recording underneath it is
+    all the masking that is needed — the body covers the recording's square corners and the notch.
+
+    The backdrop behind the body must be **opaque**. A GIF stores a frame as the pixels that differ
+    from the one before, and it marks the rest transparent; reserving the transparent index for a
+    see-through background takes that away and every frame is written whole. On a nine second scroll
+    that difference measured four megabytes against one.
+    """
+    fps, colors, gif_width = capture.ios_gif()
+    frame = ios_frame()
+    slices = trim_slices(trim) if trim else []
+    with TemporaryDirectory() as tmp:
+        art = Path(tmp) / "frame.png"
+        frame.image.save(art)
+        width, height = frame.size
+        ox, oy = frame.screen_origin
+        sw, sh = frame.screen_size
+
+        if slices:
+            cuts = "".join(
+                f"[0:v]trim=start={start}:duration={seconds},setpts=PTS-STARTPTS[cut{index}];"
+                for index, (start, seconds) in enumerate(slices)
+            )
+            joined = "".join(f"[cut{index}]" for index in range(len(slices)))
+            cut = f"{cuts}{joined}concat=n={len(slices)}:v=1:a=0[kept];[kept]"
+        else:
+            cut = "[0:v]"
+
+        compose = (
+            f"{cut}scale={sw}:{sh}:flags=lanczos,format=rgba[screen];"
+            f"color=c={BACKDROP_HEX}:s={width}x{height}:r={fps},format=rgba[bg];"
+            f"[bg][screen]overlay={ox}:{oy}:shortest=1[seated];"
+            f"[1:v]format=rgba[art];[seated][art]overlay=0:0:format=auto,"
+            f"fps={fps},scale={gif_width}:-1:flags=lanczos"
+        )
+        palette = Path(tmp) / "palette.png"
+        run(["ffmpeg", "-y", "-i", str(source), "-i", str(art), "-filter_complex",
+             f"{compose}[x];[x]palettegen=max_colors={colors}:stats_mode=diff", str(palette)])
+        run(["ffmpeg", "-y", "-i", str(source), "-i", str(art), "-i", str(palette),
+             "-filter_complex",
+             f"{compose}[x];[x][2:v]paletteuse=dither=bayer:bayer_scale=3", str(output)])
+
+
+def trim_slices(trim: str) -> list[tuple[float, float]]:
+    """`--trim 6:3,11:3` as `[(start, seconds), …]`.
+
+    More than one slice exists because the operator is a person: the gesture script is performed
+    over a recording that also contains reaching for the mouse, a mistimed flick, and the pause
+    before the next step. Keeping the four moments that matter and dropping what is between them
+    costs nothing in honesty — each slice is untouched footage — and is the difference between a
+    six second GIF of the behaviour and a twenty second GIF of somebody operating a simulator.
+    """
+    slices = []
+    for piece in trim.split(","):
+        start, _, seconds = piece.partition(":")
+        slices.append((float(start), float(seconds or 0) or 3600.0))
+    return slices
+
+
+def capture_ios(capture: Capture, source: Path | None = None, trim: str | None = None) -> Path:
     """Record the simulator while a human performs `ios_steps`.
 
     There is no `simctl` verb that touches the screen, so this half stays manual on purpose rather
     than pretending to be reproducible. What the tool does own is everything after the gesture:
     the same fps, the same width, the same palette and the same file name as the Android column, so
-    the two cells of a README row are actually comparable.
+    the two cells of a README row are actually comparable — plus the device the result is shown in.
     """
-    simulator = booted_simulator()
+    # `--from` re-encodes a kept recording, which needs no simulator at all.
+    simulator = booted_simulator() if source is None else ""
     is_gif = capture.name in GIF_CAPTURES
     print(f"\n  {capture.name} — {capture.description}")
     print(f"  Perform on the simulator: {capture.ios_steps or '(no gesture script recorded)'}")
@@ -686,25 +843,44 @@ def capture_ios(capture: Capture) -> Path:
         raw = OUTPUT_DIR / f"{capture.name}-{IOS_SUFFIX}.png"
         run(["xcrun", "simctl", "io", simulator, "screenshot", str(raw)])
         output = raw.with_suffix(".webp")
-        run(["ffmpeg", "-y", "-i", str(raw), "-vf", f"scale={STILL_WIDTH}:-1:flags=lanczos",
-             "-quality", str(STILL_QUALITY), str(output)])
+        frame_still(raw, output)
         raw.unlink()
         return output
 
-    local = OUTPUT_DIR / f"{capture.name}-ios.mov"
+    local = source or OUTPUT_DIR / f"{capture.name}-ios.mov"
+    if source is None:
+        local = _record_ios(simulator, capture, local)
+
+    output = OUTPUT_DIR / f"{capture.name}-{IOS_SUFFIX}.gif"
+    frame_gif(local, output, capture, trim=trim)
+
+    size_kb = output.stat().st_size // 1024
+    if size_kb > GIF_BUDGET_KB:
+        print(f"  {size_kb} KB, over the {GIF_BUDGET_KB} KB budget — lower this capture's "
+              f"`ios_gif_fps` / `ios_gif_width` / `ios_gif_colors`, then re-encode without "
+              f"performing the gesture again:")
+        print(f"    python3 tools/capture_media.py ios {capture.name} --from {local}")
+    elif source is None:
+        local.unlink()
+    return output
+
+
+def _record_ios(simulator: str, capture: Capture, local: Path) -> Path:
     prompt(f"  Press Return to start recording {capture.duration}s, then perform the gesture. ")
     recorder = subprocess.Popen(
         ["xcrun", "simctl", "io", simulator, "recordVideo", "--codec", "h264", "-f", str(local)],
         stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
     )
-    time.sleep(capture.duration + 1.5)
+    # `recordVideo` opens its encoder asynchronously, the same way `screenrecord` does on Android.
+    # A gesture performed inside that window is not in the file, and the GIF then opens halfway
+    # through the movement it exists to show. Announcing the real start makes the operator's cue
+    # exact instead of approximate.
+    time.sleep(RECORDER_WARMUP)
+    print(f"  recording {capture.duration}s — go", flush=True)
+    time.sleep(capture.duration)
     recorder.send_signal(2)
     recorder.wait(timeout=30)
-
-    output = OUTPUT_DIR / f"{capture.name}-{IOS_SUFFIX}.gif"
-    to_gif(local, output, capture)
-    local.unlink()
-    return output
+    return local
 
 
 # --------------------------------------------------------------------------------------------
@@ -726,6 +902,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("command", choices=["list", "shot", "gif", "all", "ios"])
     parser.add_argument("name", nargs="?")
+    parser.add_argument("--from", dest="source", type=Path,
+                        help="re-encode this kept .mov instead of recording the gesture again")
+    parser.add_argument("--trim", metavar="START[:SECONDS][,START[:SECONDS]…]",
+                        help="keep only these slices of the recording and join them, for a take "
+                             "with dead time between the steps")
     args = parser.parse_args()
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -757,7 +938,7 @@ def main() -> int:
     capture = CAPTURES[args.name]
 
     if args.command == "ios":
-        output = capture_ios(capture)
+        output = capture_ios(capture, source=args.source, trim=args.trim)
     elif args.command == "gif":
         output = capture_gif(capture)
     else:

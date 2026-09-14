@@ -74,9 +74,21 @@ struct ShortMediaView: View {
 
     var body: some View {
         GeometryReader { geometry in
+            // A paging `ScrollView` always extends under the safe area and insets its content to
+            // compensate, so its visible window is taller than `geometry.size` by exactly these
+            // insets. Sizing a page to `geometry.size` therefore leaves that difference showing the
+            // *next* page below the current one. The page has to match the window, not the layout
+            // frame, and the chrome gets the insets back as padding so it keeps its clearance over
+            // the floating tab bar.
+            let insets = geometry.safeAreaInsets
+            let pageSize = CGSize(
+                width: geometry.size.width,
+                height: geometry.size.height + insets.top + insets.bottom
+            )
+
             ZStack {
                 Color.black.ignoresSafeArea()
-                content(pageSize: geometry.size)
+                content(pageSize: pageSize, chromeInsets: insets)
                 topBar
 
                 if let toast {
@@ -112,7 +124,7 @@ struct ShortMediaView: View {
     // MARK: - Feed
 
     @ViewBuilder
-    private func content(pageSize: CGSize) -> some View {
+    private func content(pageSize: CGSize, chromeInsets: EdgeInsets) -> some View {
         if store.state.items.isEmpty && store.state.isLoading {
             ProgressView("Loading shorts")
                 .tint(.streamAccentBright)
@@ -132,6 +144,7 @@ struct ShortMediaView: View {
                         ShortPageView(
                             item: item,
                             isActive: item.id == visibleId && isDestinationActive && scenePhase == .active,
+                            chromeInsets: chromeInsets,
                             onProfile: { sheet = .provider(item.id) },
                             onFollow: { store.toggleFollow(item) },
                             onLike: { store.toggleLike(item) },
@@ -144,9 +157,16 @@ struct ShortMediaView: View {
                 }
                 .scrollTargetLayout()
             }
+            .ignoresSafeArea()
             .scrollIndicators(.hidden)
             .scrollTargetBehavior(.paging)
             .scrollPosition(id: $visibleId)
+            // A scroll view that spans the safe area resolves its position a beat later than one
+            // laid out inside it, so `scrollPosition` no longer reports the first page on the very
+            // first layout. Nothing would then be the active page and the first short would sit on
+            // its thumbnail until the feed was scrolled once. Claiming the shared selection as soon
+            // as the feed exists is what `onChange(of: items.count)` does for every later load.
+            .onAppear { positionAtSharedSelection(ifUnsetOnly: true) }
             .onChange(of: visibleId) { _, id in
                 guard let id else { return }
                 store.select(id: id)
@@ -313,6 +333,8 @@ struct ShortMediaView: View {
 private struct ShortPageView: View {
     let item: ShortItemUiModel
     let isActive: Bool
+    /// The video runs edge to edge, so the caption and action rail carry the safe area themselves.
+    let chromeInsets: EdgeInsets
     let onProfile: () -> Void
     let onFollow: () -> Void
     let onLike: () -> Void
@@ -405,7 +427,7 @@ private struct ShortPageView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         .padding(.leading, 16)
         .padding(.trailing, 8)
-        .padding(.bottom, 16)
+        .padding(.bottom, 16 + chromeInsets.bottom)
     }
 
     /// The `actions` column: avatar with its overlaid follow control, then Like, Comment, Share and
