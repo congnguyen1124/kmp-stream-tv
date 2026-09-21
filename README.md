@@ -7,13 +7,15 @@ boundary stops at the feature ViewModels: everything below them — domain, data
 paging, optimistic interaction state — is one Kotlin implementation; everything above them is
 written twice, natively.
 
-- **Android** is XML and `RecyclerView`, with playback through the sibling `android_stream_player`.
-- **iOS** is SwiftUI and `Observation`, with playback through `AVPlayer` and `AVPictureInPicture`.
+- **Android** is XML and `RecyclerView`.
+- **iOS** is SwiftUI and `Observation`.
 - **`shared`** owns Home, short and story models, repository contracts, deterministic fixtures,
   Koin wiring and the Ktor boundary.
 
-Neither UI reconstructs a domain rule, and no shared file imports an `Activity`, a SwiftUI view,
-Media3 or AVFoundation.
+Both platforms include special logic that supports reliable playback while preserving their native
+user-interface conventions.
+
+Neither UI reconstructs a domain rule, and no shared file imports an `Activity` or a SwiftUI view.
 
 > Every Android image and GIF below is captured automatically from an emulator by
 > [`tools/capture_media.py`](tools/capture_media.py). See
@@ -30,9 +32,8 @@ Media3 or AVFoundation.
 | **Dependency injection** | Koin — `startKoinForAndroid` from `Application`, `startKoinForIos` before the first Store |
 | **Networking** | Ktor behind `StreamTvApiClient` — OkHttp on Android, Darwin/`NSURLSession` on iOS |
 | **Android UI** | XML, `RecyclerView`, `ViewPager2`, Material 3 · compileSdk 37 · minSdk 26 |
-| **Android playback** | [`android_stream_player`](../android_stream_player) over Media3, resolved through a Gradle composite build |
 | **iOS UI** | SwiftUI, `@Published` stores bridging the shared `StateFlow` |
-| **iOS playback** | `AVPlayer` with a periodic time observer, `AVPictureInPictureController` |
+| **Playback** | Special platform-specific logic supporting the same product experience on Android and iOS |
 
 ### How to read the screenshot tables
 
@@ -46,8 +47,7 @@ same shared state, rendered by two independent native UIs.
 Every file the tool writes carries a platform suffix, so the matching `-ios` file can be dropped in
 beside the `-android` one without renaming anything. An empty iOS cell names the exact file it is
 waiting for, and says why it is still empty: two of them — landscape fullscreen and Picture in
-Picture — cannot come from a simulator at all, because nothing in `simctl` rotates one and
-`AVPictureInPictureController` reports itself unsupported there.
+Picture — require capture on a physical device or a manually rotated simulator.
 
 ---
 
@@ -96,8 +96,7 @@ shares every rule worth sharing and shares no pixel.
    platform         │ androidMain — OkHttp     │   │ iosMain — Darwin / NSURLSession  │
                     └──────────────────────────┘   └──────────────────────────────────┘
 
-   playback stays native on both sides and never crosses the boundary:
-     Android  StreamTvPlayerManager → Media3/ExoPlayer      iOS  StreamPlayer → AVPlayer
+   playback stays platform-owned on both sides and never crosses the shared boundary
 ```
 
 Two consequences are worth stating, because they are what the rest of this README shows:
@@ -106,8 +105,8 @@ Two consequences are worth stating, because they are what the rest of this READM
   strings, booleans and counts, not sealed hierarchies, because they have to stay ergonomic in
   Swift. The typed `Video` / `Series` / `Channel` / `ShortVideo` variants live in the domain layer
   and never leave it.
-- **Decoder state never crosses.** Position, buffering, track selection, surface lifecycle and
-  rotation are owned by each platform. What crosses is a URL and some metadata.
+- **Playback remains platform-owned.** Shared state carries only the catalogue information needed
+  to open content; each platform presents the viewing experience natively.
 
 ---
 
@@ -179,9 +178,8 @@ implementations — because the animation itself is a platform concern.
 
 ## 4. The short feed
 
-A full-height page at a time, one active player. Android snaps a vertical `RecyclerView` with
-`PagerSnapHelper` and lends engines from a three-slot `StreamTvPlayerPool`; iOS pages a SwiftUI
-scroll view and unloads the `AVPlayer` item of any page that stops being active.
+A full-height page at a time, with one active item. Moving between pages pauses and rewinds the other
+items while keeping recently viewed pages ready for a quick return.
 
 <table>
 <tr><th width="50%">Android</th><th width="50%">iOS</th></tr>
@@ -209,10 +207,8 @@ optimistic state keeps the finished behaviour testable until the endpoint exists
 
 ## 5. The player
 
-`PlayerFragment` is an overlay on `MainActivity`, not a separate Activity — that is what lets
-playback survive switching tabs. It owns one `StreamTvPlayerManager` and asks the overlay for one
-of four presentations: portrait detail, landscape fullscreen, mini, or system Picture in Picture.
-`PlayerOverlayStore` is its iOS counterpart.
+The viewing experience has four presentations: portrait detail, landscape fullscreen, a floating
+mini player and system Picture in Picture. Playback continues while moving between them.
 
 <table>
 <tr><th width="50%">Android</th><th width="50%">iOS</th></tr>
@@ -225,30 +221,21 @@ of four presentations: portrait detail, landscape fullscreen, mini, or system Pi
 <td><img src="docs/images/player-detail-scroll-android.gif" alt="Detail list scrolling on Android"></td>
 <td><img src="docs/images/player-detail-scroll-ios.gif" alt="Detail list scrolling on iOS"></td>
 </tr>
-<tr><td colspan="2"><em>The detail list scrolls under a player that stays put. The list reserves the player's strip with a 16:9 spacer rather than being laid out below it, because the player is a sibling that floats over the list and will move.</em></td></tr>
+<tr><td colspan="2"><em>The detail list scrolls beneath a player that stays fixed at the top, keeping the video visible while recommendations move independently.</em></td></tr>
 <tr>
 <td><img src="docs/images/player-fullscreen-android.webp" alt="Landscape fullscreen on Android"></td>
 <td align="center"><em>waiting for <code>docs/images/player-fullscreen-ios.webp</code><br>— must be captured on a device or by rotating the simulator by hand; nothing in <code>simctl</code> rotates one</em></td>
 </tr>
-<tr><td colspan="2"><em>Landscape is fullscreen with the wide controller spacing. The configuration change is handled by the Activity, so the same fragment, the same manager and the same decoder stay alive across the rotation — nothing reloads.</em></td></tr>
+<tr><td colspan="2"><em>Landscape is fullscreen with wide controller spacing. Rotating preserves the session, current position and selected content without reloading.</em></td></tr>
 <tr>
 <td><img src="docs/images/player-settings-android.webp" alt="Player settings on Android"></td>
 <td><img src="docs/images/player-settings-ios.webp" alt="Player settings on iOS"></td>
 </tr>
-<tr><td colspan="2"><em>Quality, speed, audio and subtitles, each resolved from the engine's real track list. A category with nothing to choose between is not drawn, so this panel is shorter on a stream with one rendition — that is the design, not a missing row.</em></td></tr>
+<tr><td colspan="2"><em>Quality, speed, audio and subtitles reflect the options available for the current stream. A category with nothing to choose between is not drawn, so this panel is intentionally shorter for some content.</em></td></tr>
 </table>
 
-Every control maps to one engine operation and creates no duplicate state:
-
-| UI action | `android_stream_player` operation |
-| --- | --- |
-| Initial load, retry, or replacing the item | `loadAndPlay(uri)` |
-| Play or pause, VOD | `togglePlayPause()` |
-| Play or pause, live | `togglePlayPauseAtDefaultPosition()` |
-| Replay an ended VOD | `replay()` |
-| Rewind / forward | `seekBack()` / `seekForward()` |
-| Scrub | `seekTo(duration)` |
-| Quality, audio, subtitles | `selectVideoTrack` / `selectAudioTrack` / `selectTextTrack` |
+Controls cover retry, play/pause for live and on-demand content, replay, rewind/forward, scrubbing
+and the track options available for the current stream.
 
 Back is layered rather than uniform: close the settings panel, else leave landscape for portrait,
 else minimize a portrait detail player, else close an already minimized one.
@@ -257,9 +244,8 @@ else minimize a portrait detail player, else close an already minimized one.
 
 ## 6. The floating mini player
 
-Dragging the player downward shrinks it into a card that can be dragged anywhere, pinched, and
-parked in a corner. The card is a one-to-one port of `ottclouds-android`'s Compose
-`NewMinimizableView` into XML Views, with the same arithmetic in `MinimizableViewState`.
+Dragging the player downward shrinks it into a card that can be moved anywhere, pinched and parked
+in a corner.
 
 <table>
 <tr><th width="50%">Android</th><th width="50%">iOS</th></tr>
@@ -272,25 +258,11 @@ parked in a corner. The card is a one-to-one port of `ottclouds-android`'s Compo
 <td><img src="docs/images/player-mini-corner-android.gif" alt="Mini player parking in a corner on Android"></td>
 <td><img src="docs/images/player-mini-corner-ios.gif" alt="Mini player parking in a corner on iOS"></td>
 </tr>
-<tr><td colspan="2"><em>Released anywhere, the card settles into the nearest corner and keeps the same 16 dp gap from both window edges. The bottom-navigation height is <strong>measured</strong> rather than assumed, because that bar is <code>GONE</code> while the player is expanded and a <code>GONE</code> view measures zero.</em></td></tr>
+<tr><td colspan="2"><em>Released anywhere, the card settles into the nearest corner, keeps a 16 dp gap from both window edges and remains clear of the bottom navigation.</em></td></tr>
 </table>
 
-While minimized, the overlay container stays window-sized — the card travels the whole window — but
-it paints no background and nothing outside the card is clickable, so a touch beside the mini player
-falls through to the destination behind it. That is why the bottom navigation and the feed stay
-usable underneath.
-
-Three things differ from the Compose reference, and only because the host is a `ViewGroup`:
-
-1. **The padded card and the scaled content are two views.** Padding lives inside a view's bounds,
-   so scaling one view would scale its border gap with it; Compose gets this free from modifier
-   order.
-2. **No coroutine scope.** The composable queues updates on `AndroidUiDispatcher` and has to reason
-   about FIFO ordering; `MinimizableView` calls the state directly from the touch handler on the
-   main thread, so there is no queue to get wrong.
-3. **Touches are hit-tested against the card.** The composable's `pointerInput` sits on the player
-   column alone; this view spans the whole overlay, so without an explicit hit test the list behind
-   could not be scrolled.
+While minimized, the area outside the card remains transparent and interactive, so the viewer can
+continue using the feed and bottom navigation underneath it.
 
 ---
 
@@ -303,9 +275,9 @@ difference is which process is in front.
 <tr><th width="50%">Android</th><th width="50%">iOS</th></tr>
 <tr>
 <td><img src="docs/images/player-pip-android.gif" alt="Entering Picture in Picture on Android"></td>
-<td align="center"><em>waiting for <code>docs/images/player-pip-ios.gif</code><br>— <code>AVPictureInPictureController.isPictureInPictureSupported()</code> is <code>false</code> in the Simulator, so the app correctly draws no PiP action there; this cell needs a device</em></td>
+<td align="center"><em>waiting for <code>docs/images/player-pip-ios.gif</code><br>— Picture in Picture is unavailable in the simulator, so this cell needs a physical device</em></td>
 </tr>
-<tr><td colspan="2"><em>The controller's PiP action hands the surface to the system window and the app goes to the background. The same manager and the same surface stay alive — detail, settings, errors and every app controller are hidden rather than torn down, so coming back restores portrait detail or landscape fullscreen without a reload.</em></td></tr>
+<tr><td colspan="2"><em>The PiP action moves playback into the system window while the app goes to the background. Returning restores portrait detail or landscape fullscreen without a reload.</em></td></tr>
 </table>
 
 | | Mini player | System Picture in Picture |
@@ -315,12 +287,8 @@ difference is which process is in front.
 | Controls | the app's own transport strip | system-provided PiP chrome |
 | Entered by | dragging the player down | the controller's PiP action, or leaving the app while playing |
 
-Android enters with a 16:9 ratio, a source-rect hint and Android 12 seamless/auto-enter parameters;
-`onUserLeaveHint` also enters it when the viewer leaves the app while playing. Minimizing or closing
-disables auto-enter, so an inactive player cannot reopen PiP later. iOS owns the same transitions
-through `AVPictureInPictureController` in `PictureInPictureCoordinator` — `start()` is the
-counterpart of `enterPlayerPictureInPicture`, and its delegate callbacks are the counterpart of
-`onPictureInPictureModeChanged`.
+Leaving the app while active can enter Picture in Picture automatically. Minimizing or closing the
+content disables auto-entry, so an inactive session cannot reopen the system window later.
 
 ---
 
@@ -343,9 +311,7 @@ capture, and writes `docs/images/<name>-android.{webp,gif}`.
 
 **Read [`updateReadme.md`](updateReadme.md) before re-capturing anything.** It maps each source
 file to the captures that must be re-run, records which fixture each demo uses, and documents the
-two traps that produce valid files of the wrong thing: an emulator decoder that corrupts H.264
-Main and High profiles into coloured noise while still reporting healthy playback, and a controller
-that auto-hides only while `isPlaying` is true.
+platform and device limitations that can affect an otherwise valid capture.
 
 ---
 
@@ -362,9 +328,8 @@ kmp-stream-tv/
 ├── androidApp/src/main/
 │   ├── kotlin/.../core/ui/recyclerview/   # RecyclerView support primitives
 │   ├── kotlin/.../feature/home/           # Home tab/fragment, category bar, adapters, holders
-│   ├── kotlin/.../feature/short/          # Paged vertical feed and pooled playback
+│   ├── kotlin/.../feature/short/          # Paged vertical feed and action rail
 │   ├── kotlin/.../feature/story/          # Grouped story viewer and progress controls
-│   ├── kotlin/.../feature/player/         # PlayerFragment, PlayerView, mini player, PiP
 │   ├── kotlin/.../feature/placeholder/    # Ready-to-replace destination fragments
 │   └── res/layout/                        # XML layouts
 ├── iosApp/iosApp/
@@ -372,7 +337,6 @@ kmp-stream-tv/
 │   ├── Feature/Home/         # Store, category shell, feed, section renderers
 │   ├── Feature/Short/        # Vertical short feed and action sheets
 │   ├── Feature/Story/        # Grouped story viewer and reaction store
-│   ├── Feature/Player/       # AVPlayer owner, controller, mini container, PiP
 │   └── Core/UI/              # Platform-wide visual tokens and remote artwork
 ├── tools/capture_media.py    # The capture tool behind every Android image above
 ├── docs/                     # Architecture and integration notes
@@ -388,10 +352,8 @@ across the boundary.
 ## Android navigation shell
 
 `MainActivity` owns the four-item bottom navigation (Home, Music, Short, Playlist) and keeps
-destination fragments alive while switching tabs. The player overlay is excluded from that
-hide/show loop, which is what lets mini playback survive a tab change. Music, Playlist and the
-non-Home categories are placeholders so a future feature can replace one class without rebuilding
-the shell.
+destination fragments alive while switching tabs. Music, Playlist and the non-Home categories are
+placeholders so a future feature can replace one class without rebuilding the shell.
 
 See [navigation shell](docs/navigation.md) for ownership and replacement points.
 
@@ -407,7 +369,7 @@ UI contract.
 
 ## Build and test
 
-Requirements: JDK 17+, Android SDK 37, and the sibling `android_stream_player` checkout.
+Requirements: JDK 17+ and Android SDK 37.
 
 ```bash
 ./gradlew ktlintFormat
@@ -424,8 +386,7 @@ Open `iosApp/iosApp.xcodeproj` in Xcode to build iOS. Configure `TEAM_ID` in
 - [Architecture](docs/architecture.md)
 - [Home implementation](docs/home.md)
 - [Navigation shell](docs/navigation.md)
-- [Player integration](docs/player.md)
 - [Short feed and stories](docs/shorts.md)
 - [Kotlin code style](docs/code-style.md)
 - [How to update the images in this README](updateReadme.md)
-- Specs: [home](spec/home.md) · [navigation](spec/navigation.md) · [player](spec/player.md) · [shorts and stories](spec/shorts.md) · [profile](spec/profile.md)
+- Specs: [home](spec/home.md) · [navigation](spec/navigation.md) · [shorts and stories](spec/shorts.md) · [profile](spec/profile.md)
